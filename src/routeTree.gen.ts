@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as ResumeRouteImport } from './routes/resume'
 import { Route as YcRouteImport } from './routes/yc'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as CompanyNameRouteImport } from './routes/company.$name'
@@ -23,6 +24,11 @@ const IndexRoute = IndexRouteImport.update({
 const ChatRoute = ChatRouteImport.update({
   id: '/chat',
   path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResumeRoute = ResumeRouteImport.update({
+  id: '/resume',
+  path: '/resume',
   getParentRoute: () => rootRouteImport,
 } as any)
 const YcRoute = YcRouteImport.update({
@@ -44,6 +50,7 @@ const CompanyNameRoute = CompanyNameRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/resume': typeof ResumeRoute
   '/yc': typeof YcRoute
   '/api/chat': typeof ApiChatRoute
   '/company/$name': typeof CompanyNameRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/resume': typeof ResumeRoute
   '/yc': typeof YcRoute
   '/api/chat': typeof ApiChatRoute
   '/company/$name': typeof CompanyNameRoute
@@ -59,21 +67,30 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/resume': typeof ResumeRoute
   '/yc': typeof YcRoute
   '/api/chat': typeof ApiChatRoute
   '/company/$name': typeof CompanyNameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat' | '/yc' | '/api/chat' | '/company/$name'
+  fullPaths: '/' | '/chat' | '/resume' | '/yc' | '/api/chat' | '/company/$name'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat' | '/yc' | '/api/chat' | '/company/$name'
-  id: '__root__' | '/' | '/chat' | '/yc' | '/api/chat' | '/company/$name'
+  to: '/' | '/chat' | '/resume' | '/yc' | '/api/chat' | '/company/$name'
+  id:
+    | '__root__'
+    | '/'
+    | '/chat'
+    | '/resume'
+    | '/yc'
+    | '/api/chat'
+    | '/company/$name'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatRoute: typeof ChatRoute
+  ResumeRoute: typeof ResumeRoute
   YcRoute: typeof YcRoute
   ApiChatRoute: typeof ApiChatRoute
   CompanyNameRoute: typeof CompanyNameRoute
@@ -93,6 +110,13 @@ declare module '@tanstack/react-router' {
       path: '/chat'
       fullPath: '/chat'
       preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resume': {
+      id: '/resume'
+      path: '/resume'
+      fullPath: '/resume'
+      preLoaderRoute: typeof ResumeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/yc': {
@@ -122,6 +146,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatRoute: ChatRoute,
+  ResumeRoute: ResumeRoute,
   YcRoute: YcRoute,
   ApiChatRoute: ApiChatRoute,
   CompanyNameRoute: CompanyNameRoute,

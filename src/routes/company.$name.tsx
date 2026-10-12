@@ -166,6 +166,7 @@ function CompanyPage() {
                         <Button onClick={() => open(r.url, r.title)} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-primary-foreground">
                           <FileText className="h-3.5 w-3.5" /> Explore role
                         </Button>
+                        <Link to="/resume" search={{ job: r.url, target: `${r.title} at ${name}`.slice(0,200) }} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5">Match my resume</Link>
                         <a href={r.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5">
                           <ExternalLink className="h-3.5 w-3.5" /> Source
                         </a>

@@ -30,6 +30,7 @@ export function Shell({ children }: { children: ReactNode }) {
         <nav className="order-3 flex w-full items-center justify-center gap-1 rounded-full glass p-1 text-sm sm:order-none sm:w-auto">
           {([
             ["/", "Discover"],
+            ["/resume", "Resume"],
             ["/yc", "YC Explorer"],
             ["/chat", "Chat"],
           ] as const).map(([to, l]) => (
