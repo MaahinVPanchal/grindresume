@@ -107,9 +107,9 @@ function YCPage() {
       </div>
       {res?.ok && pages > 1 && (
         <nav aria-label="YC pages" className="mt-6 flex items-center justify-center gap-3 text-sm">
-          <Button variant="secondary" disabled={page <= 1 || loading} onClick={() => go(page - 1)}>Previous</Button>
+          <Button disabled={page <= 1 || loading} onClick={() => go(page - 1)}>Previous</Button>
           <span className="text-muted-foreground">Page {page} of {pages}</span>
-          <Button variant="secondary" disabled={page >= pages || loading} onClick={() => go(page + 1)}>Next</Button>
+          <Button disabled={page >= pages || loading} onClick={() => go(page + 1)}>Next</Button>
         </nav>
       )}
       <CommunityCatalog query={q}/>
