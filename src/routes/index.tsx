@@ -6,6 +6,7 @@ import { Shell } from "@/components/Shell";
 import { CompanyTicker } from "@/components/CompanyTicker";
 import { CommunityCatalog } from "@/components/CommunityCatalog";
 import { FeaturedCatalog } from "@/components/FeaturedCatalog";
+import { resolveCompany } from "@/lib/role-match";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,8 +50,10 @@ function Index() {
         onSubmit={(e) => {
           e.preventDefault();
           if (company.trim()) {
+            const known = resolveCompany(company);
             const isUrl = company.includes(".");
-            go(isUrl ? company.replace(/^https?:\/\//, "").split(".")[0] ?? company : company.trim(), isUrl ? company : undefined);
+            if (known) void go(known.name, known.domain);
+            else void go(isUrl ? company.replace(/^https?:\/\//, "").split(".")[0] ?? company : company.trim(), isUrl ? company : undefined);
           }
         }}
         className="mx-auto mt-7 max-w-4xl space-y-4 rounded-lg glass p-5 text-left"
