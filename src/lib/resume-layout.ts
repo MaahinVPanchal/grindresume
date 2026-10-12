@@ -99,7 +99,7 @@ export async function exportPDF(r: Resume,title: string) {
       pdf.setFillColor(color[0] ?? 42,color[1] ?? 42,color[2] ?? 42);
       pdf.rect(d.x,d.y,d.width,d.height,'F');
     }
-    pdf.setDrawColor(...accent);pdf.setLineWidth(r.format.borderWidth);
+    pdf.setDrawColor(accent[0],accent[1],accent[2]);pdf.setLineWidth(r.format.borderWidth);
     if(r.format.border==='page')pdf.rect(margin/2,margin/2,width-margin,height-margin);
     for(const l of lines){pdf.setFont(font,l.bold?'bold':l.italic?'italic':'normal');pdf.setFontSize(l.size);const color=l.tone==='paper'?[255,255,255]:l.tone==='accent'?accent:ink;pdf.setTextColor(color[0] ?? 42,color[1] ?? 42,color[2] ?? 42);pdf.text(l.text,l.x,l.y+l.size*0.3528);}
     pdf.setTextColor(...ink);pdf.setFontSize(8);pdf.text(`${i+1} / ${pages.length}`,width-margin-10,height-8);
