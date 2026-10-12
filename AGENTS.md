@@ -15,3 +15,6 @@
 - Parse PDF and DOCX in browser event handlers with real parsers; retain original files and source text privately in Cloud so extraction is recoverable.
 - Store resumes and versions in owner-scoped Cloud tables; public resume entrypoints offer inline sign-in rather than redirecting during SSR.
 - Keep configurable resume AI adapters server-only and require explicit approval before changing canonical resume content.
+- Validate resume formatting alongside content and use the shared layout for template previews and PDF exports; translate the same settings into DOCX to prevent divergence.
+- Keep application briefs separate from canonical resumes and cache external role research in owner-scoped Cloud rows; only explicit editor approval may change resume facts.
+- Retain the legacy chat URL but use contextual company chat and the shared-shell assistant for navigation; saved roles live in owner-scoped Cloud rows.
