@@ -145,6 +145,7 @@ export const searchYC = createServerFn({ method: "POST" })
         q: z.string().max(100).default(""),
         hiring: z.boolean().default(true),
         industry: z.string().max(60).default(""),
+        page: z.number().int().min(1).max(500).default(1),
       })
       .parse(d),
   )
@@ -171,7 +172,9 @@ export const searchYC = createServerFn({ method: "POST" })
         ok: true as const,
         total: list.length,
         industries,
-        companies: list.slice(0, 60).map((c) => ({
+        page: data.page,
+        pageSize: 60,
+        companies: list.slice((data.page - 1) * 60, data.page * 60).map((c) => ({
           name: c.name,
           slug: c.slug,
           website: c.website,
