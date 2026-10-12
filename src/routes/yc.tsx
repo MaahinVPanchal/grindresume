@@ -6,6 +6,7 @@ import { Shell } from "@/components/Shell";
 import { searchYC } from "@/lib/research.functions";
 import { Button } from "@/components/Button";
 import { CommunityCatalog } from "@/components/CommunityCatalog";
+import { FeaturedCatalog } from "@/components/FeaturedCatalog";
 
 export const Route = createFileRoute("/yc")({
   head: () => ({
@@ -112,6 +113,7 @@ function YCPage() {
           <Button disabled={page >= pages || loading} onClick={() => go(page + 1)}>Next</Button>
         </nav>
       )}
+      <FeaturedCatalog query={q}/>
       <CommunityCatalog query={q}/>
     </Shell>
   );
