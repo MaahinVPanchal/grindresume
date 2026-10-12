@@ -16,5 +16,8 @@
 - Store resumes and versions in owner-scoped Cloud tables; public resume entrypoints offer inline sign-in rather than redirecting during SSR.
 - Keep configurable resume AI adapters server-only and require explicit approval before changing canonical resume content.
 - Validate resume formatting alongside content and use the shared layout for template previews and PDF exports; translate the same settings into DOCX to prevent divergence.
+- Define resume template geometry in the shared paginated layout, including independent column cursors and decoration primitives; generate real-text gallery thumbnails and PDF/Word structure from that layout rather than separate mockups.
 - Keep application briefs separate from canonical resumes and cache external role research in owner-scoped Cloud rows; only explicit editor approval may change resume facts.
 - Retain the legacy chat URL but use contextual company chat and the shared-shell assistant for navigation; saved roles live in owner-scoped Cloud rows.
+- Publish community companies only through the confirmed-domain catalog RPC and explicit per-employer approval; keep raw contributions owner-scoped and reuse the same company cards on Discover and YC Explorer.
+- Fetch company website metadata only in authenticated server functions with public-host/IP checks, revalidated redirects, bounded responses and deadlines; no private resume content is sent to websites.
