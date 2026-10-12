@@ -11,7 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as FocusRouteImport } from './routes/focus'
 import { Route as ResumeRouteImport } from './routes/resume'
+import { Route as SavedRouteImport } from './routes/saved'
 import { Route as YcRouteImport } from './routes/yc'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as CompanyNameRouteImport } from './routes/company.$name'
@@ -26,9 +28,19 @@ const ChatRoute = ChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FocusRoute = FocusRouteImport.update({
+  id: '/focus',
+  path: '/focus',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResumeRoute = ResumeRouteImport.update({
   id: '/resume',
   path: '/resume',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SavedRoute = SavedRouteImport.update({
+  id: '/saved',
+  path: '/saved',
   getParentRoute: () => rootRouteImport,
 } as any)
 const YcRoute = YcRouteImport.update({
@@ -50,7 +62,9 @@ const CompanyNameRoute = CompanyNameRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/focus': typeof FocusRoute
   '/resume': typeof ResumeRoute
+  '/saved': typeof SavedRoute
   '/yc': typeof YcRoute
   '/api/chat': typeof ApiChatRoute
   '/company/$name': typeof CompanyNameRoute
@@ -58,7 +72,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/focus': typeof FocusRoute
   '/resume': typeof ResumeRoute
+  '/saved': typeof SavedRoute
   '/yc': typeof YcRoute
   '/api/chat': typeof ApiChatRoute
   '/company/$name': typeof CompanyNameRoute
@@ -67,21 +83,41 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
+  '/focus': typeof FocusRoute
   '/resume': typeof ResumeRoute
+  '/saved': typeof SavedRoute
   '/yc': typeof YcRoute
   '/api/chat': typeof ApiChatRoute
   '/company/$name': typeof CompanyNameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/chat' | '/resume' | '/yc' | '/api/chat' | '/company/$name'
+  fullPaths:
+    | '/'
+    | '/chat'
+    | '/focus'
+    | '/resume'
+    | '/saved'
+    | '/yc'
+    | '/api/chat'
+    | '/company/$name'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/chat' | '/resume' | '/yc' | '/api/chat' | '/company/$name'
+  to:
+    | '/'
+    | '/chat'
+    | '/focus'
+    | '/resume'
+    | '/saved'
+    | '/yc'
+    | '/api/chat'
+    | '/company/$name'
   id:
     | '__root__'
     | '/'
     | '/chat'
+    | '/focus'
     | '/resume'
+    | '/saved'
     | '/yc'
     | '/api/chat'
     | '/company/$name'
@@ -90,7 +126,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatRoute: typeof ChatRoute
+  FocusRoute: typeof FocusRoute
   ResumeRoute: typeof ResumeRoute
+  SavedRoute: typeof SavedRoute
   YcRoute: typeof YcRoute
   ApiChatRoute: typeof ApiChatRoute
   CompanyNameRoute: typeof CompanyNameRoute
@@ -112,11 +150,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/focus': {
+      id: '/focus'
+      path: '/focus'
+      fullPath: '/focus'
+      preLoaderRoute: typeof FocusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/resume': {
       id: '/resume'
       path: '/resume'
       fullPath: '/resume'
       preLoaderRoute: typeof ResumeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/saved': {
+      id: '/saved'
+      path: '/saved'
+      fullPath: '/saved'
+      preLoaderRoute: typeof SavedRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/yc': {
@@ -146,7 +198,9 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatRoute: ChatRoute,
+  FocusRoute: FocusRoute,
   ResumeRoute: ResumeRoute,
+  SavedRoute: SavedRoute,
   YcRoute: YcRoute,
   ApiChatRoute: ApiChatRoute,
   CompanyNameRoute: CompanyNameRoute,

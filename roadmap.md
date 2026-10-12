@@ -6,3 +6,8 @@
 - [x] PDF/DOCX downloads and visible resume entrypoints.
 - [x] Verify upload, editing, saving, reopening, AI approval and exports.
 - [ ] Verify live Tavily research and Nebius suggestions — blocked by absent provider keys; Lovable AI verified.
+- [x] Correct neutral responsibility labels; add five visible templates, borders, alignment and font-weight controls synchronized with exports.
+- [x] Replace top-level Chat navigation with Saved; retain contextual company/role chat and global Ask Grinder with appearance controls.
+- [x] Add Application Brief with resume evidence, sourced guidance and editable cover letter; cache research privately.
+- [x] Add a product-focus tab explaining Tavily/Nebius and existing alternatives; verify templates, formatting, exports, navigation and shared assistant in-browser.
+- [ ] Verify live company Application Brief end-to-end with provider keys; live Tavily/Nebius checks remain blocked by absent keys.

@@ -9,6 +9,8 @@ import { ChatPanel } from "@/components/ChatPanel";
 import { useKeys } from "@/lib/keys";
 import { findCareers, extractPage } from "@/lib/research.functions";
 import { logoFor, cleanDomain } from "@/lib/companies";
+import { SaveRole } from '@/components/SaveRole';
+import { ApplicationBrief } from '@/components/ApplicationBrief';
 
 const search = z.object({
   domain: z.string().optional(),
@@ -42,6 +44,7 @@ function CompanyPage() {
   const [res, setRes] = useState<Result | null>(null);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("");
+  const [briefContext,setBriefContext]=useState('');
   const [selected, setSelected] = useState<{ url: string; title: string; content?: string; loading?: boolean; error?: string } | null>(null);
 
   async function run() {
@@ -53,11 +56,13 @@ function CompanyPage() {
   useEffect(() => {
     setRes(null);
     setSelected(null);
+    setBriefContext('');
     run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keys.tavily, name, domain, title, location]);
 
   async function open(url: string, t: string) {
+    setBriefContext('');
     setSelected({ url, title: t, loading: true });
     const r = await extract({ data: { apiKey: keys.tavily, url } });
     setSelected(r.ok ? { url, title: t, content: r.content } : { url, title: t, error: r.error });
@@ -73,9 +78,10 @@ function CompanyPage() {
       "Career pages:\n" + res.careerPages.map((p) => `- ${p.title} ${p.url}: ${p.snippet}`).join("\n"),
       "Discovered listings:\n" + res.roles.map((r) => `- ${r.title} ${r.url}: ${r.snippet}`).join("\n"),
       selected?.content ? `Selected page (${selected.url}):\n${selected.content.slice(0, 8000)}` : "",
+      briefContext ? `Application brief based on candidate resume: ${briefContext}` : '',
     ];
     return parts.filter(Boolean).join("\n\n");
-  }, [res, selected, name, domain, title, location]);
+  }, [res, selected, name, domain, title, location,briefContext]);
 
   return (
     <Shell>
@@ -162,7 +168,8 @@ function CompanyPage() {
                         </div>
                       </div>
                       <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{r.snippet}</p>
-                      <div className="mt-3 flex gap-2 text-xs">
+                       <div className="mt-3 flex flex-wrap gap-2 text-xs">
+                         <SaveRole company={name} title={r.title} url={r.url}/>
                         <Button onClick={() => open(r.url, r.title)} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-primary-foreground">
                           <FileText className="h-3.5 w-3.5" /> Explore role
                         </Button>
@@ -194,6 +201,7 @@ function CompanyPage() {
                     </pre>
                   )}
                   <p className="mt-3 text-xs text-muted-foreground">This page is now shared with the assistant →</p>
+                  <ApplicationBrief key={selected.url} company={name} role={selected.title} job={selected.content||selected.url} onContext={setBriefContext}/>
                 </section>
               )}
             </>
@@ -202,12 +210,12 @@ function CompanyPage() {
         <ChatPanel
           key={name}
           className="h-[calc(100vh-7rem)] lg:sticky lg:top-4"
-          title={`Ask about ${name}`}
+           title={selected?'Career Copilot · selected role':`Career Copilot · ${name}`}
           context={context}
           suggestions={[
-            `Which ${name} roles look most recent and active?`,
-            `What does ${name} seem to look for in candidates?`,
-            selected ? `Summarize the key requirements of "${selected.title}"` : `Which teams at ${name} are hiring?`,
+             selected?'Which of my projects should I emphasize?':`Find the latest sourced roles at ${name}.`,
+             selected?'What should my cover letter communicate?':`What is ${name} currently working on?`,
+             selected?'Help me explain why this company interests me.':`Which teams at ${name} have relevant openings?`,
           ]}
         />
       </div>
