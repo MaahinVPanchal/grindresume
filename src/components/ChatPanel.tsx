@@ -35,6 +35,21 @@ export function ChatPanel({
   const box = useRef<HTMLDivElement>(null);
   const ta = useRef<HTMLTextAreaElement>(null);
   const list = useServerFn(listNebiusModels);
+  const research = useServerFn(deepResearch);
+  const [deep, setDeep] = useState(false);
+  const [resumes, setResumes] = useState<{ id: string; title: string }[]>([]);
+  const [resumeId, setResumeId] = useState("");
+  const [target, setTarget] = useState("");
+  const [status, setStatus] = useState("");
+
+  useEffect(() => {
+    if (!deep || resumes.length) return;
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!data.session) return;
+      const r = await supabase.from("resumes").select("id,title").order("updated_at", { ascending: false });
+      if (r.data?.length) { setResumes(r.data); setResumeId((v) => v || r.data[0].id); }
+    });
+  }, [deep, resumes.length]);
 
   useEffect(() => {
     if (!keys.nebius) return;
@@ -61,11 +76,21 @@ export function ChatPanel({
     setBusy(true);
     abort.current = new AbortController();
     try {
+      let ctx = context || "";
+      if (deep) {
+        const { data: s } = await supabase.auth.getSession();
+        if (!s.session) throw new Error("Sign in to use deep research with your resume.");
+        setStatus(target.trim() ? "Researching the role and company…" : "Reading your resume…");
+        const r = await research({ data: { resumeId: resumeId || undefined, target: target || (context ? "" : ""), tavilyKey: keys.tavily || undefined } });
+        if (!r.ok) throw new Error(r.error);
+        ctx = `${ctx}\n\n${r.context}`.slice(0, 30000);
+        setStatus(`${r.sourceCount} sources · ${r.resumeUsed ? "resume facts included" : "no resume"}`);
+      }
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: abort.current.signal,
-        body: JSON.stringify({ apiKey: keys.nebius, model: keys.model, messages: next, context }),
+        body: JSON.stringify({ apiKey: keys.nebius, model: keys.model, messages: next, context: ctx || undefined }),
       });
       if (!res.ok || !res.body) throw new Error((await res.text()) || `Error ${res.status}`);
       const reader = res.body.getReader();
