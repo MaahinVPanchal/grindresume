@@ -61,7 +61,7 @@ export function ChatPanel({
   const [resumeId, setResumeId] = useState("");
   const [target, setTarget] = useState("");
   const [status, setStatus] = useState("");
-  const careers = useServerFn(findCareers);
+  const _careers = useServerFn(findCareers);
   const [company, setCompany] = useState<{ name: string; domain: string } | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [picked, setPicked] = useState<Role[]>([]);
