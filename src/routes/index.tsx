@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Building2, Globe, MapPin, Briefcase, Search, Upload, ArrowRight } from "lucide-react";
 import { Shell } from "@/components/Shell";
-import { FEATURED, logoFor } from "@/lib/companies";
+import { CompanyTicker } from "@/components/CompanyTicker";
 import { CommunityCatalog } from "@/components/CommunityCatalog";
 
 export const Route = createFileRoute("/")({
@@ -73,19 +73,7 @@ function Index() {
         </Button>
       </form>
 
-      <p className="mt-8 text-center text-sm text-muted-foreground">Try exploring</p>
-      <div className="mx-auto mt-3 grid max-w-6xl grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
-        {FEATURED.map(([name, domain]) => (
-          <Button
-            key={name}
-            onClick={() => go(name, domain)}
-            className="flex items-center justify-start gap-2 rounded-lg glass px-3 py-2.5 text-sm transition hover:-translate-y-0.5 hover:bg-glass-strong"
-          >
-            <img src={logoFor(domain)} alt="" className="h-5 w-5 shrink-0 rounded" loading="lazy" />
-            {name}
-          </Button>
-        ))}
-      </div>
+      <CompanyTicker onSelect={go} />
       <CommunityCatalog query={company.includes('.') ? '' : company}/>
       <p className="mt-6 text-center text-sm">
         <Link to="/yc" className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
