@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Building2, Globe, MapPin, Briefcase, Search, Upload, ArrowRight } from "lucide-react";
 import { Shell } from "@/components/Shell";
-import { FeaturedCompanyCatalog } from "@/components/FeaturedCompanyCatalog";
+import { CompanyTicker } from "@/components/CompanyTicker";
 import { CommunityCatalog } from "@/components/CommunityCatalog";
 
 export const Route = createFileRoute("/")({
@@ -73,7 +73,7 @@ function Index() {
         </Button>
       </form>
 
-      <FeaturedCompanyCatalog query={company} onSelect={go} />
+      <CompanyTicker onSelect={go} />
       <CommunityCatalog query={company.includes('.') ? '' : company}/>
       <p className="mt-6 text-center text-sm">
         <Link to="/yc" className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground">

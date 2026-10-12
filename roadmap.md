@@ -1,5 +1,4 @@
 # Resume workspace
-- [x] Replace the Discover ticker with paginated YC-style featured company cards above the community catalog; verify browsing, search and navigation.
 - [x] Replace the Discover company grid with four alternating ticker rows and verify motion, pause and company navigation.
 - [x] Add explicit employer website approval, metadata preview and removal without automatically publishing resume employers.
 - [x] Display confirmed community company cards on Discover and YC Explorer; verify sharing end-to-end.
