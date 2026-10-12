@@ -47,7 +47,7 @@ function QuizPage() {
       setSignedIn(!!data.session);
       if (!data.session) return;
       const r = await supabase.from('resumes').select('id,title').order('updated_at', { ascending: false });
-      if (r.data?.length) { setResumes(r.data); setResumeId(r.data[0].id); }
+      if (r.data?.length) { setResumes(r.data); setResumeId(r.data[0]?.id || ""); }
       loadPast();
     });
   }, []);
@@ -93,7 +93,7 @@ function QuizPage() {
                     <textarea aria-label={`Answer ${i + 1}`} value={answers[i]} disabled={!!result} rows={6} maxLength={4000}
                       onPaste={(e) => { e.preventDefault(); setPasted((p) => p.map((x, j) => (j === i ? true : x))); }}
                       onChange={(e) => setAnswers((a) => a.map((x, j) => (j === i ? e.target.value : x)))} className={field} placeholder="Type in your own words…" />
-                    <p className="text-xs text-muted-foreground">{answers[i].trim().split(/\s+/).filter(Boolean).length} words{pasted[i] && ' · pasting is turned off so answers stay your own'}</p>
+                    <p className="text-xs text-muted-foreground">{(answers[i] || "").trim().split(/\s+/).filter(Boolean).length} words{pasted[i] && ' · pasting is turned off so answers stay your own'}</p>
                     {result?.perQuestion[i] && <div className="rounded-md bg-muted/60 p-2 text-sm"><b>{Math.round(result.perQuestion[i].score)}/100</b> · <span className="text-sage">✓ {result.perQuestion[i].strengths}</span><br /><span className="text-muted-foreground">Gap: {result.perQuestion[i].gaps}</span></div>}
                   </div>
                 ))}
