@@ -161,7 +161,18 @@ input, textarea { min-width: 0; }
 .resume-paper { position: relative; margin: 0 auto; flex-shrink: 0; background: var(--paper); color: var(--ink); box-shadow: var(--shadow-paper); }
 .resume-line { position: absolute; text-align: left; line-height: 1.35; white-space: pre; background: transparent; border: 0; border-radius: 0; color: inherit; }
 .resume-line:hover, .resume-line:focus-visible { background: var(--muted); }
-.resume-line[style*="700"] { color: var(--resume-accent, var(--ink)); }
+.resume-line.tone-accent { color: var(--resume-accent, var(--ink)); }
+.resume-line.tone-paper { color: var(--paper); }
+.resume-decoration { position:absolute; pointer-events:none; }
+.decoration-accent { background:var(--resume-accent,var(--ink)); }
+.decoration-soft { background:var(--border); }
+.resume-thumbnail { display:block; width:100%; aspect-ratio:210/297; height:auto; }
+.sheet-background { fill:var(--paper); }
+.sheet-accent,.sheet-text-accent { fill:var(--resume-accent,var(--ink)); }
+.sheet-soft { fill:var(--border); }
+.sheet-text-ink { fill:var(--ink); }
+.sheet-text-paper { fill:var(--paper); }
+.sheet-frame { fill:none; stroke:var(--resume-accent,var(--ink)); }
 .border-page.resume-paper::before { content:''; position:absolute; inset:var(--resume-frame-inset, 2.5%); border:var(--resume-border-width, 1px) solid var(--resume-accent,var(--ink)); pointer-events:none; }
 .border-headings .resume-heading-line { border-bottom:var(--resume-border-width, 1px) solid var(--resume-accent,var(--ink)); padding-bottom:1px; }
 .template-thumbnail { position:relative; aspect-ratio:210/180; overflow:hidden; background:var(--paper); color:var(--ink); }
