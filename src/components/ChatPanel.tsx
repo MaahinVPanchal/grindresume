@@ -1,3 +1,4 @@
+import { Button } from "@/components/Button";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { ArrowUp, Loader2, Square } from "lucide-react";
@@ -99,9 +100,9 @@ export function ChatPanel({
   }
 
   return (
-    <div className={`flex flex-col rounded-3xl glass-strong ${className}`}>
+    <div className={`flex min-w-0 flex-col rounded-lg glass-strong ${className}`}>
       <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
-        <div className="font-medium">{title}</div>
+        <div className="min-w-0 break-words font-medium">{title}</div>
         <select
           value={keys.model}
           onChange={(e) => saveKeys({ model: e.target.value })}
@@ -115,24 +116,24 @@ export function ChatPanel({
           ))}
         </select>
       </div>
-      <div ref={box} className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
+      <div ref={box} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 text-sm">
         {msgs.length === 0 && (
           <div className="space-y-2">
             <p className="text-muted-foreground">Ask about roles, the company or your application.</p>
             {suggestions.map((s) => (
-              <button
+              <Button
                 key={s}
                 onClick={() => send(s)}
-                className="block w-full rounded-xl bg-muted px-3 py-2 text-left text-xs hover:bg-accent"
+                className="block w-full rounded-lg bg-muted px-3 py-2 text-left text-xs hover:bg-accent"
               >
                 {s}
-              </button>
+              </Button>
             ))}
           </div>
         )}
         {msgs.map((m, i) =>
           m.role === "user" ? (
-            <div key={i} className="ml-8 rounded-2xl bg-primary px-3 py-2 text-primary-foreground">
+            <div key={i} className="ml-8 rounded-lg bg-primary px-3 py-2 text-primary-foreground">
               {m.content}
             </div>
           ) : (
@@ -145,14 +146,14 @@ export function ChatPanel({
             </div>
           ),
         )}
-        {err && <p className="rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive">{err}</p>}
+        {err && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">{err}</p>}
       </div>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           send(input);
         }}
-        className="m-3 flex items-end gap-2 rounded-2xl bg-muted p-2"
+        className="m-3 flex items-end gap-2 rounded-lg bg-muted p-2"
       >
         <textarea
           ref={ta}
@@ -170,13 +171,13 @@ export function ChatPanel({
           className="flex-1 resize-none bg-transparent px-2 py-1 text-sm outline-none"
         />
         {busy ? (
-          <button type="button" onClick={() => abort.current?.abort()} className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
+          <Button type="button" onClick={() => abort.current?.abort()} className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
             <Square className="h-3.5 w-3.5" />
-          </button>
+          </Button>
         ) : (
-          <button type="submit" className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground" aria-label="Send">
+          <Button type="submit" className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground" aria-label="Send">
             <ArrowUp className="h-4 w-4" />
-          </button>
+          </Button>
         )}
       </form>
     </div>

@@ -53,7 +53,7 @@
 }
 
 :root {
-  --radius: 1rem;
+  --radius: 0.5rem;
   --background: oklch(0.985 0.012 85);
   --foreground: oklch(0.26 0.01 60);
   --card: oklch(0.99 0.01 85 / 0.72);
@@ -73,12 +73,12 @@
   --border: oklch(0.88 0.02 70 / 0.7);
   --input: oklch(0.9 0.02 70 / 0.8);
   --ring: oklch(0.6 0.05 40);
-  --glass: oklch(0.99 0.012 85 / 0.62);
-  --glass-strong: oklch(0.99 0.012 85 / 0.86);
+  --glass: oklch(0.99 0.012 85 / 0.78);
+  --glass-strong: oklch(0.99 0.012 85 / 0.94);
   --peach: oklch(0.86 0.08 35);
   --sage: oklch(0.82 0.07 160);
   --yc: oklch(0.66 0.19 45);
-  --shadow-soft: 0 10px 40px -18px oklch(0.4 0.05 40 / 0.35);
+  --shadow-soft: 0 4px 20px -10px oklch(0.4 0.05 40 / 0.2);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -97,12 +97,24 @@
 @layer base {
   * {
     border-color: var(--color-border);
+    letter-spacing: 0;
   }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
+}
+
+.app-button { cursor: pointer; }
+.app-button:disabled { cursor: not-allowed; }
+:is(button, a, input, textarea, select):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+input, textarea { min-width: 0; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
 @utility glass {
