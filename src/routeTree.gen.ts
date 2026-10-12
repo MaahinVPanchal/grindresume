@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as FocusRouteImport } from './routes/focus'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ResumeRouteImport } from './routes/resume'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as YcRouteImport } from './routes/yc'
@@ -31,6 +32,11 @@ const ChatRoute = ChatRouteImport.update({
 const FocusRoute = FocusRouteImport.update({
   id: '/focus',
   path: '/focus',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResumeRoute = ResumeRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/focus': typeof FocusRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/resume': typeof ResumeRoute
   '/saved': typeof SavedRoute
   '/yc': typeof YcRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/focus': typeof FocusRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/resume': typeof ResumeRoute
   '/saved': typeof SavedRoute
   '/yc': typeof YcRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/focus': typeof FocusRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/resume': typeof ResumeRoute
   '/saved': typeof SavedRoute
   '/yc': typeof YcRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/focus'
+    | '/reset-password'
     | '/resume'
     | '/saved'
     | '/yc'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/focus'
+    | '/reset-password'
     | '/resume'
     | '/saved'
     | '/yc'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/focus'
+    | '/reset-password'
     | '/resume'
     | '/saved'
     | '/yc'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatRoute: typeof ChatRoute
   FocusRoute: typeof FocusRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   ResumeRoute: typeof ResumeRoute
   SavedRoute: typeof SavedRoute
   YcRoute: typeof YcRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/focus'
       fullPath: '/focus'
       preLoaderRoute: typeof FocusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/resume': {
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatRoute: ChatRoute,
   FocusRoute: FocusRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   ResumeRoute: ResumeRoute,
   SavedRoute: SavedRoute,
   YcRoute: YcRoute,
