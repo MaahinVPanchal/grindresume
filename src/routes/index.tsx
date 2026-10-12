@@ -6,6 +6,7 @@ import { Shell } from "@/components/Shell";
 import { CompanyTicker } from "@/components/CompanyTicker";
 import { CommunityCatalog } from "@/components/CommunityCatalog";
 import { FeaturedCatalog } from "@/components/FeaturedCatalog";
+import { resolveCompany } from "@/lib/role-match";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,6 +50,8 @@ function Index() {
         onSubmit={(e) => {
           e.preventDefault();
           if (company.trim()) {
+            const known = resolveCompany(company);
+            if (known) return go(known.name, known.domain);
             const isUrl = company.includes(".");
             go(isUrl ? company.replace(/^https?:\/\//, "").split(".")[0] ?? company : company.trim(), isUrl ? company : undefined);
           }
