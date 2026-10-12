@@ -4,7 +4,8 @@ import ReactMarkdown from "react-markdown";
 import { ArrowUp, Brain, Copy, Loader2, Square } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { saveKeys, useKeys } from "@/lib/keys";
-import { listNebiusModels } from "@/lib/research.functions";
+import { findCareers, listNebiusModels } from "@/lib/research.functions";
+import { FEATURED } from "@/lib/companies";
 import { deepResearch } from "@/lib/deep-research.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from '@tanstack/react-router';
@@ -41,6 +42,22 @@ export function ChatPanel({
   const [resumeId, setResumeId] = useState("");
   const [target, setTarget] = useState("");
   const [status, setStatus] = useState("");
+  const careers = useServerFn(findCareers);
+  const [company, setCompany] = useState<{ name: string; domain: string } | null>(null);
+  const [roles, setRoles] = useState<{ title: string; url: string; source: string }[]>([]);
+  const [rolesState, setRolesState] = useState("");
+  const mention = /(?:^|\s)@([\w .-]{0,30})$/.exec(input)?.[1];
+  const matches = mention === undefined ? [] : FEATURED.filter(([n]) => n.toLowerCase().startsWith(mention.toLowerCase().trimEnd())).slice(0, 6);
+  async function pickCompany(name: string, domain: string) {
+    setInput((v) => v.replace(/@([\w .-]{0,30})$/, `@${name} `));
+    setCompany({ name, domain }); setDeep(true); setTarget(name); setRoles([]);
+    if (!keys.tavily) return setRolesState("Connect your Tavily key to load open roles.");
+    setRolesState("Loading open roles…");
+    const r = await careers({ data: { apiKey: keys.tavily, company: name, domain } });
+    if (!r.ok) return setRolesState(r.error);
+    setRoles(r.roles.slice(0, 8)); setRolesState(r.roles.length ? "" : "No open roles found.");
+    ta.current?.focus();
+  }
 
   useEffect(() => {
     if (!deep || resumes.length) return;
@@ -81,10 +98,10 @@ export function ChatPanel({
         const { data: s } = await supabase.auth.getSession();
         if (!s.session) throw new Error("Sign in to use deep research with your resume.");
         setStatus(target.trim() ? "Researching the role and company…" : "Reading your resume…");
-        const r = await research({ data: { resumeId: resumeId || undefined, target, tavilyKey: keys.tavily || undefined } });
+        const r = await research({ data: { resumeId: resumeId || undefined, target, tavilyKey: keys.tavily || undefined, nebiusKey: keys.nebius || undefined } });
         if (!r.ok) throw new Error(r.error);
         ctx = `${ctx}\n\n${r.context}`.slice(0, 30000);
-        setStatus(`${r.sourceCount} sources · ${r.resumeUsed ? "resume facts included" : "no resume"}`);
+        setStatus(`${r.sourceCount} sources · ${r.resumeUsed ? "resume facts included" : "no resume"}${r.match ? ` · ${r.match.score}% semantic match` : ""}`);
       }
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -198,6 +215,18 @@ export function ChatPanel({
           {status && !busy && <span className="text-muted-foreground">{status}</span>}
         </div>
       )}
+      {company && (
+        <div className="mx-3 mt-2 rounded-lg border border-border bg-muted/60 p-2 text-xs">
+          <div className="flex items-center justify-between gap-2"><span className="font-medium">@{company.name} · open roles</span><Button type="button" aria-label="Clear company" onClick={() => { setCompany(null); setRoles([]); setRolesState(""); }} className="px-1 text-muted-foreground">×</Button></div>
+          {rolesState && <p className="mt-1 text-muted-foreground">{rolesState}</p>}
+          <div className="mt-1 flex flex-wrap gap-1">{roles.map((r) => <Button type="button" key={r.url} title={r.source} onClick={() => setTarget(r.url)} className={`max-w-full truncate rounded-full border px-2 py-0.5 ${target === r.url ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{r.title.slice(0, 60)}</Button>)}</div>
+        </div>
+      )}
+      {matches.length > 0 && (
+        <div role="listbox" aria-label="Companies" className="mx-3 mt-2 rounded-lg border border-border bg-background/90 p-1 text-sm">
+          {matches.map(([n, d]) => <Button type="button" role="option" key={n} onClick={() => pickCompany(n, d)} className="block w-full rounded px-2 py-1 text-left hover:bg-accent">@{n} <span className="text-xs text-muted-foreground">{d}</span></Button>)}
+        </div>
+      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -222,12 +251,13 @@ export function ChatPanel({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey && matches[0]) { e.preventDefault(); pickCompany(matches[0][0], matches[0][1]); return; }
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
               send(input);
             }
           }}
-          placeholder={deep ? "e.g. Write a cover letter for this role…" : "Message Grinder…"}
+          placeholder={deep ? "e.g. Write a cover letter for this role…" : "Message Grinder… type @ to pick a company"}
           className="flex-1 resize-none bg-transparent px-2 py-1 text-sm outline-none"
         />
         {busy ? (
