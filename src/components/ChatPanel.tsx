@@ -1,7 +1,7 @@
 import { Button } from "@/components/Button";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { ArrowUp, Brain, Copy, Loader2, Square } from "lucide-react";
+import { ArrowUp, Bookmark, Brain, Check, Copy, Download, ExternalLink, Loader2, Square } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { saveKeys, useKeys } from "@/lib/keys";
 import { findCareers, listNebiusModels } from "@/lib/research.functions";
@@ -11,6 +11,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from '@tanstack/react-router';
 
 type Msg = { role: "user" | "assistant"; content: string };
+type Role = { title: string; url: string; source: string };
+const SAVED = "grinder.savedReplies";
+// Keep only links that look like an individual job posting, not career home pages, news or blogs.
+function isPosting(r: Role) {
+  try {
+    const u = new URL(r.url);
+    const path = u.pathname.toLowerCase();
+    if (/news\.ycombinator|wikipedia|reddit|medium|youtube|glassdoor\.com\/(interview|reviews)/.test(u.hostname + u.pathname)) return false;
+    if (/^(careers?|jobs?)\b|\b(jobs|careers) (at|\|)|interview|blog|news|expanding|^show hn/i.test(r.title.trim()) ) return false;
+    const segs = path.split("/").filter(Boolean);
+    if (/greenhouse|lever\.co|ashbyhq|workable|smartrecruiters|myworkdayjobs|jobvite|icims/.test(u.hostname)) return segs.length >= 2;
+    return /\/(jobs?|positions?|openings?|roles?|careers?)\/[^/]+/.test(path) && segs.length >= 2 && !/\/(search|teams?|locations?)\/?$/.test(path);
+  } catch { return false; }
+}
+function download(text: string, name: string) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+  a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
 
 export function ChatPanel({
   context,
@@ -44,18 +63,34 @@ export function ChatPanel({
   const [status, setStatus] = useState("");
   const careers = useServerFn(findCareers);
   const [company, setCompany] = useState<{ name: string; domain: string } | null>(null);
-  const [roles, setRoles] = useState<{ title: string; url: string; source: string }[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [picked, setPicked] = useState<Role[]>([]);
+  const [careerSite, setCareerSite] = useState("");
+  const [saved, setSaved] = useState<{ at: string; title: string; content: string }[]>([]);
+  const [flash, setFlash] = useState("");
+  useEffect(() => { try { setSaved(JSON.parse(localStorage.getItem(SAVED) || "[]")); } catch { /* empty */ } }, []);
+  function saveReply(content: string) {
+    const next = [{ at: new Date().toISOString(), title: (company ? `${company.name} · ` : "") + content.replace(/[#*_>\n]+/g, " ").trim().slice(0, 50), content }, ...saved].slice(0, 30);
+    setSaved(next); localStorage.setItem(SAVED, JSON.stringify(next)); note("Saved");
+  }
+  function note(t: string) { setFlash(t); setTimeout(() => setFlash(""), 1500); }
+  function togglePick(r: Role) {
+    setPicked((p) => p.some((x) => x.url === r.url) ? p.filter((x) => x.url !== r.url) : p.length >= 3 ? p : [...p, r]);
+  }
   const [rolesState, setRolesState] = useState("");
   const mention = /(?:^|\s)@([\w .-]{0,30})$/.exec(input)?.[1];
   const matches = mention === undefined || /\s$/.test(mention) ? [] : FEATURED.filter(([n]) => n.toLowerCase().startsWith(mention.toLowerCase().trimEnd())).slice(0, 6);
   async function pickCompany(name: string, domain: string) {
     setInput((v) => v.replace(/@([\w .-]{0,30})$/, `@${name} `));
-    setCompany({ name, domain }); setDeep(true); setTarget(name); setRoles([]);
+    setCompany({ name, domain }); setDeep(true); setTarget(name); setRoles([]); setPicked([]); setCareerSite("");
     if (!keys.tavily) return setRolesState("Connect your Tavily key to load open roles.");
     setRolesState("Loading open roles…");
     const r = await careers({ data: { apiKey: keys.tavily, company: name, domain } });
     if (!r.ok) return setRolesState(r.error);
-    setRoles(r.roles.slice(0, 8)); setRolesState(r.roles.length ? "" : "No open roles found.");
+    const real = r.roles.filter(isPosting).slice(0, 12);
+    const site = r.careerPages.find((p) => { try { return new URL(p.url).hostname.endsWith(domain); } catch { return false; } }) || r.careerPages[0];
+    setCareerSite(site?.url || "");
+    setRoles(real); setRolesState(real.length ? "Pick up to 3 roles you're interested in." : "No individual job postings found. Open the career site and paste a job link into the role box.");
     ta.current?.focus();
   }
 
@@ -98,7 +133,7 @@ export function ChatPanel({
         const { data: s } = await supabase.auth.getSession();
         if (!s.session) throw new Error("Sign in to use deep research with your resume.");
         setStatus(target.trim() ? "Researching the role and company…" : "Reading your resume…");
-        const r = await research({ data: { resumeId: resumeId || undefined, target, tavilyKey: keys.tavily || undefined, nebiusKey: keys.nebius || undefined } });
+        const r = await research({ data: { resumeId: resumeId || undefined, target, roles: picked.length ? picked.map((p) => p.url) : undefined, tavilyKey: keys.tavily || undefined, nebiusKey: keys.nebius || undefined } });
         if (!r.ok) throw new Error(r.error);
         ctx = `${ctx}\n\n${r.context}`.slice(0, 30000);
         setStatus(`${r.sourceCount} sources · ${r.resumeUsed ? "resume facts included" : "no resume"}${r.match ? ` · ${r.match.score}% semantic match` : ""}`);
@@ -191,9 +226,11 @@ export function ChatPanel({
                 <>
                   <ReactMarkdown>{m.content}</ReactMarkdown>
                   {!(busy && i === msgs.length - 1) && (
-                    <Button type="button" aria-label="Copy reply" onClick={() => navigator.clipboard.writeText(m.content)} className="mt-1 inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
-                      <Copy className="h-3 w-3" /> Copy
-                    </Button>
+                    <div className="mt-1 flex flex-wrap gap-1 text-xs text-muted-foreground">
+                      <Button type="button" aria-label="Copy reply" onClick={() => { navigator.clipboard.writeText(m.content); note("Copied"); }} className="inline-flex items-center gap-1 rounded-md px-2 py-1 hover:bg-muted"><Copy className="h-3 w-3" /> Copy</Button>
+                      <Button type="button" aria-label="Download reply as text" onClick={() => download(m.content, `grinder-${company?.name.replace(/\W+/g, "-").toLowerCase() || "reply"}-${Date.now()}.txt`)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 hover:bg-muted"><Download className="h-3 w-3" /> .txt</Button>
+                      <Button type="button" aria-label="Save reply" onClick={() => saveReply(m.content)} className="inline-flex items-center gap-1 rounded-md px-2 py-1 hover:bg-muted"><Bookmark className="h-3 w-3" /> Save</Button>
+                    </div>
                   )}
                 </>
               ) : (
@@ -202,6 +239,7 @@ export function ChatPanel({
             </div>
           ),
         )}
+        {flash && <p role="status" className="inline-flex items-center gap-1 text-xs text-primary"><Check className="h-3 w-3" />{flash}</p>}
         {err && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">{err}</p>}
       </div>
       {deep && (
@@ -217,10 +255,16 @@ export function ChatPanel({
       )}
       {company && (
         <div className="mx-3 mt-2 rounded-lg border border-border bg-muted/60 p-2 text-xs">
-          <div className="flex items-center justify-between gap-2"><span className="font-medium">@{company.name} · open roles</span><Button type="button" aria-label="Clear company" onClick={() => { setCompany(null); setRoles([]); setRolesState(""); }} className="px-1 text-muted-foreground">×</Button></div>
+          <div className="flex items-center justify-between gap-2"><span className="font-medium">@{company.name} · open roles {picked.length > 0 && `(${picked.length}/3 picked)`}</span>{careerSite && <a href={careerSite} target="_blank" rel="noreferrer" className="ml-auto inline-flex items-center gap-1 text-primary underline">Career site <ExternalLink className="h-3 w-3" /></a>}<Button type="button" aria-label="Clear company" onClick={() => { setCompany(null); setRoles([]); setPicked([]); setCareerSite(""); setRolesState(""); }} className="px-1 text-muted-foreground">×</Button></div>
           {rolesState && <p className="mt-1 text-muted-foreground">{rolesState}</p>}
-          <div className="mt-1 flex flex-wrap gap-1">{roles.map((r) => <Button type="button" key={r.url} title={r.source} onClick={() => setTarget(r.url)} className={`max-w-full truncate rounded-full border px-2 py-0.5 ${target === r.url ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{r.title.slice(0, 60)}</Button>)}</div>
+          <div className="mt-1 flex flex-wrap gap-1">{roles.map((r) => { const on = picked.some((x) => x.url === r.url); return <Button type="button" key={r.url} title={r.source} aria-pressed={on} disabled={!on && picked.length >= 3} onClick={() => togglePick(r)} className={`max-w-full truncate rounded-full border px-2 py-0.5 disabled:opacity-40 ${on ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{on && "✓ "}{r.title.slice(0, 60)}</Button>; })}</div>
         </div>
+      )}
+      {saved.length > 0 && (
+        <details className="mx-3 mt-2 rounded-lg border border-border bg-muted/60 p-2 text-xs">
+          <summary className="cursor-pointer font-medium">Saved replies ({saved.length})</summary>
+          <ul className="mt-1 max-h-40 space-y-1 overflow-y-auto">{saved.map((r, i) => <li key={r.at} className="flex items-center gap-1"><span className="min-w-0 flex-1 truncate">{r.title}</span><Button type="button" aria-label="Copy saved reply" onClick={() => { navigator.clipboard.writeText(r.content); note("Copied"); }} className="rounded px-1 hover:bg-accent"><Copy className="h-3 w-3" /></Button><Button type="button" aria-label="Download saved reply" onClick={() => download(r.content, `grinder-saved-${i + 1}.txt`)} className="rounded px-1 hover:bg-accent"><Download className="h-3 w-3" /></Button><Button type="button" aria-label="Delete saved reply" onClick={() => { const n = saved.filter((x) => x.at !== r.at); setSaved(n); localStorage.setItem(SAVED, JSON.stringify(n)); }} className="rounded px-1 hover:bg-accent">×</Button></li>)}</ul>
+        </details>
       )}
       {matches.length > 0 && (
         <div role="listbox" aria-label="Companies" className="mx-3 mt-2 rounded-lg border border-border bg-background/90 p-1 text-sm">
