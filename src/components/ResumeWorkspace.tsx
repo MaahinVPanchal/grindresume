@@ -14,6 +14,7 @@ import { Icon, ResumeEditor, ResumeField } from './ResumeEditor';
 import { ResumePreview } from './ResumePreview';
 import { ResumeFormatting } from './ResumeFormatting';
 import { CompanySharing } from './CompanySharing';
+import { EmployerReview } from './EmployerReview';
 import type { Session as AuthSession } from '@supabase/supabase-js';
 
 type Row = { id: string; title: string; data: Json; original_path: string | null; extracted_text: string; updated_at: string };
@@ -37,6 +38,7 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
   const [modal,setModal]=useState<'ai'|'history'|'source'|null>(null);
   const [versions,setVersions]=useState<Version[]>([]);
   const [extracted,setExtracted]=useState('');
+  const [reviewEmployers,setReviewEmployers]=useState(false);
   const [dragging,setDragging]=useState(false);
   const input=useRef<HTMLInputElement>(null);
   const revision=useRef(0);
@@ -99,7 +101,7 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
       else{
         const fallback=blankResume();fallback.sections=[{id:uid(),kind:'additional',heading:'Imported content — review and organize',entries:[{...blankEntry(),details:text}]}];fallback.reviewNotes=[result.error];await create(fallback,path,text);
       }
-      setProgress(100);
+      setProgress(100);setReviewEmployers(true);
     }catch(e){setError(e instanceof Error?e.message:'This file could not be read. Try a text-based PDF or DOCX.');if(originalPath)await supabase.storage.from('resumes').remove([originalPath]);}
     finally{setBusy('');if(input.current)input.current.value='';}
   }
@@ -110,6 +112,7 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
   if(!authReady)return <div className="flex justify-center py-24"><Loader2 className="animate-spin"/></div>;
   if(!session)return <div className="mx-auto max-w-xl py-8"><div className="mb-7 text-center"><h1 className="font-display text-5xl">Your resume, refined.</h1><p className="mt-3 text-muted-foreground">A private workspace for your next opportunity.</p></div><ResumeAuth onError={setError}/>{error&&<p role="alert" className="mt-4 text-sm text-destructive">{error}</p>}</div>;
   return <>
+    {reviewEmployers&&resume&&<EmployerReview resume={resume} userId={session.user.id} onDone={next=>{setReviewEmployers(false);if(next)change(next);}}/>}
     {fileInput}
     {error&&<div role="alert" className="mb-4 flex items-center justify-between rounded-md border bg-glass-strong p-3 text-sm text-destructive">{error}<Icon label="Dismiss error" onClick={()=>setError('')}><X/></Icon></div>}
     {busy&&resume&&<p role="status" className="mb-3 flex items-center gap-2 text-sm"><Loader2 className="h-4 w-4 animate-spin"/>{busy}{progress>0&&` · ${progress}%`}</p>}
