@@ -15,6 +15,13 @@
       "when": 1791800017491,
       "tag": "0001_application_workspace",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791801266920,
+      "tag": "0002_community_companies",
+      "breakpoints": true
     }
   ]
 }

@@ -13,6 +13,7 @@ import { Button } from './Button';
 import { Icon, ResumeEditor, ResumeField } from './ResumeEditor';
 import { ResumePreview } from './ResumePreview';
 import { ResumeFormatting } from './ResumeFormatting';
+import { CompanySharing } from './CompanySharing';
 import type { Session as AuthSession } from '@supabase/supabase-js';
 
 type Row = { id: string; title: string; data: Json; original_path: string | null; extracted_text: string; updated_at: string };
@@ -131,6 +132,7 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
         <Button className="ml-auto underline" onClick={()=>setModal('source')}>Original resume</Button><Button disabled={!!busy} onClick={()=>input.current?.click()} className="underline">Import another</Button>
       </div>
       <ResumeFormatting resume={resume} change={change}/>
+      <CompanySharing resume={resume} userId={session.user.id}/>
       {resume.reviewNotes.length>0&&<details className="mb-4 rounded-md bg-peach/25 px-4 py-3 text-sm"><summary className="cursor-pointer font-medium">Review imported information ({resume.reviewNotes.length})</summary><ul className="mt-2 list-disc space-y-1 pl-5">{resume.reviewNotes.map((note,i)=><li key={i}>{note}</li>)}</ul></details>}
       <div className="mb-3 flex border-b lg:hidden">{['editor','preview'].map(t=><Button key={t} onClick={()=>setTab(t)} className={`flex-1 py-2 text-sm capitalize ${tab===t?'border-b-2 border-primary font-semibold':'text-muted-foreground'}`}>{t}</Button>)}</div>
       <div className="resume-workspace grid overflow-hidden rounded-lg border bg-glass-strong lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">

@@ -4,6 +4,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Search } from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { searchYC } from "@/lib/research.functions";
+import { communityCompanies } from "@/lib/community";
+import { Users } from "lucide-react";
 
 export const Route = createFileRoute("/yc")({
   head: () => ({
@@ -28,6 +30,10 @@ function YCPage() {
   const [industry, setIndustry] = useState("");
   const [res, setRes] = useState<R | null>(null);
   const [loading, setLoading] = useState(true);
+  const [community, setCommunity] = useState<{ name: string; people: number }[]>([]);
+  useEffect(() => { communityCompanies().then(setCommunity).catch(() => setCommunity([])); }, []);
+  const ql = q.trim().toLowerCase();
+  const shownCommunity = community.filter((c) => !ql || c.name.toLowerCase().includes(ql));
 
   useEffect(() => {
     setLoading(true);
@@ -63,6 +69,21 @@ function YCPage() {
           <input type="checkbox" checked={hiring} onChange={(e) => setHiring(e.target.checked)} /> Hiring only
         </label>
       </div>
+      <section className="mx-auto mt-6 max-w-6xl">
+        <h2 className="flex items-center gap-2 text-lg font-semibold"><Users className="h-4 w-4" /> Where our users have worked</h2>
+        <p className="mt-1 text-xs text-muted-foreground">Companies Grinder members chose to share from their resumes, anonymously.</p>
+        {shownCommunity.length === 0 ? (
+          <p className="mt-3 text-sm text-muted-foreground">{community.length ? "No matches." : "No shared companies yet — share yours from the Resume page."}</p>
+        ) : (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {shownCommunity.slice(0, 60).map((c) => (
+              <Link key={c.name} to="/company/$name" params={{ name: c.name }} className="rounded-full glass px-3 py-1.5 text-sm transition hover:bg-glass-strong">
+                {c.name}{c.people >= 3 && <span className="ml-1.5 text-xs text-muted-foreground">{c.people}</span>}
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
       <p className="mt-4 text-center text-xs text-muted-foreground">
         {loading ? "Loading…" : res?.ok ? `${res.total} companies${res.total > 60 ? " · showing 60" : ""}` : res?.error}
       </p>
