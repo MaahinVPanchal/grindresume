@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as FocusRouteImport } from './routes/focus'
+import { Route as QuizRouteImport } from './routes/quiz'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ResumeRouteImport } from './routes/resume'
 import { Route as SavedRouteImport } from './routes/saved'
@@ -32,6 +33,11 @@ const ChatRoute = ChatRouteImport.update({
 const FocusRoute = FocusRouteImport.update({
   id: '/focus',
   path: '/focus',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuizRoute = QuizRouteImport.update({
+  id: '/quiz',
+  path: '/quiz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -69,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/focus': typeof FocusRoute
+  '/quiz': typeof QuizRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resume': typeof ResumeRoute
   '/saved': typeof SavedRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/focus': typeof FocusRoute
+  '/quiz': typeof QuizRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resume': typeof ResumeRoute
   '/saved': typeof SavedRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/chat': typeof ChatRoute
   '/focus': typeof FocusRoute
+  '/quiz': typeof QuizRoute
   '/reset-password': typeof ResetPasswordRoute
   '/resume': typeof ResumeRoute
   '/saved': typeof SavedRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/focus'
+    | '/quiz'
     | '/reset-password'
     | '/resume'
     | '/saved'
@@ -116,6 +126,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/focus'
+    | '/quiz'
     | '/reset-password'
     | '/resume'
     | '/saved'
@@ -127,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/chat'
     | '/focus'
+    | '/quiz'
     | '/reset-password'
     | '/resume'
     | '/saved'
@@ -139,6 +151,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ChatRoute: typeof ChatRoute
   FocusRoute: typeof FocusRoute
+  QuizRoute: typeof QuizRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ResumeRoute: typeof ResumeRoute
   SavedRoute: typeof SavedRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/focus'
       fullPath: '/focus'
       preLoaderRoute: typeof FocusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quiz': {
+      id: '/quiz'
+      path: '/quiz'
+      fullPath: '/quiz'
+      preLoaderRoute: typeof QuizRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -219,6 +239,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ChatRoute: ChatRoute,
   FocusRoute: FocusRoute,
+  QuizRoute: QuizRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ResumeRoute: ResumeRoute,
   SavedRoute: SavedRoute,
