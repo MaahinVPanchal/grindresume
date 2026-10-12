@@ -51,7 +51,7 @@ function Index() {
           e.preventDefault();
           if (company.trim()) {
             const known = resolveCompany(company);
-            if (known) return go(known.name, known.domain);
+            if (known) { go(known.name, known.domain); return; }
             const isUrl = company.includes(".");
             go(isUrl ? company.replace(/^https?:\/\//, "").split(".")[0] ?? company : company.trim(), isUrl ? company : undefined);
           }
