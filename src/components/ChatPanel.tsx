@@ -47,7 +47,7 @@ export function ChatPanel({
   const [roles, setRoles] = useState<{ title: string; url: string; source: string }[]>([]);
   const [rolesState, setRolesState] = useState("");
   const mention = /(?:^|\s)@([\w .-]{0,30})$/.exec(input)?.[1];
-  const matches = mention === undefined ? [] : FEATURED.filter(([n]) => n.toLowerCase().startsWith(mention.toLowerCase().trimEnd())).slice(0, 6);
+  const matches = mention === undefined || /\s$/.test(mention) ? [] : FEATURED.filter(([n]) => n.toLowerCase().startsWith(mention.toLowerCase().trimEnd())).slice(0, 6);
   async function pickCompany(name: string, domain: string) {
     setInput((v) => v.replace(/@([\w .-]{0,30})$/, `@${name} `));
     setCompany({ name, domain }); setDeep(true); setTarget(name); setRoles([]);
