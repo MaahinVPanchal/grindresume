@@ -6,6 +6,7 @@ import bg from "@/assets/landscape.webp.asset.json";
 import { saveKeys, useKeys } from "@/lib/keys";
 import { useServerFn } from "@tanstack/react-start";
 import { validateTavily, listNebiusModels } from "@/lib/research.functions";
+import { ProfileMenu } from "@/components/ProfileMenu";
 
 export function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -45,14 +46,17 @@ export function Shell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
-        <Button
-          onClick={() => setOpen(true)}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-        >
-          <KeyRound className="h-4 w-4" />
-          <span className="hidden sm:inline">{ready ? "Keys connected" : "Connect keys"}</span>
-          <span className={`h-2 w-2 rounded-full ${ready ? "bg-sage" : "bg-peach"}`} />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setOpen(true)}
+            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+          >
+            <KeyRound className="h-4 w-4" />
+            <span className="hidden sm:inline">{ready ? "Keys connected" : "Connect keys"}</span>
+            <span className={`h-2 w-2 rounded-full ${ready ? "bg-sage" : "bg-peach"}`} />
+          </Button>
+          <ProfileMenu />
+        </div>
       </header>
       <main className="mx-auto max-w-7xl px-5 pb-16">{children}</main>
       {open && <Settings onClose={() => setOpen(false)} />}
