@@ -47,7 +47,7 @@ export function ChatPanel({
     supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) return;
       const r = await supabase.from("resumes").select("id,title").order("updated_at", { ascending: false });
-      if (r.data?.length) { setResumes(r.data); setResumeId((v) => v || r.data[0].id); }
+      if (r.data?.length) { setResumes(r.data); setResumeId((v) => v || r.data?.[0]?.id || ""); }
     });
   }, [deep, resumes.length]);
 
