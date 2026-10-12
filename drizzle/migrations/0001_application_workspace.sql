@@ -1,0 +1,10 @@
+CREATE TABLE public.saved_roles (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL DEFAULT auth.uid(), company text NOT NULL, title text NOT NULL, url text NOT NULL, status text NOT NULL DEFAULT 'Saved', created_at timestamptz NOT NULL DEFAULT now(), UNIQUE(user_id,url));
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.saved_roles TO authenticated;
+GRANT ALL ON public.saved_roles TO service_role;
+ALTER TABLE public.saved_roles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Own saved roles" ON public.saved_roles FOR ALL TO authenticated USING (user_id=auth.uid()) WITH CHECK (user_id=auth.uid());
+CREATE TABLE public.application_research (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL DEFAULT auth.uid(), cache_key text NOT NULL, data jsonb NOT NULL DEFAULT '{}'::jsonb, checked_at timestamptz NOT NULL DEFAULT now(), UNIQUE(user_id,cache_key));
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.application_research TO authenticated;
+GRANT ALL ON public.application_research TO service_role;
+ALTER TABLE public.application_research ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Own research cache" ON public.application_research FOR ALL TO authenticated USING (user_id=auth.uid()) WITH CHECK (user_id=auth.uid());
