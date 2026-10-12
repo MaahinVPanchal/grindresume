@@ -8,7 +8,7 @@ export const inspectCompanyWebsite = createServerFn({ method: 'POST' })
   .inputValidator(d => z.object({ website: z.string().min(1).max(253) }).parse(d))
   .handler(async ({ data }) => {
     try { const { readCompanyMetadata } = await import('./company-metadata.server'); return { ok: true as const, ...await readCompanyMetadata(data.website) }; }
-    catch (e) { return { ok: false as const, error: e instanceof Error ? e.message : 'Website lookup failed. Enter details yourself.' }; }
+    catch { return { ok: false as const, error: 'Website details could not be read. Review the official URL and enter the description yourself.' }; }
   });
 
 export const confirmCompany = createServerFn({ method: 'POST' })
