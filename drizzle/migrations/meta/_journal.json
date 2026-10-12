@@ -29,6 +29,13 @@
       "when": 1791802241410,
       "tag": "0003_confirmed_company_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791824723673,
+      "tag": "0004_user_api_keys",
+      "breakpoints": true
     }
   ]
 }
