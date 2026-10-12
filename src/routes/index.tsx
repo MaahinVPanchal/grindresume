@@ -51,9 +51,9 @@ function Index() {
           e.preventDefault();
           if (company.trim()) {
             const known = resolveCompany(company);
-            if (known) { go(known.name, known.domain); return; }
             const isUrl = company.includes(".");
-            go(isUrl ? company.replace(/^https?:\/\//, "").split(".")[0] ?? company : company.trim(), isUrl ? company : undefined);
+            if (known) void go(known.name, known.domain);
+            else void go(isUrl ? company.replace(/^https?:\/\//, "").split(".")[0] ?? company : company.trim(), isUrl ? company : undefined);
           }
         }}
         className="mx-auto mt-7 max-w-4xl space-y-4 rounded-lg glass p-5 text-left"
