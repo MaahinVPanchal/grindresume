@@ -6,7 +6,7 @@ import { validateSaved, resumeBlocks } from './resume-model';
 // Deep research for chat: gathers selected-resume facts plus live Tavily role/company sources.
 export const deepResearch = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ resumeId: z.string().uuid().optional(), target: z.string().max(300), tavilyKey: z.string().optional(), nebiusKey: z.string().optional() }).parse(d))
+  .inputValidator((d) => z.object({ resumeId: z.string().uuid().optional(), target: z.string().max(300), roles: z.array(z.string().url().max(500)).max(3).optional(), tavilyKey: z.string().optional(), nebiusKey: z.string().optional() }).parse(d))
   .handler(async ({ data, context }) => {
     try {
       let resume = '';
@@ -18,7 +18,7 @@ export const deepResearch = createServerFn({ method: 'POST' })
       }
       const sources: { title: string; url: string; content: string }[] = [];
       const target = data.target.trim();
-      if (target) {
+      if (target || data.roles?.length) {
         const key = data.tavilyKey || process.env['TAVILY_API_KEY'];
         if (!key) return { ok: false as const, error: 'Connect your Tavily key (top right) to use deep research.' };
         const call = async (path: string, body: Record<string, unknown>) => {
@@ -26,10 +26,10 @@ export const deepResearch = createServerFn({ method: 'POST' })
           if (!res.ok) throw new Error(res.status === 401 ? 'Tavily rejected this API key.' : `Tavily research failed (${res.status}).`);
           return res.json();
         };
-        if (/^https?:\/\/\S+$/.test(target)) {
-          const j = await call('extract', { urls: [target] });
-          const t = j.results?.[0]?.raw_content;
-          if (t) sources.push({ title: 'Job description', url: target, content: String(t).slice(0, 8000) });
+        const urls = data.roles?.length ? data.roles : /^https?:\/\/\S+$/.test(target) ? [target] : [];
+        if (urls.length) {
+          const j = await call('extract', { urls });
+          for (const r of (j.results || []) as { url: string; raw_content?: string }[]) if (r.raw_content) sources.push({ title: 'Job description', url: r.url, content: String(r.raw_content).slice(0, Math.floor(9000 / urls.length)) });
         }
         const q = sources.length ? `${sources[0]?.content.slice(0, 200) ?? target} company news` : target;
         const [role, news] = await Promise.all([
