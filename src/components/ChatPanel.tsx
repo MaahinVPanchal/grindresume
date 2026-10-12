@@ -1,10 +1,12 @@
 import { Button } from "@/components/Button";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { ArrowUp, Loader2, Square } from "lucide-react";
+import { ArrowUp, Brain, Copy, Loader2, Square } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { saveKeys, useKeys } from "@/lib/keys";
 import { listNebiusModels } from "@/lib/research.functions";
+import { deepResearch } from "@/lib/deep-research.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Link } from '@tanstack/react-router';
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -33,6 +35,21 @@ export function ChatPanel({
   const box = useRef<HTMLDivElement>(null);
   const ta = useRef<HTMLTextAreaElement>(null);
   const list = useServerFn(listNebiusModels);
+  const research = useServerFn(deepResearch);
+  const [deep, setDeep] = useState(false);
+  const [resumes, setResumes] = useState<{ id: string; title: string }[]>([]);
+  const [resumeId, setResumeId] = useState("");
+  const [target, setTarget] = useState("");
+  const [status, setStatus] = useState("");
+
+  useEffect(() => {
+    if (!deep || resumes.length) return;
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!data.session) return;
+      const r = await supabase.from("resumes").select("id,title").order("updated_at", { ascending: false });
+      if (r.data?.length) { setResumes(r.data); setResumeId((v) => v || r.data?.[0]?.id || ""); }
+    });
+  }, [deep, resumes.length]);
 
   useEffect(() => {
     if (!keys.nebius) return;
@@ -59,11 +76,21 @@ export function ChatPanel({
     setBusy(true);
     abort.current = new AbortController();
     try {
+      let ctx = context || "";
+      if (deep) {
+        const { data: s } = await supabase.auth.getSession();
+        if (!s.session) throw new Error("Sign in to use deep research with your resume.");
+        setStatus(target.trim() ? "Researching the role and company…" : "Reading your resume…");
+        const r = await research({ data: { resumeId: resumeId || undefined, target, tavilyKey: keys.tavily || undefined } });
+        if (!r.ok) throw new Error(r.error);
+        ctx = `${ctx}\n\n${r.context}`.slice(0, 30000);
+        setStatus(`${r.sourceCount} sources · ${r.resumeUsed ? "resume facts included" : "no resume"}`);
+      }
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: abort.current.signal,
-        body: JSON.stringify({ apiKey: keys.nebius, model: keys.model, messages: next, context }),
+        body: JSON.stringify({ apiKey: keys.nebius, model: keys.model, messages: next, context: ctx || undefined }),
       });
       if (!res.ok || !res.body) throw new Error((await res.text()) || `Error ${res.status}`);
       const reader = res.body.getReader();
@@ -144,15 +171,33 @@ export function ChatPanel({
           ) : (
             <div key={i} className="prose-chat">
               {m.content ? (
-                <ReactMarkdown>{m.content}</ReactMarkdown>
+                <>
+                  <ReactMarkdown>{m.content}</ReactMarkdown>
+                  {!(busy && i === msgs.length - 1) && (
+                    <Button type="button" aria-label="Copy reply" onClick={() => navigator.clipboard.writeText(m.content)} className="mt-1 inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:bg-muted">
+                      <Copy className="h-3 w-3" /> Copy
+                    </Button>
+                  )}
+                </>
               ) : (
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <span className="inline-flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{deep && status}</span>
               )}
             </div>
           ),
         )}
         {err && <p className="rounded-lg bg-destructive/10 px-3 py-2 text-xs text-destructive">{err}</p>}
       </div>
+      {deep && (
+        <div className="mx-3 mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/60 p-2 text-xs">
+          <span className="inline-flex items-center gap-1 font-medium text-primary"><Brain className="h-3.5 w-3.5" /> Deep research</span>
+          <select aria-label="Resume for deep research" value={resumeId} onChange={(e) => setResumeId(e.target.value)} className="max-w-[45%] rounded border bg-background/70 p-1">
+            {resumes.length === 0 && <option value="">No saved resume (sign in / upload)</option>}
+            {resumes.map((r) => <option key={r.id} value={r.id}>Using: {r.title}</option>)}
+          </select>
+          <input aria-label="Target role or job URL" value={target} onChange={(e) => setTarget(e.target.value)} placeholder="Role + company, or job URL" className="min-w-40 flex-1 rounded border bg-background/70 p-1 outline-none" />
+          {status && !busy && <span className="text-muted-foreground">{status}</span>}
+        </div>
+      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -160,6 +205,16 @@ export function ChatPanel({
         }}
         className="m-3 flex items-end gap-2 rounded-lg bg-muted p-2"
       >
+        <Button
+          type="button"
+          aria-label="Deep research"
+          aria-pressed={deep}
+          title="Deep research: use your resume and live role research"
+          onClick={() => setDeep((v) => !v)}
+          className={`grid h-9 w-9 place-items-center rounded-full ${deep ? "bg-primary text-primary-foreground shadow-[0_0_12px_var(--primary)]" : "text-muted-foreground hover:bg-accent"}`}
+        >
+          <Brain className="h-4 w-4" />
+        </Button>
         <textarea
           ref={ta}
           autoFocus
@@ -172,7 +227,7 @@ export function ChatPanel({
               send(input);
             }
           }}
-          placeholder="Message Grinder…"
+          placeholder={deep ? "e.g. Write a cover letter for this role…" : "Message Grinder…"}
           className="flex-1 resize-none bg-transparent px-2 py-1 text-sm outline-none"
         />
         {busy ? (

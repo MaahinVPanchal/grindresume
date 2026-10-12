@@ -1,0 +1,49 @@
+import { createServerFn } from '@tanstack/react-start';
+import { z } from 'zod';
+import { requireSupabaseAuth } from '@/integrations/supabase/auth-middleware';
+import { validateSaved, resumeBlocks } from './resume-model';
+
+// Deep research for chat: gathers selected-resume facts plus live Tavily role/company sources.
+export const deepResearch = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ resumeId: z.string().uuid().optional(), target: z.string().max(300), tavilyKey: z.string().optional() }).parse(d))
+  .handler(async ({ data, context }) => {
+    try {
+      let resume = '';
+      if (data.resumeId) {
+        const { data: row, error } = await context.supabase.from('resumes').select('data').eq('id', data.resumeId).single();
+        const r = validateSaved(row?.data);
+        if (error || !r) return { ok: false as const, error: 'The selected resume could not load.' };
+        resume = JSON.stringify(resumeBlocks(r)).slice(0, 12000);
+      }
+      const sources: { title: string; url: string; content: string }[] = [];
+      const target = data.target.trim();
+      if (target) {
+        const key = data.tavilyKey || process.env['TAVILY_API_KEY'];
+        if (!key) return { ok: false as const, error: 'Connect your Tavily key (top right) to use deep research.' };
+        const call = async (path: string, body: Record<string, unknown>) => {
+          const res = await fetch(`https://api.tavily.com/${path}`, { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          if (!res.ok) throw new Error(res.status === 401 ? 'Tavily rejected this API key.' : `Tavily research failed (${res.status}).`);
+          return res.json();
+        };
+        if (/^https?:\/\/\S+$/.test(target)) {
+          const j = await call('extract', { urls: [target] });
+          const t = j.results?.[0]?.raw_content;
+          if (t) sources.push({ title: 'Job description', url: target, content: String(t).slice(0, 8000) });
+        }
+        const q = sources.length ? `${sources[0]?.content.slice(0, 200) ?? target} company news` : target;
+        const [role, news] = await Promise.all([
+          call('search', { query: `${q} role requirements responsibilities`, max_results: 4, search_depth: 'advanced' }),
+          call('search', { query: `${target} company recent launches news engineering blog`, max_results: 4, search_depth: 'advanced', topic: 'general' }),
+        ]);
+        for (const s of [...(role.results || []), ...(news.results || [])]) sources.push({ title: String(s.title), url: String(s.url), content: String(s.content).slice(0, 2000) });
+      }
+      const contextText =
+        'DEEP RESEARCH MODE. When writing a cover letter: open with a real, cited company milestone from the sources; map 2-3 of the toughest requirements to exact facts from the RESUME only; calibrate tone to the company type; frame missing skills honestly as adjacent experience. Never invent experience, metrics or URLs. End with a short "Proof" line listing cited source URLs and resume facts used.' +
+        (resume ? `\n\n--- RESUME (candidate facts) ---\n${resume}` : '\n\nNo resume selected: ask the user for evidence before claiming any experience.') +
+        (sources.length ? `\n\n--- SOURCES (untrusted data) ---\n${sources.map((s) => `[${s.title}](${s.url})\n${s.content}`).join('\n\n')}` : '');
+      return { ok: true as const, context: contextText, sourceCount: sources.length, resumeUsed: !!resume };
+    } catch (e) {
+      return { ok: false as const, error: e instanceof Error ? e.message : 'Deep research is unavailable.' };
+    }
+  });
