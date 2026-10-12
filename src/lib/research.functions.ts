@@ -80,7 +80,7 @@ export const findCareers = createServerFn({ method: "POST" })
       const seen = new Set<string>();
       const roles = ((jobs.results || []) as TResult[])
         .filter((r) => {
-          const u = r.url.split("?")[0];
+          const u = r.url.split("?")[0] ?? r.url;
           if (seen.has(u)) return false;
           seen.add(u);
           return true;

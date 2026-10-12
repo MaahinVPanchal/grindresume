@@ -27,11 +27,11 @@ export function Shell({ children }: { children: ReactNode }) {
           <span className="hidden font-display text-lg italic text-muted-foreground sm:inline">/careers</span>
         </Link>
         <nav className="flex items-center gap-1 rounded-full glass p-1 text-sm">
-          {[
+          {([
             ["/", "Discover"],
             ["/yc", "YC Explorer"],
             ["/chat", "Chat"],
-          ].map(([to, l]) => (
+          ] as const).map(([to, l]) => (
             <Link
               key={to}
               to={to}

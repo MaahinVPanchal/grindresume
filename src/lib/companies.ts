@@ -29,4 +29,4 @@ export const logoFor = (domain: string) =>
   `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
 
 export const cleanDomain = (url?: string) =>
-  (url || "").replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+  (url || "").replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0] ?? "";

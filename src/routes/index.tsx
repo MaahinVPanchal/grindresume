@@ -42,7 +42,7 @@ function Index() {
           e.preventDefault();
           if (company.trim()) {
             const isUrl = company.includes(".");
-            go(isUrl ? company.replace(/^https?:\/\//, "").split(".")[0] : company.trim(), isUrl ? company : undefined);
+            go(isUrl ? company.replace(/^https?:\/\//, "").split(".")[0] ?? company : company.trim(), isUrl ? company : undefined);
           }
         }}
         className="mx-auto mt-10 max-w-4xl space-y-4 rounded-3xl glass p-6 text-left"

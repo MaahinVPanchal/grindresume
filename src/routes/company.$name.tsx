@@ -59,7 +59,7 @@ function CompanyPage() {
   async function open(url: string, t: string) {
     setSelected({ url, title: t, loading: true });
     const r = await extract({ data: { apiKey: keys.tavily, url } });
-    setSelected({ url, title: t, content: r.ok ? r.content : undefined, error: r.ok ? undefined : r.error });
+    setSelected(r.ok ? { url, title: t, content: r.content } : { url, title: t, error: r.error });
   }
 
   const roles = res?.ok ? res.roles.filter((r) => (r.title + r.snippet).toLowerCase().includes(filter.toLowerCase())) : [];
