@@ -29,7 +29,7 @@ export function ProfileMenu() {
       </Link>
     );
 
-  const meta = user.user_metadata as { full_name?: string; name?: string; avatar_url?: string; picture?: string };
+  const meta = (user.user_metadata ?? {}) as { full_name?: string; name?: string; avatar_url?: string; picture?: string };
   const name = meta.full_name || meta.name || user.email?.split("@")[0] || "You";
   const avatar = meta.avatar_url || meta.picture;
   const initial = name.charAt(0).toUpperCase();
