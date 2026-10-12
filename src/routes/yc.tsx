@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Loader2, Search } from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { searchYC } from "@/lib/research.functions";
+import { Button } from "@/components/Button";
 import { CommunityCatalog } from "@/components/CommunityCatalog";
 
 export const Route = createFileRoute("/yc")({
@@ -29,18 +30,23 @@ function YCPage() {
   const [industry, setIndustry] = useState("");
   const [res, setRes] = useState<R | null>(null);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  useEffect(() => setPage(1), [q, hiring, industry]);
 
   useEffect(() => {
     setLoading(true);
     const t = setTimeout(() => {
-      fn({ data: { q, hiring, industry } }).then((r) => {
+      fn({ data: { q, hiring, industry, page } }).then((r) => {
         setRes(r);
         setLoading(false);
       });
     }, 300);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q, hiring, industry]);
+  }, [q, hiring, industry, page]);
+
+  const pages = res?.ok ? Math.max(1, Math.ceil(res.total / 60)) : 1;
+  const go = (p: number) => { setPage(p); window.scrollTo({ top: 0, behavior: "smooth" }); };
 
   return (
     <Shell>
@@ -64,9 +70,8 @@ function YCPage() {
           <input type="checkbox" checked={hiring} onChange={(e) => setHiring(e.target.checked)} /> Hiring only
         </label>
       </div>
-      <CommunityCatalog query={q}/>
       <p className="mt-4 text-center text-xs text-muted-foreground">
-        {loading ? "Loading…" : res?.ok ? `${res.total} companies${res.total > 60 ? " · showing 60" : ""}` : res?.error}
+        {loading ? "Loading…" : res?.ok ? `${res.total} companies${res.total > 60 ? ` · showing ${(page - 1) * 60 + 1}–${Math.min(page * 60, res.total)}` : ""}` : res?.error}
       </p>
       {loading && !res && (
         <div className="mt-10 flex justify-center">
@@ -100,6 +105,14 @@ function YCPage() {
           </Link>
         ))}
       </div>
+      {res?.ok && pages > 1 && (
+        <nav aria-label="YC pages" className="mt-6 flex items-center justify-center gap-3 text-sm">
+          <Button disabled={page <= 1 || loading} onClick={() => go(page - 1)}>Previous</Button>
+          <span className="text-muted-foreground">Page {page} of {pages}</span>
+          <Button disabled={page >= pages || loading} onClick={() => go(page + 1)}>Next</Button>
+        </nav>
+      )}
+      <CommunityCatalog query={q}/>
     </Shell>
   );
 }
