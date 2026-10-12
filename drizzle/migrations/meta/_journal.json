@@ -36,6 +36,13 @@
       "when": 1791824723673,
       "tag": "0004_user_api_keys",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791826768582,
+      "tag": "0005_role_assessments_and_queries",
+      "breakpoints": true
     }
   ]
 }

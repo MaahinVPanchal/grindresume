@@ -124,6 +124,51 @@ export type Database = {
         }
         Relationships: []
       }
+      role_assessments: {
+        Row: {
+          answers: Json
+          company: string
+          created_at: string
+          feedback: Json
+          id: string
+          job_url: string
+          questions: Json
+          resume_id: string | null
+          role: string
+          score: number | null
+          submitted_at: string | null
+          user_id: string
+        }
+        Insert: {
+          answers?: Json
+          company?: string
+          created_at?: string
+          feedback?: Json
+          id?: string
+          job_url?: string
+          questions?: Json
+          resume_id?: string | null
+          role?: string
+          score?: number | null
+          submitted_at?: string | null
+          user_id?: string
+        }
+        Update: {
+          answers?: Json
+          company?: string
+          created_at?: string
+          feedback?: Json
+          id?: string
+          job_url?: string
+          questions?: Json
+          resume_id?: string | null
+          role?: string
+          score?: number | null
+          submitted_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_roles: {
         Row: {
           company: string
@@ -150,6 +195,36 @@ export type Database = {
           status?: string
           title?: string
           url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      search_history: {
+        Row: {
+          company: string
+          created_at: string
+          id: string
+          kind: string
+          query: string
+          urls: Json
+          user_id: string
+        }
+        Insert: {
+          company?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          query: string
+          urls?: Json
+          user_id?: string
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          query?: string
+          urls?: Json
           user_id?: string
         }
         Relationships: []
