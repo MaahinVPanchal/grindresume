@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      application_research: {
+        Row: {
+          cache_key: string
+          checked_at: string
+          data: Json
+          id: string
+          user_id: string
+        }
+        Insert: {
+          cache_key: string
+          checked_at?: string
+          data?: Json
+          id?: string
+          user_id?: string
+        }
+        Update: {
+          cache_key?: string
+          checked_at?: string
+          data?: Json
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       resume_versions: {
         Row: {
           created_at: string
@@ -78,6 +102,36 @@ export type Database = {
           original_path?: string | null
           title?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_roles: {
+        Row: {
+          company: string
+          created_at: string
+          id: string
+          status: string
+          title: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          company: string
+          created_at?: string
+          id?: string
+          status?: string
+          title: string
+          url: string
+          user_id?: string
+        }
+        Update: {
+          company?: string
+          created_at?: string
+          id?: string
+          status?: string
+          title?: string
+          url?: string
           user_id?: string
         }
         Relationships: []
