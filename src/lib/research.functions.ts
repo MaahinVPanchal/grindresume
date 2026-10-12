@@ -63,27 +63,40 @@ export const findCareers = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const key = tavilyKey(data.apiKey);
+      const { rejectReason, careerHost } = await import("./role-match");
+      const company = data.company.trim();
+      const domain = data.domain?.replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
       const role = [data.title, data.location].filter(Boolean).join(" ");
-      const [official, jobs] = await Promise.all([
+      const kw = role || "jobs";
+      // Stage 1: official careers portal
+      const official = await tavily("search", key, {
+        query: `${company} official careers page jobs`,
+        max_results: 6,
+        include_answer: "basic",
+        ...(domain ? { include_domains: [domain, `careers.${domain}`, `jobs.${domain}`] } : {}),
+      });
+      const portal = careerHost((official.results || []) as TResult[], company, domain);
+      const own = [portal, domain].filter(Boolean) as string[];
+      // Stage 2: exact roles on own domain + quoted ATS search
+      const [site, ats] = await Promise.all([
+        own.length
+          ? tavily("search", key, { query: `"${company}" ${kw} job opening`, max_results: 10, search_depth: "advanced", include_domains: own })
+          : Promise.resolve({ results: [] }),
         tavily("search", key, {
-          query: `${data.company} official careers page jobs${data.domain ? ` site ${data.domain}` : ""}`,
-          max_results: 5,
-          include_answer: "basic",
-        }),
-        tavily("search", key, {
-          query: `${data.company} open roles ${role || "hiring"} job posting apply`,
+          query: `"${company}" (job OR career OR opening) ${kw}`,
           max_results: 15,
           search_depth: "advanced",
-          include_domains: data.domain ? [...JOB_BOARDS, data.domain] : JOB_BOARDS,
+          include_domains: JOB_BOARDS,
+          exclude_domains: ["glassdoor.com", "indeed.com"],
         }),
       ]);
       const seen = new Set<string>();
-      const roles = ((jobs.results || []) as TResult[])
+      const roles = ([...(site.results || []), ...(ats.results || [])] as TResult[])
         .filter((r) => {
           const u = r.url.split("?")[0] ?? r.url;
           if (seen.has(u)) return false;
           seen.add(u);
-          return true;
+          return !rejectReason(r, company, domain);
         })
         .map((r) => ({
           title: r.title,
