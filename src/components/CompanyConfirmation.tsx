@@ -7,7 +7,7 @@ import { CompanyProfileSchema, officialWebsite, type CompanyProfile } from '@/li
 import { confirmCompany, inspectCompanyWebsite } from '@/lib/community.functions';
 import { supabase } from '@/integrations/supabase/client';
 
-export function CompanyConfirmation({ employer, saved, onSaved }: { employer: { key: string; name: string }; saved?: CompanyProfile; onSaved: () => void }) {
+export function CompanyConfirmation({ employer, saved, onSaved }: { employer: { key: string; name: string }; saved?: CompanyProfile | undefined; onSaved: () => void }) {
   const [draft, setDraft] = useState<CompanyProfile>(saved || { ...employer, website: '', oneLiner: '', industry: '', location: '' });
   const [confirmed, setConfirmed] = useState(Boolean(saved));
   const [busy, setBusy] = useState('');
@@ -18,7 +18,7 @@ export function CompanyConfirmation({ employer, saved, onSaved }: { employer: { 
   try { website = officialWebsite(draft.website); } catch { /* Incomplete input has no preview. */ }
   const update = (field: keyof CompanyProfile, value: string) => { setDraft(d => ({ ...d, [field]: value })); setMessage(''); };
   const changed = !saved || ['website', 'name', 'oneLiner', 'industry', 'location'].some(k => draft[k as keyof CompanyProfile] !== saved[k as keyof CompanyProfile]);
-  return <div className="rounded-lg border bg-glass-strong p-4">
+  return <div className="border-b pb-4">
     <div className="mb-3 flex items-center justify-between gap-2"><h3 className="font-medium">{employer.name}</h3>{confirmed && <span className="flex items-center gap-1 text-xs"><Check className="h-3 w-3"/>Confirmed</span>}</div>
     <label className="block text-xs font-medium">Company name<input aria-label={`${employer.name} company name`} maxLength={80} value={draft.name} onChange={e => update('name', e.target.value)} className="mt-1 h-10 w-full rounded-md border bg-background px-3 text-sm"/></label>
     <label className="mt-3 block text-xs font-medium">Official website<input aria-label={`${employer.name} official website`} maxLength={253} placeholder="company.com" value={draft.website} onChange={e => update('website', e.target.value)} className="mt-1 h-10 w-full rounded-md border bg-background px-3 text-sm"/></label>
