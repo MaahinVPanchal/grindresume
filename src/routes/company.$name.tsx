@@ -1,3 +1,4 @@
+import { Button } from "@/components/Button";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -78,36 +79,36 @@ function CompanyPage() {
 
   return (
     <Shell>
-      <div className="grid gap-5 lg:grid-cols-[1fr_400px]">
-        <div className="space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-3xl glass p-5">
-            <div className="flex items-center gap-4">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="min-w-0 space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg p-5">
+            <div className="flex min-w-0 items-center gap-4">
               <Link to="/" className="text-muted-foreground hover:text-foreground" aria-label="Back">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
-              {domain && <img src={logoFor(cleanDomain(domain))} alt="" className="h-10 w-10 rounded-xl bg-glass-strong p-1.5" />}
+              {domain && <img src={logoFor(cleanDomain(domain))} alt="" className="h-10 w-10 rounded-lg bg-glass-strong p-1.5" />}
               <div>
-                <h1 className="font-display text-4xl leading-none">{name}</h1>
+                <h1 className="font-display break-words text-4xl leading-tight">{name}</h1>
                 <p className="mt-1 text-xs text-muted-foreground">
                   {[title, location].filter(Boolean).join(" · ") || "All roles"}
                   {res?.ok && ` · checked ${new Date(res.checkedAt).toLocaleTimeString()}`}
                 </p>
               </div>
             </div>
-            <button
+            <Button
               onClick={run}
               disabled={loading || !keys.tavily}
-              className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
-            </button>
+            </Button>
           </div>
 
           {!keys.tavily && (
             <Notice>Connect your Tavily key (top right) to research this company's open roles.</Notice>
           )}
           {loading && (
-            <div className="flex items-center gap-3 rounded-3xl glass p-8 text-muted-foreground">
+            <div className="flex items-center gap-3 rounded-lg glass p-8 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" /> Searching official careers pages and job boards…
             </div>
           )}
@@ -115,12 +116,12 @@ function CompanyPage() {
 
           {res?.ok && (
             <>
-              <section className="rounded-3xl glass p-5">
+              <section className="rounded-lg p-5">
                 <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Official career pages</h2>
                 {res.answer && <p className="mb-4 text-sm leading-relaxed">{res.answer}</p>}
                 <div className="grid gap-2 sm:grid-cols-2">
                   {res.careerPages.map((p) => (
-                    <a key={p.url} href={p.url} target="_blank" rel="noreferrer" className="group rounded-2xl bg-glass-strong p-3 text-sm hover:bg-accent">
+                    <a key={p.url} href={p.url} target="_blank" rel="noreferrer" className="group rounded-lg bg-glass-strong p-3 text-sm hover:bg-accent">
                       <div className="flex items-center justify-between gap-2 font-medium">
                         <span className="line-clamp-1">{p.title}</span>
                         <ExternalLink className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -131,7 +132,7 @@ function CompanyPage() {
                 </div>
               </section>
 
-              <section className="rounded-3xl glass p-5">
+              <section className="rounded-lg p-5">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                     Discovered listings ({roles.length})
@@ -140,7 +141,7 @@ function CompanyPage() {
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
                     placeholder="Filter…"
-                    className="h-9 rounded-xl bg-muted px-3 text-sm outline-none"
+                    className="h-9 rounded-lg bg-muted px-3 text-sm outline-none"
                   />
                 </div>
                 {roles.length === 0 && (
@@ -150,7 +151,7 @@ function CompanyPage() {
                 )}
                 <div className="space-y-2">
                   {roles.map((r) => (
-                    <div key={r.url} className={`rounded-2xl bg-glass-strong p-4 ${selected?.url === r.url ? "ring-2 ring-ring" : ""}`}>
+                    <div key={r.url} className={`rounded-lg bg-glass-strong p-4 ${selected?.url === r.url ? "ring-2 ring-ring" : ""}`}>
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <div className="font-medium">{r.title}</div>
@@ -162,9 +163,9 @@ function CompanyPage() {
                       </div>
                       <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{r.snippet}</p>
                       <div className="mt-3 flex gap-2 text-xs">
-                        <button onClick={() => open(r.url, r.title)} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-primary-foreground">
+                        <Button onClick={() => open(r.url, r.title)} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-primary-foreground">
                           <FileText className="h-3.5 w-3.5" /> Explore role
-                        </button>
+                        </Button>
                         <a href={r.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5">
                           <ExternalLink className="h-3.5 w-3.5" /> Source
                         </a>
@@ -175,9 +176,9 @@ function CompanyPage() {
               </section>
 
               {selected && (
-                <section className="rounded-3xl glass p-5">
+                <section className="rounded-lg p-5">
                   <h2 className="font-medium">{selected.title}</h2>
-                  <a href={selected.url} target="_blank" rel="noreferrer" className="text-xs text-muted-foreground underline">
+                  <a href={selected.url} target="_blank" rel="noreferrer" className="break-all text-xs text-muted-foreground underline">
                     {selected.url}
                   </a>
                   {selected.loading && (
@@ -215,7 +216,7 @@ function CompanyPage() {
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 rounded-3xl glass p-5 text-sm">
+    <div className="flex items-center gap-3 rounded-lg p-5 text-sm">
       <AlertCircle className="h-5 w-5 text-muted-foreground" /> {children}
     </div>
   );

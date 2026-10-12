@@ -48,18 +48,18 @@ function YCPage() {
         <h1 className="mt-4 font-display text-5xl sm:text-6xl">Explore YC startups</h1>
         <p className="mt-2 text-muted-foreground">Pick a company to research its open roles with Tavily.</p>
       </section>
-      <div className="mx-auto mt-8 flex max-w-4xl flex-wrap gap-2 rounded-3xl glass p-3">
-        <div className="flex flex-1 items-center gap-2 rounded-xl bg-glass-strong px-3">
+      <div className="mx-auto mt-8 flex max-w-4xl flex-wrap gap-2 rounded-lg glass p-3">
+        <div className="flex min-w-[200px] flex-1 items-center gap-2 rounded-lg bg-glass-strong px-3">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, product or industry…" className="h-11 flex-1 bg-transparent text-sm outline-none" />
         </div>
-        <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="h-11 rounded-xl bg-glass-strong px-3 text-sm outline-none">
+        <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="h-11 max-w-full rounded-lg bg-glass-strong px-3 text-sm outline-none">
           <option value="">All industries</option>
           {res?.industries.map((i) => (
             <option key={i}>{i}</option>
           ))}
         </select>
-        <label className="flex h-11 items-center gap-2 rounded-xl bg-glass-strong px-3 text-sm">
+        <label className="flex h-11 items-center gap-2 rounded-lg bg-glass-strong px-3 text-sm">
           <input type="checkbox" checked={hiring} onChange={(e) => setHiring(e.target.checked)} /> Hiring only
         </label>
       </div>
@@ -78,10 +78,10 @@ function YCPage() {
             to="/company/$name"
             params={{ name: c.name }}
             search={{ domain: c.website }}
-            className="group rounded-3xl glass p-4 transition hover:-translate-y-0.5 hover:bg-glass-strong"
+            className="group rounded-lg glass p-4 transition hover:-translate-y-0.5 hover:bg-glass-strong"
           >
             <div className="flex items-center gap-3">
-              <img src={c.logo} alt="" className="h-11 w-11 rounded-xl bg-glass-strong object-contain" loading="lazy" />
+              <img src={c.logo} alt="" className="h-11 w-11 rounded-lg bg-glass-strong object-contain" loading="lazy" />
               <div className="min-w-0">
                 <div className="truncate font-medium">{c.name}</div>
                 <div className="text-xs text-muted-foreground">

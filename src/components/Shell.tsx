@@ -1,3 +1,4 @@
+import { Button } from "@/components/Button";
 import { Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { Eye, EyeOff, KeyRound, Loader2, Check } from "lucide-react";
@@ -11,22 +12,22 @@ export function Shell({ children }: { children: ReactNode }) {
   const keys = useKeys();
   const ready = !!keys.tavily && !!keys.nebius;
   return (
-    <div className="relative min-h-screen">
+    <div className="relative isolate min-h-screen">
       <div
         className="fixed inset-0 -z-10 bg-cover bg-center"
         style={{ backgroundImage: `url(${bg.url})` }}
         aria-hidden
       />
-      <div className="fixed inset-0 -z-10 bg-background/55" aria-hidden />
-      <header className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
+      <div className="fixed inset-0 -z-10 bg-background/35" aria-hidden />
+      <header className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-4">
         <Link to="/" className="flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary font-display text-xl text-primary-foreground">
+          <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary font-display text-xl text-primary-foreground">
             g
           </span>
-          <span className="text-xl font-semibold tracking-tight">grinder</span>
+          <span className="text-xl font-semibold tracking-normal">grinder</span>
           <span className="hidden font-display text-lg italic text-muted-foreground sm:inline">/careers</span>
         </Link>
-        <nav className="flex items-center gap-1 rounded-full glass p-1 text-sm">
+        <nav className="order-3 flex w-full items-center justify-center gap-1 rounded-full glass p-1 text-sm sm:order-none sm:w-auto">
           {([
             ["/", "Discover"],
             ["/yc", "YC Explorer"],
@@ -43,14 +44,14 @@ export function Shell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
-        <button
+        <Button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
         >
           <KeyRound className="h-4 w-4" />
           <span className="hidden sm:inline">{ready ? "Keys connected" : "Connect keys"}</span>
           <span className={`h-2 w-2 rounded-full ${ready ? "bg-sage" : "bg-peach"}`} />
-        </button>
+        </Button>
       </header>
       <main className="mx-auto max-w-7xl px-5 pb-16">{children}</main>
       {open && <Settings onClose={() => setOpen(false)} />}
@@ -77,12 +78,12 @@ function KeyField({
 }) {
   const [show, setShow] = useState(false);
   return (
-    <div className="rounded-2xl glass p-4">
+    <div className="rounded-lg glass p-4">
       <div className="mb-2 flex items-center justify-between text-sm font-medium">
         {label}
         <span className="text-xs text-muted-foreground">{status}</span>
       </div>
-      <div className="flex items-center rounded-xl bg-muted px-3">
+      <div className="flex items-center rounded-lg bg-muted px-3">
         <input
           type={show ? "text" : "password"}
           value={value}
@@ -90,9 +91,9 @@ function KeyField({
           placeholder={placeholder}
           className="h-11 flex-1 bg-transparent text-sm outline-none"
         />
-        <button onClick={() => setShow(!show)} className="text-muted-foreground" aria-label="Toggle visibility">
+        <Button onClick={() => setShow(!show)} className="text-muted-foreground" aria-label="Toggle visibility">
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-        </button>
+        </Button>
       </div>
       <p className="mt-2 text-xs text-muted-foreground">
         {hint}{" "}
@@ -134,7 +135,7 @@ function Settings({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/20 p-4" onClick={onClose}>
-      <div className="w-full max-w-lg space-y-3 rounded-3xl glass-strong p-6" onClick={(e) => e.stopPropagation()}>
+      <div className="max-h-[90dvh] w-full max-w-lg space-y-3 overflow-y-auto rounded-lg glass-strong p-6" onClick={(e) => e.stopPropagation()}>
         <h2 className="font-display text-3xl">Connect your keys</h2>
         <p className="text-sm text-muted-foreground">
           Keys are kept only in this browser and sent to our server just to call Tavily and Nebius.
@@ -158,17 +159,17 @@ function Settings({ onClose }: { onClose: () => void }) {
           status={msg.n || (keys.nebius ? "Saved" : "")}
         />
         <div className="flex justify-end gap-2 pt-2">
-          <button onClick={onClose} className="rounded-xl px-4 py-2 text-sm text-muted-foreground">
+          <Button onClick={onClose} className="rounded-lg px-4 py-2 text-sm text-muted-foreground">
             Close
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={save}
             disabled={busy}
-            className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
+            className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
           >
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
             Verify & save
-          </button>
+          </Button>
         </div>
       </div>
     </div>
