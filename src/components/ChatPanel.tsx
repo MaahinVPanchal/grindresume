@@ -121,7 +121,6 @@ export function ChatPanel({
         {msgs.length === 0 && (
           <div className="space-y-2">
             <Link to="/resume" className="inline-flex items-center gap-2 border-b pb-2 text-xs font-medium">Upload or edit my resume →</Link>
-            <p className="text-muted-foreground">Ask about roles, the company or your application.</p>
             {suggestions.map((s) => (
               <Button
                 key={s}
@@ -174,7 +173,7 @@ export function ChatPanel({
         />
         {busy ? (
           <Button type="button" onClick={() => abort.current?.abort()} className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
-            <Square className="h-3.5 w-3.5" />
+             <Square aria-label="Stop response" className="h-3.5 w-3.5" />
           </Button>
         ) : (
           <Button type="submit" className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground" aria-label="Send">
