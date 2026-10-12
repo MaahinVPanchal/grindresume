@@ -5,6 +5,7 @@ import { ArrowUp, Loader2, Square } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { saveKeys, useKeys } from "@/lib/keys";
 import { listNebiusModels } from "@/lib/research.functions";
+import { Link } from '@tanstack/react-router';
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -119,6 +120,7 @@ export function ChatPanel({
       <div ref={box} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 text-sm">
         {msgs.length === 0 && (
           <div className="space-y-2">
+            <Link to="/resume" className="inline-flex items-center gap-2 border-b pb-2 text-xs font-medium">Upload or edit my resume →</Link>
             <p className="text-muted-foreground">Ask about roles, the company or your application.</p>
             {suggestions.map((s) => (
               <Button

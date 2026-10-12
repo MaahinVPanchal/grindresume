@@ -1,0 +1,8 @@
+import { describe,it,expect } from 'vitest';
+import { blankResume,blankEntry,validateSaved,uid } from '@/lib/resume-model';
+import { layoutResume } from '@/lib/resume-layout';
+describe('Resume canonical state and layout',()=>{
+ it('retains all fields and custom content when restoring',()=>{const r=blankResume();r.personal.name='Alex';r.sections=[{id:uid(),heading:'Volunteer work',kind:'additional',entries:[{...blankEntry(),details:'Original volunteer content'}]}];expect(validateSaved(r)).toEqual(r);expect(validateSaved({personal:{}})).toBeNull();});
+ it('paginates long content within actual paper bounds',()=>{const r=blankResume();r.sections=[{id:uid(),heading:'Experience',kind:'experience',entries:[{...blankEntry(),bullets:Array.from({length:180},(_,i)=>`Original achievement ${i} with exact source facts preserved.`)}]}];const result=layoutResume(r);expect(result.pages.length).toBeGreaterThan(1);for(const page of result.pages)for(const l of page){expect(l.y).toBeGreaterThanOrEqual(result.margin);expect(l.y).toBeLessThan(result.height-result.margin);}});
+ it('updates paper size and template without mutating content',()=>{const r=blankResume();r.personal.name='Alex';const classic=layoutResume({...r,format:{...r.format,template:'classic',pageSize:'Letter'}});expect(classic.width).toBe(215.9);expect(classic.pages[0]?.[0]?.x).toBeGreaterThan(classic.margin);expect(r.personal.name).toBe('Alex');});
+});

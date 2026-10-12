@@ -1,7 +1,7 @@
 import { Button } from "@/components/Button";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Building2, Globe, MapPin, Briefcase, Search } from "lucide-react";
+import { Building2, Globe, MapPin, Briefcase, Search, Upload, ArrowRight } from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { FEATURED, logoFor } from "@/lib/companies";
 
@@ -37,6 +37,11 @@ function Index() {
           and improve your application with research.
         </p>
       </section>
+
+      <div className="mx-auto mt-6 flex max-w-4xl flex-wrap items-center justify-between gap-4 border-y border-border py-4 text-left">
+        <div className="flex items-center gap-3"><Upload className="h-5 w-5 text-muted-foreground"/><div><p className="text-sm font-semibold">Make your next application count.</p><p className="text-xs text-muted-foreground">Your resume, ready for the right opportunity.</p></div></div>
+        <Link to="/resume" className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground">Upload resume <ArrowRight className="h-4 w-4"/></Link>
+      </div>
 
       <form
         onSubmit={(e) => {
