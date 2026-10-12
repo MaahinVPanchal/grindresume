@@ -26,6 +26,9 @@ export function ChatPanel({
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [font,setFont]=useState('Arial');
+  const [weight,setWeight]=useState(false);
+  const [alignment,setAlignment]=useState<'left'|'center'|'right'>('left');
   const abort = useRef<AbortController | null>(null);
   const box = useRef<HTMLDivElement>(null);
   const ta = useRef<HTMLTextAreaElement>(null);
@@ -117,7 +120,8 @@ export function ChatPanel({
           ))}
         </select>
       </div>
-      <div ref={box} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 text-sm">
+      <details className="border-b px-4 py-2 text-xs"><summary className="cursor-pointer">Chat appearance</summary><div className="mt-2 flex flex-wrap items-center gap-3"><label>Font <select aria-label="Chat font family" value={font} onChange={e=>setFont(e.target.value)} className="rounded border bg-muted p-1">{['Arial','Georgia','Courier New'].map(f=><option key={f}>{f}</option>)}</select></label><label>Alignment <select aria-label="Chat alignment" value={alignment} onChange={e=>setAlignment(e.target.value as typeof alignment)} className="rounded border bg-muted p-1">{['left','center','right'].map(a=><option key={a}>{a}</option>)}</select></label><label><input type="checkbox" checked={weight} onChange={e=>setWeight(e.target.checked)}/> Bold text</label></div></details>
+      <div ref={box} style={{fontFamily:font,fontWeight:weight?700:400,textAlign:alignment}} className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4 text-sm">
         {msgs.length === 0 && (
           <div className="space-y-2">
             <Link to="/resume" className="inline-flex items-center gap-2 border-b pb-2 text-xs font-medium">Upload or edit my resume →</Link>
