@@ -13,7 +13,7 @@ export function ResumeFormatting({resume,change}:{resume:Resume;change:(r:Resume
         const layout=layoutResume(sample);
         return <Button key={t.id} aria-label={`${t.id} template`} aria-pressed={resume.format.template===t.id} onClick={()=>set({...t.format,template:t.id})} className={`min-w-0 rounded-md border p-2 text-left ${resume.format.template===t.id?'ring-2 ring-ring':'bg-glass'}`}>
           <div className={`template-thumbnail accent-${resume.format.accent} border-${sample.format.border}`}>
-            {layout.pages[0]?.slice(0,32).map((l,i)=><span key={i} className={l.bold?'template-bold':''} style={{left:`${l.x/layout.width*100}%`,top:`${l.y/layout.height*100}%`,width:`${Math.min(85-l.x/layout.width*100,l.text.length*l.size*0.045)}%`}}/>)}
+            {layout.pages[0]?.slice(0,32).map((l,i)=><span key={i} className={l.bold?'template-bold':''} style={{left:`${l.x/layout.width*100}%`,top:`${l.y/layout.height*100}%`,width:`${Math.max(0,Math.min(93-l.x/layout.width*100,l.text.length*l.size*0.045))}%`}}/>)}
           </div>
           <span className="mt-2 block text-xs font-medium">{t.name}</span>
         </Button>;
