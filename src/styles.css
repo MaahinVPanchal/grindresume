@@ -115,6 +115,34 @@
 
 .app-button { cursor: pointer; }
 .app-button:disabled { cursor: not-allowed; }
+.company-ticker-lane {
+  overflow: hidden;
+  padding-block: 4px;
+  mask-image: linear-gradient(to right, transparent, var(--foreground) 28px, var(--foreground) calc(100% - 28px), transparent);
+}
+.company-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: company-ticker-scroll 45s linear infinite;
+}
+.company-ticker-group { display: flex; flex-shrink: 0; gap: 8px; padding-right: 8px; }
+.ticker-lane-2 .company-ticker-track { animation-duration: 52s; animation-direction: reverse; }
+.ticker-lane-3 .company-ticker-track { animation-duration: 40s; }
+.ticker-lane-4 .company-ticker-track { animation-duration: 48s; animation-direction: reverse; }
+.company-ticker-lane:hover .company-ticker-track,
+.company-ticker-lane:focus-within .company-ticker-track { animation-play-state: paused; }
+.ticker-paused .company-ticker-lane,
+.company-ticker-lane:focus-within { overflow-x: auto; mask-image: none; }
+.ticker-paused .company-ticker-track,
+.company-ticker-lane:focus-within .company-ticker-track { animation: none; }
+.ticker-paused .ticker-duplicate,
+.company-ticker-lane:focus-within .ticker-duplicate { display: none; }
+@keyframes company-ticker-scroll { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .company-ticker-lane { overflow-x: auto; mask-image: none; }
+  .company-ticker-track { animation: none; }
+  .ticker-duplicate { display: none; }
+}
 :is(button, a, input, textarea, select):focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 3px;

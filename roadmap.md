@@ -1,4 +1,5 @@
 # Resume workspace
+- [ ] Replace the Discover company grid with four alternating ticker rows and verify motion, pause and company navigation.
 - [x] Add explicit employer website approval, metadata preview and removal without automatically publishing resume employers.
 - [x] Display confirmed community company cards on Discover and YC Explorer; verify sharing end-to-end.
 - [x] Compare uploaded examples and online resume templates; improve template layouts and previews without changing resume facts or the platform theme.
