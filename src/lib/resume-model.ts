@@ -12,11 +12,11 @@ export type Format = z.infer<typeof FormatSchema>;
 export type Resume = ResumeContent & { format: Format };
 export const defaultFormat: Format = { template: 'modern', pageSize: 'A4', font: 'Arial', fontSize: 10, margin: 15, spacing: 5, accent: 'charcoal', alignment: 'left', fontWeight: 'regular', border: 'none', borderWidth: 0.5 };
 export const templates: { id: Format['template']; name: string; format: Partial<Format> }[] = [
-  {id:'classic',name:'Classic · traditional',format:{font:'Times New Roman',spacing:5,border:'none'}},
-  {id:'modern',name:'Modern · professional',format:{font:'Arial',spacing:5,border:'headings'}},
-  {id:'technical',name:'Technical · engineering',format:{font:'Courier',spacing:4,border:'headings'}},
-  {id:'compact',name:'Compact · concise',format:{font:'Helvetica',spacing:2,fontSize:9,border:'none'}},
-  {id:'executive',name:'Executive · leadership',format:{font:'Georgia',spacing:6,border:'page'}},
+  {id:'classic',name:'Classic · Harvard style',format:{font:'Times New Roman',fontSize:10,margin:18,spacing:3,border:'headings',accent:'charcoal',alignment:'left',fontWeight:'regular'}},
+  {id:'modern',name:'Modern · two columns',format:{font:'Arial',fontSize:10,margin:15,spacing:4,border:'none',accent:'green',alignment:'left',fontWeight:'regular'}},
+  {id:'technical',name:'Sidebar · professional',format:{font:'Helvetica',fontSize:10,margin:15,spacing:4,border:'none',accent:'blue',alignment:'left',fontWeight:'regular'}},
+  {id:'compact',name:'Compact · single column',format:{font:'Helvetica',margin:13,spacing:2,fontSize:9,border:'headings',accent:'charcoal',alignment:'left',fontWeight:'regular'}},
+  {id:'executive',name:'Editorial · executive',format:{font:'Georgia',fontSize:10,margin:18,spacing:5,border:'headings',accent:'green',alignment:'left',fontWeight:'regular'}},
 ];
 export const uid = () => crypto.randomUUID();
 export const blankEntry = (): Entry => ({ id: uid(), title: '', subtitle: '', location: '', start: '', end: '', current: false, details: '', bullets: [], link: '' });
