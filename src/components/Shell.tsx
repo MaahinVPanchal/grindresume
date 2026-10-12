@@ -7,9 +7,12 @@ import { saveKeys, useKeys } from "@/lib/keys";
 import { useServerFn } from "@tanstack/react-start";
 import { validateTavily, listNebiusModels } from "@/lib/research.functions";
 import { ProfileMenu } from "@/components/ProfileMenu";
+import { ChatPanel } from './ChatPanel';
+import { MessageCircle, X } from 'lucide-react';
 
 export function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const [ask, setAsk] = useState(false);
   const keys = useKeys();
   const ready = !!keys.tavily && !!keys.nebius;
   return (
@@ -28,18 +31,19 @@ export function Shell({ children }: { children: ReactNode }) {
           <span className="text-xl font-semibold tracking-normal">grinder</span>
           <span className="hidden font-display text-lg italic text-muted-foreground sm:inline">/careers</span>
         </Link>
-        <nav className="order-3 flex w-full items-center justify-center gap-1 rounded-full glass p-1 text-sm sm:order-none sm:w-auto">
+        <nav className="order-3 flex w-full flex-wrap items-center justify-center gap-1 rounded-full glass p-1 text-sm lg:order-none lg:w-auto">
           {([
             ["/", "Discover"],
             ["/resume", "Resume"],
             ["/yc", "YC Explorer"],
-            ["/chat", "Chat"],
+            ["/saved", "Saved"],
+            ["/focus", "Our focus"],
           ] as const).map(([to, l]) => (
             <Link
               key={to}
               to={to}
               activeOptions={{ exact: true }}
-              className="rounded-full px-4 py-1.5 text-muted-foreground transition hover:text-foreground"
+              className="rounded-full px-3 py-1.5 text-muted-foreground transition hover:text-foreground"
               activeProps={{ className: "bg-primary !text-primary-foreground" }}
             >
               {l}
@@ -47,6 +51,7 @@ export function Shell({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <Button aria-label="Ask Grinder" title="Ask Grinder" className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong" onClick={()=>setAsk(true)}><MessageCircle className="h-4 w-4"/></Button>
           <Button
             onClick={() => setOpen(true)}
             className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
@@ -60,6 +65,7 @@ export function Shell({ children }: { children: ReactNode }) {
       </header>
       <main className="mx-auto max-w-7xl px-5 pb-16">{children}</main>
       {open && <Settings onClose={() => setOpen(false)} />}
+      {ask&&<div className="fixed inset-0 z-50 grid place-items-center bg-foreground/20 p-4" onClick={()=>setAsk(false)}><div role="dialog" aria-label="Ask Grinder" aria-modal="true" className="w-full max-w-xl" onClick={e=>e.stopPropagation()}><Button aria-label="Close assistant" title="Close assistant" onClick={()=>setAsk(false)} className="mb-2 ml-auto grid h-8 w-8 place-items-center rounded-full bg-glass-strong"><X className="h-4 w-4"/></Button><ChatPanel title="Ask Grinder" context="Ask which company or role the user wants to explore if no employer context is provided. Do not invent candidate experience." className="h-[65dvh]" suggestions={['Help me choose a company to explore.','What role should I research next?']}/></div></div>}
     </div>
   );
 }
