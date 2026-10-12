@@ -81,7 +81,7 @@ export function ChatPanel({
         const { data: s } = await supabase.auth.getSession();
         if (!s.session) throw new Error("Sign in to use deep research with your resume.");
         setStatus(target.trim() ? "Researching the role and company…" : "Reading your resume…");
-        const r = await research({ data: { resumeId: resumeId || undefined, target: target || (context ? "" : ""), tavilyKey: keys.tavily || undefined } });
+        const r = await research({ data: { resumeId: resumeId || undefined, target, tavilyKey: keys.tavily || undefined } });
         if (!r.ok) throw new Error(r.error);
         ctx = `${ctx}\n\n${r.context}`.slice(0, 30000);
         setStatus(`${r.sourceCount} sources · ${r.resumeUsed ? "resume facts included" : "no resume"}`);
