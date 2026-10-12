@@ -1,0 +1,17 @@
+CREATE TABLE public.resumes (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL DEFAULT auth.uid(), title text NOT NULL DEFAULT 'My resume', data jsonb NOT NULL DEFAULT '{}', original_path text, extracted_text text NOT NULL DEFAULT '', created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.resumes TO authenticated;
+GRANT ALL ON public.resumes TO service_role;
+ALTER TABLE public.resumes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Own resumes" ON public.resumes FOR ALL TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+CREATE INDEX resumes_owner ON public.resumes(user_id, updated_at DESC);
+CREATE TABLE public.resume_versions (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), resume_id uuid NOT NULL REFERENCES public.resumes(id) ON DELETE CASCADE, user_id uuid NOT NULL DEFAULT auth.uid(), data jsonb NOT NULL, label text NOT NULL DEFAULT 'Saved version', created_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT, DELETE ON public.resume_versions TO authenticated;
+GRANT ALL ON public.resume_versions TO service_role;
+ALTER TABLE public.resume_versions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Read own versions" ON public.resume_versions FOR SELECT TO authenticated USING (user_id = auth.uid());
+CREATE POLICY "Save own versions" ON public.resume_versions FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid() AND EXISTS (SELECT 1 FROM public.resumes WHERE id = resume_id AND user_id = auth.uid()));
+CREATE POLICY "Delete own versions" ON public.resume_versions FOR DELETE TO authenticated USING (user_id = auth.uid());
+CREATE INDEX resume_versions_owner ON public.resume_versions(user_id, resume_id, created_at DESC);
+CREATE POLICY "Upload own resume files" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'resumes' AND (storage.foldername(name))[1] = auth.uid()::text);
+CREATE POLICY "Read own resume files" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'resumes' AND (storage.foldername(name))[1] = auth.uid()::text);
+CREATE POLICY "Delete own resume files" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'resumes' AND (storage.foldername(name))[1] = auth.uid()::text);
