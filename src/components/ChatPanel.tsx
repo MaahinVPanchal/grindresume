@@ -1,10 +1,12 @@
 import { Button } from "@/components/Button";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { ArrowUp, Loader2, Square } from "lucide-react";
+import { ArrowUp, Brain, Copy, Loader2, Square } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { saveKeys, useKeys } from "@/lib/keys";
 import { listNebiusModels } from "@/lib/research.functions";
+import { deepResearch } from "@/lib/deep-research.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { Link } from '@tanstack/react-router';
 
 type Msg = { role: "user" | "assistant"; content: string };
