@@ -80,17 +80,18 @@ export function ChatPanel({
   const [rolesState, setRolesState] = useState("");
   const mention = /(?:^|\s)@([\w .-]{0,30})$/.exec(input)?.[1];
   const matches = mention === undefined || /\s$/.test(mention) ? [] : FEATURED.filter(([n]) => n.toLowerCase().startsWith(mention.toLowerCase().trimEnd())).slice(0, 6);
-  async function pickCompany(name: string, domain: string) {
+  const [linkDraft, setLinkDraft] = useState("");
+  function pickCompany(name: string, domain: string) {
     setInput((v) => v.replace(/@([\w .-]{0,30})$/, `@${name} `));
-    setCompany({ name, domain }); setDeep(true); setTarget(name); setRoles([]); setPicked([]); setCareerSite("");
-    if (!keys.tavily) return setRolesState("Connect your Tavily key to load open roles.");
-    setRolesState("Loading open roles…");
-    const r = await careers({ data: { apiKey: keys.tavily, company: name, domain } });
-    if (!r.ok) return setRolesState(r.error);
-    const real = r.roles.filter(isPosting).slice(0, 12);
-    const site = r.careerPages.find((p) => { try { return new URL(p.url).hostname.endsWith(domain); } catch { return false; } }) || r.careerPages[0];
-    setCareerSite(site?.url || "");
-    setRoles(real); setRolesState(real.length ? "Pick up to 3 roles you're interested in." : "No individual job postings found. Open the career site and paste a job link into the role box.");
+    setCompany({ name, domain }); setDeep(true); setTarget(name); setRoles([]); setPicked([]); setCareerSite(`https://${domain}`);
+    setRolesState("Paste up to 3 job links you're interested in.");
+  }
+  function addLink() {
+    const u = linkDraft.trim();
+    if (!/^https?:\/\/\S+$/.test(u)) return setRolesState("Enter a full job link starting with https://");
+    if (picked.length >= 3 || picked.some((p) => p.url === u)) return;
+    let title = u; try { const x = new URL(u); title = `${x.hostname}${x.pathname}`.slice(0, 60); } catch { /* keep */ }
+    setPicked((p) => [...p, { title, url: u, source: "Your link" } as Role]); setLinkDraft(""); setRolesState("");
     ta.current?.focus();
   }
 
@@ -133,6 +134,7 @@ export function ChatPanel({
         const { data: s } = await supabase.auth.getSession();
         if (!s.session) throw new Error("Sign in to use deep research with your resume.");
         setStatus(target.trim() ? "Researching the role and company…" : "Reading your resume…");
+        void supabase.from("search_history").insert({ user_id: s.session.user.id, kind: "deep_chat", query: text.slice(0, 2000), company: company?.name || target.slice(0, 120), urls: picked.map((p) => p.url) });
         const r = await research({ data: { resumeId: resumeId || undefined, target, roles: picked.length ? picked.map((p) => p.url) : undefined, tavilyKey: keys.tavily || undefined, nebiusKey: keys.nebius || undefined } });
         if (!r.ok) throw new Error(r.error);
         ctx = `${ctx}\n\n${r.context}`.slice(0, 30000);
@@ -255,9 +257,10 @@ export function ChatPanel({
       )}
       {company && (
         <div className="mx-3 mt-2 rounded-lg border border-border bg-muted/60 p-2 text-xs">
-          <div className="flex items-center justify-between gap-2"><span className="font-medium">@{company.name} · open roles {picked.length > 0 && `(${picked.length}/3 picked)`}</span>{careerSite && <a href={careerSite} target="_blank" rel="noreferrer" className="ml-auto inline-flex items-center gap-1 text-primary underline">Career site <ExternalLink className="h-3 w-3" /></a>}<Button type="button" aria-label="Clear company" onClick={() => { setCompany(null); setRoles([]); setPicked([]); setCareerSite(""); setRolesState(""); }} className="px-1 text-muted-foreground">×</Button></div>
+          <div className="flex items-center justify-between gap-2"><span className="font-medium">@{company.name} · job links ({picked.length}/3)</span>{careerSite && <a href={careerSite} target="_blank" rel="noreferrer" className="ml-auto inline-flex items-center gap-1 text-primary underline">Website <ExternalLink className="h-3 w-3" /></a>}<Button type="button" aria-label="Clear company" onClick={() => { setCompany(null); setRoles([]); setPicked([]); setCareerSite(""); setRolesState(""); }} className="px-1 text-muted-foreground">×</Button></div>
+          {picked.length < 3 && <div className="mt-1 flex gap-1"><input aria-label="Job link" value={linkDraft} onChange={(e) => setLinkDraft(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addLink(); } }} placeholder="https://… job posting link" className="min-w-0 flex-1 rounded border bg-background/70 p-1 outline-none" /><Button type="button" onClick={addLink} className="rounded border px-2 hover:bg-accent">Add</Button></div>}
           {rolesState && <p className="mt-1 text-muted-foreground">{rolesState}</p>}
-          <div className="mt-1 flex flex-wrap gap-1">{roles.map((r) => { const on = picked.some((x) => x.url === r.url); return <Button type="button" key={r.url} title={r.source} aria-pressed={on} disabled={!on && picked.length >= 3} onClick={() => togglePick(r)} className={`max-w-full truncate rounded-full border px-2 py-0.5 disabled:opacity-40 ${on ? "bg-primary text-primary-foreground" : "hover:bg-accent"}`}>{on && "✓ "}{r.title.slice(0, 60)}</Button>; })}</div>
+          <div className="mt-1 flex flex-wrap gap-1">{picked.map((r) => <span key={r.url} className="inline-flex max-w-full items-center gap-1 rounded-full border bg-primary px-2 py-0.5 text-primary-foreground"><span className="truncate">{r.title}</span><Link to="/quiz" search={{ company: company.name, url: r.url }} className="underline">Quiz</Link><button type="button" aria-label="Remove link" onClick={() => togglePick(r)}>×</button></span>)}</div>
         </div>
       )}
       {saved.length > 0 && (
