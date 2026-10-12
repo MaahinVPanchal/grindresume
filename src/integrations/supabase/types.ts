@@ -156,22 +156,40 @@ export type Database = {
       }
       shared_companies: {
         Row: {
+          confirmed_at: string | null
           created_at: string
           display_name: string
+          industry: string
+          location: string
+          logo_url: string
           name_key: string
+          one_liner: string
           user_id: string
+          website: string | null
         }
         Insert: {
+          confirmed_at?: string | null
           created_at?: string
           display_name: string
+          industry?: string
+          location?: string
+          logo_url?: string
           name_key: string
+          one_liner?: string
           user_id?: string
+          website?: string | null
         }
         Update: {
+          confirmed_at?: string | null
           created_at?: string
           display_name?: string
+          industry?: string
+          location?: string
+          logo_url?: string
           name_key?: string
+          one_liner?: string
           user_id?: string
+          website?: string | null
         }
         Relationships: []
       }
@@ -180,6 +198,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      community_catalog: {
+        Args: never
+        Returns: {
+          industry: string
+          location: string
+          logo_url: string
+          name: string
+          one_liner: string
+          people: number
+          website: string
+        }[]
+      }
       community_companies: {
         Args: never
         Returns: {
