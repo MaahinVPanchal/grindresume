@@ -193,6 +193,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_api_keys: {
+        Row: {
+          model: string
+          nebius: string
+          tavily: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          model?: string
+          nebius?: string
+          tavily?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          model?: string
+          nebius?: string
+          tavily?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,6 +1,6 @@
 import { Button } from "@/components/Button";
 import { Link } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Eye, EyeOff, KeyRound, Loader2, Check } from "lucide-react";
 import bg from "@/assets/landscape.webp.asset.json";
 import { saveKeys, useKeys } from "@/lib/keys";
@@ -120,6 +120,10 @@ function Settings({ onClose }: { onClose: () => void }) {
   const keys = useKeys();
   const [tav, setTav] = useState(keys.tavily);
   const [neb, setNeb] = useState(keys.nebius);
+  useEffect(() => {
+    setTav((v) => v || keys.tavily);
+    setNeb((v) => v || keys.nebius);
+  }, [keys.tavily, keys.nebius]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ t: string; n: string }>({ t: "", n: "" });
   const vT = useServerFn(validateTavily);
@@ -149,7 +153,7 @@ function Settings({ onClose }: { onClose: () => void }) {
       <div className="max-h-[90dvh] w-full max-w-lg space-y-3 overflow-y-auto rounded-lg glass-strong p-6" onClick={(e) => e.stopPropagation()}>
         <h2 className="font-display text-3xl">Connect your keys</h2>
         <p className="text-sm text-muted-foreground">
-          Keys are kept only in this browser and sent to our server just to call Tavily and Nebius.
+          When signed in, keys are saved privately to your account so you only add them once. Update them here anytime.
         </p>
         <KeyField
           label="1 · Tavily API key"
