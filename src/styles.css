@@ -162,6 +162,12 @@ input, textarea { min-width: 0; }
 .resume-line { position: absolute; text-align: left; line-height: 1.35; white-space: pre; background: transparent; border: 0; border-radius: 0; color: inherit; }
 .resume-line:hover, .resume-line:focus-visible { background: var(--muted); }
 .resume-line[style*="700"] { color: var(--resume-accent, var(--ink)); }
+.border-page.resume-paper::before { content:''; position:absolute; inset:2.5%; border:var(--resume-border-width, 1px) solid var(--resume-accent,var(--ink)); pointer-events:none; }
+.border-headings .resume-heading-line { border-bottom:var(--resume-border-width, 1px) solid var(--resume-accent,var(--ink)); padding-bottom:1px; }
+.template-thumbnail { position:relative; aspect-ratio:210/180; overflow:hidden; background:var(--paper); color:var(--ink); }
+.template-thumbnail span { position:absolute; height:2px; background:var(--ink); opacity:0.5; }
+.template-thumbnail .template-bold { height:3px; background:var(--resume-accent,var(--ink)); opacity:1; }
+.template-thumbnail.border-page::before { content:'';position:absolute;inset:4%;border:1px solid var(--resume-accent,var(--ink)); }
 .accent-charcoal { --resume-accent: var(--ink); }
 .accent-green { --resume-accent: var(--resume-green); }
 .accent-blue { --resume-accent: var(--resume-blue); }
