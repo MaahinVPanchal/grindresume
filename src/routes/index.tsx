@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Building2, Globe, MapPin, Briefcase, Search, Upload, ArrowRight } from "lucide-react";
 import { Shell } from "@/components/Shell";
 import { FEATURED, logoFor } from "@/lib/companies";
+import { CommunityCatalog } from "@/components/CommunityCatalog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -85,6 +86,7 @@ function Index() {
           </Button>
         ))}
       </div>
+      <CommunityCatalog query={company.includes('.') ? '' : company}/>
       <p className="mt-6 text-center text-sm">
         <Link to="/yc" className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
           <Globe className="h-4 w-4" /> Or explore hiring Y Combinator startups →

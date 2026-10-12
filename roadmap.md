@@ -1,4 +1,7 @@
 # Resume workspace
+- [x] Add explicit employer website approval, metadata preview and removal without automatically publishing resume employers.
+- [x] Display confirmed community company cards on Discover and YC Explorer; verify sharing end-to-end.
+- [x] Compare uploaded examples and online resume templates; improve template layouts and previews without changing resume facts or the platform theme.
 - [x] Upload and extract real PDF/DOCX resumes; retain original content.
 - [x] Structured editor, synchronized paginated preview, templates and undo/redo.
 - [x] Private account-backed autosave and version restoration.
