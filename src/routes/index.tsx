@@ -5,6 +5,7 @@ import { Building2, Globe, MapPin, Briefcase, Search, Upload, ArrowRight } from 
 import { Shell } from "@/components/Shell";
 import { CompanyTicker } from "@/components/CompanyTicker";
 import { CommunityCatalog } from "@/components/CommunityCatalog";
+import { FeaturedCatalog } from "@/components/FeaturedCatalog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -74,6 +75,7 @@ function Index() {
       </form>
 
       <CompanyTicker onSelect={go} />
+      <FeaturedCatalog query={company.includes('.') ? '' : company}/>
       <CommunityCatalog query={company.includes('.') ? '' : company}/>
       <p className="mt-6 text-center text-sm">
         <Link to="/yc" className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
