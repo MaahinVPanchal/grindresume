@@ -31,7 +31,7 @@ export async function exportPDF(r: Resume, title: string) {
   const pdf = new jsPDF({ unit: 'mm', format: r.format.pageSize === 'A4' ? 'a4' : 'letter' });
   pages.forEach((lines,i) => {
     if (i) pdf.addPage();
-    lines.forEach(l => { pdf.setFont(font, l.bold ? 'bold' : 'normal'); pdf.setFontSize(l.size); const accent=({charcoal:[42,42,42],green:[38,86,60],blue:[41,75,106]} as const)[r.format.accent]; pdf.setTextColor(...(l.bold?accent:[42,42,42] as const)); pdf.text(l.text, l.x, l.y + l.size * 0.3528); });
+    lines.forEach(l => { pdf.setFont(font, l.bold ? 'bold' : 'normal'); pdf.setFontSize(l.size); const accent=({charcoal:[42,42,42],green:[38,86,60],blue:[41,75,106]} as const)[r.format.accent]; const color=l.bold?accent:[42,42,42]; pdf.setTextColor(color[0]??42,color[1]??42,color[2]??42); pdf.text(l.text, l.x, l.y + l.size * 0.3528); });
     pdf.setFontSize(8); pdf.text(`${i+1} / ${pages.length}`, margin, height-8);
   });
   pdf.save(`${title || 'resume'}.pdf`);
