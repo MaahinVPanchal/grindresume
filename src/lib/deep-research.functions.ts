@@ -31,7 +31,7 @@ export const deepResearch = createServerFn({ method: 'POST' })
           const t = j.results?.[0]?.raw_content;
           if (t) sources.push({ title: 'Job description', url: target, content: String(t).slice(0, 8000) });
         }
-        const q = sources.length ? `${sources[0].content.slice(0, 200)} company news` : target;
+        const q = sources.length ? `${sources[0]?.content.slice(0, 200) ?? target} company news` : target;
         const [role, news] = await Promise.all([
           call('search', { query: `${q} role requirements responsibilities`, max_results: 4, search_depth: 'advanced' }),
           call('search', { query: `${target} company recent launches news engineering blog`, max_results: 4, search_depth: 'advanced', topic: 'general' }),
