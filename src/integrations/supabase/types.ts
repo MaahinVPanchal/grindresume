@@ -38,6 +38,24 @@ export type Database = {
         }
         Relationships: []
       }
+      company_sharing: {
+        Row: {
+          share: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          share?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          share?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       resume_versions: {
         Row: {
           created_at: string
@@ -136,12 +154,39 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_companies: {
+        Row: {
+          created_at: string
+          display_name: string
+          name_key: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          name_key: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          name_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      community_companies: {
+        Args: never
+        Returns: {
+          name: string
+          people: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
