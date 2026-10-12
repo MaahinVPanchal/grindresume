@@ -26,5 +26,6 @@ export function ResumeFormatting({resume,change}:{resume:Resume;change:(r:Resume
       <label>Border <select aria-label="Border" value={resume.format.border} onChange={e=>set({border:e.target.value as Format['border']})} className="rounded border bg-glass-strong p-1"><option value="none">None</option><option value="page">Page frame</option><option value="headings">Section rules</option></select></label>
       <label className="flex items-center gap-2">Border width<input aria-label="Border width" type="number" min={0.25} max={2} step={0.25} value={resume.format.borderWidth} onChange={e=>set({borderWidth:Math.max(0.25,Math.min(2,Number(e.target.value)))})} className="w-14 rounded border bg-glass-strong p-1"/>mm</label>
     </div>
+    <p className="mb-3 text-xs text-muted-foreground">PDF uses standard Helvetica, Times or Courier equivalents; Word retains your selected font family.</p>
   </>;
 }
