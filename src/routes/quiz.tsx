@@ -71,7 +71,7 @@ function QuizPage() {
   const field = 'w-full rounded-lg border bg-background/70 p-2 text-sm outline-none';
   return (
     <Shell>
-      <div className="py-8"><h1 className="font-display text-5xl">Fit quiz</h1><p className="mt-2 max-w-2xl text-muted-foreground">Paste a job link, answer three questions about that role in your own words, and see how strong your fit looks before applying. No AI writes your answers.</p></div>
+      <div className="py-8"><h1 className="font-display text-5xl">Fit quiz</h1><p className="mt-2 max-w-2xl text-muted-foreground">Enter the company, paste the job description, pick your resume, then answer three questions about that role in your own words to see how strong your fit looks. No AI writes your answers.</p></div>
       {signedIn === false ? <Link to="/resume" className="underline">Sign in to take a fit quiz</Link> : (
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="space-y-4 rounded-lg glass p-5">
