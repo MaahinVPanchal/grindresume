@@ -72,12 +72,6 @@ function CompanyPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keys.tavily, name, domain, title, location]);
 
-  async function open(url: string, t: string) {
-    setBriefContext('');
-    setSelected({ url, title: t, loading: true });
-    const r = await extract({ data: { apiKey: keys.tavily, url } });
-    setSelected(r.ok ? { url, title: t, content: r.content } : { url, title: t, error: r.error });
-  }
 
   const roles = res?.ok ? res.roles.filter((r) => (r.title + r.snippet).toLowerCase().includes(filter.toLowerCase())) : [];
 
