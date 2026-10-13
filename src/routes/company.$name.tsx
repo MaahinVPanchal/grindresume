@@ -53,7 +53,7 @@ function CompanyPage() {
       const x = await extract({ data: { apiKey: keys.tavily, url: r.url } }).catch(() => null);
       return x && x.ok ? `Job posting text for ${r.title} (${r.url}):\n${x.content.slice(0, 9000)}` : '';
     } : undefined;
-    setTrigger({ id: Date.now(), mode, target: `${r.title} at ${name}`.slice(0,280), url: r.url, text, prepare });
+    setTrigger({ id: Date.now(), mode, target: `${r.title} at ${name}`.slice(0,280), url: r.url, text, ...(prepare ? { prepare } : {}) });
   }
   const focus = trigger ? res?.ok ? res.roles.find((r) => r.url === trigger.url) : undefined : undefined;
   const [selected, setSelected] = useState<{ url: string; title: string; content?: string; loading?: boolean; error?: string } | null>(null);
