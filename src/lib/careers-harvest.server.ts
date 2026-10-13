@@ -90,7 +90,14 @@ export async function harvestCareersPage(pageUrl: string): Promise<HarvestedRole
 }
 
 /** Rank roles matching the requested title/location first without hiding the rest. */
-export function rankRoles<T extends { title: string; snippet: string }>(roles: T[], title?: string, location?: string) {
+// Index pages ("Explore open roles", /careers/jobs) are not postings and confuse role-specific chat.
+function isIndex(r: { title: string; url?: string }) {
+  if (/^(explore|view|see|browse|search)\b.*\b(roles|jobs|openings|positions)\b|^(open roles|all jobs|careers|jobs)$/i.test(r.title.trim())) return true;
+  try { return /^\/((careers?|jobs?)(\/(jobs|search|open-roles))?)?\/?$/i.test(new URL(r.url || '').pathname); } catch { return false; }
+}
+
+export function rankRoles<T extends { title: string; snippet: string; url?: string }>(input: T[], title?: string, location?: string) {
+  const roles = input.filter((r) => !isIndex(r));
   const words = (s?: string) => (s || '').toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2);
   const tw = words(title), lw = words(location);
   const score = (r: T) => { const t = `${r.title} ${r.snippet}`.toLowerCase(); return tw.filter((w) => t.includes(w)).length * 2 + lw.filter((w) => t.includes(w)).length; };
