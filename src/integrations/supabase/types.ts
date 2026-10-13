@@ -348,7 +348,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_dataset: { Args: never; Returns: Json }
       admin_stats: { Args: never; Returns: Json }
+      admin_storage: { Args: never; Returns: Json }
       community_catalog: {
         Args: never
         Returns: {
