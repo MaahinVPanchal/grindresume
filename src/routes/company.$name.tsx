@@ -142,7 +142,7 @@ function CompanyPage() {
               <section className="rounded-lg p-5">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                    Discovered listings ({roles.length})
+                    Open roles ({roles.length}){res.officialCount ? ` · ${res.officialCount} from the official careers page` : ""}
                   </h2>
                   <input
                     value={filter}

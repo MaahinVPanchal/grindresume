@@ -22,3 +22,4 @@
 - Retain the legacy chat URL but use contextual company chat and the shared-shell assistant for navigation; saved roles live in owner-scoped Cloud rows.
 - Publish community companies only through the confirmed-domain catalog RPC and explicit per-employer approval; keep raw contributions owner-scoped and reuse the same company cards on Discover and YC Explorer.
 - Fetch company website metadata only in authenticated server functions with public-host/IP checks, revalidated redirects, bounded responses and deadlines; no private resume content is sent to websites.
+- Role discovery reads the official careers page and public ATS boards (Greenhouse/Ashby/Lever) first, using Tavily search/map only as fallback; why: search alone misses most exact listings.

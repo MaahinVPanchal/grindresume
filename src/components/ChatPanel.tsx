@@ -122,8 +122,12 @@ export function ChatPanel({
   }, [msgs]);
 
   const root = useRef<HTMLDivElement>(null);
+  const handled = useRef(0);
   useEffect(() => {
-    if (!trigger) return;
+    if (!trigger || handled.current === trigger.id) return;
+    // A new action interrupts any reply still streaming, then runs once the chat is free.
+    if (busy) { abort.current?.abort(); return; }
+    handled.current = trigger.id;
     root.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     if (trigger.mode === "match") {
       setDeep(true); setTarget(trigger.target);
@@ -131,7 +135,7 @@ export function ChatPanel({
       void send(trigger.text, { deep: true, target: trigger.target, roles: [trigger.url], needResume: true });
     } else void send(trigger.text, { deep: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trigger?.id]);
+  }, [trigger?.id, busy]);
 
   async function send(text: string, o?: { deep: boolean; target?: string; roles?: string[]; needResume?: boolean }) {
     if (!text.trim() || busy) return;
