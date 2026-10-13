@@ -142,7 +142,7 @@ export const findCareers = createServerFn({ method: "POST" })
           return true;
         })
         .map((r) => ({ title: r.title, url: r.url, snippet: r.content?.slice(0, 400) || "", source: new URL(r.url).hostname.replace(/^www\./, ""), published: r.published_date || null }));
-      const roles = rankRoles([...harvested, ...fromSearch], data.title, data.location).slice(0, 150);
+      const roles = rankRoles([...harvested, ...fromSearch], data.title, data.location).slice(0, 300);
       return {
         ok: true as const,
         answer: (official.answer as string) || null,
