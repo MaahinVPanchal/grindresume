@@ -4,7 +4,7 @@ import { z } from "zod";
 const Body = z.object({
   apiKey: z.string().optional(),
   model: z.string().min(1),
-  context: z.string().max(30000).optional(),
+  context: z.string().max(50000).optional(),
   messages: z
     .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().max(20000) }))
     .min(1)
