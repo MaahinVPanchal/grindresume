@@ -36,7 +36,9 @@ export function ChatPanel({
   title = "Career assistant",
   suggestions = [],
   className = "",
+  trigger,
 }: {
+  trigger?: { id: number; mode: "explore" | "match"; text: string; target: string; url: string };
   context?: string;
   title?: string;
   suggestions?: string[];
@@ -119,8 +121,38 @@ export function ChatPanel({
     box.current?.scrollTo({ top: box.current.scrollHeight });
   }, [msgs]);
 
-  async function send(text: string) {
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!trigger) return;
+    root.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (trigger.mode === "match") {
+      setDeep(true); setTarget(trigger.target);
+      setPicked([{ title: trigger.target, url: trigger.url, source: "Selected role" }]);
+      void send(trigger.text, { deep: true, target: trigger.target, roles: [trigger.url], needResume: true });
+    } else void send(trigger.text, { deep: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trigger?.id]);
+
+  async function send(text: string, o?: { deep: boolean; target?: string; roles?: string[]; needResume?: boolean }) {
     if (!text.trim() || busy) return;
+    const useDeep = o?.deep ?? deep;
+    const tgt = o?.target ?? target;
+    const roleUrls = o?.roles ?? picked.map((p) => p.url);
+    if (o?.needResume) {
+      const { data: s } = await supabase.auth.getSession();
+      let rid = resumeId;
+      if (s.session && !rid) {
+        const r = await supabase.from("resumes").select("id,title").order("updated_at", { ascending: false });
+        if (r.data?.length) { setResumes(r.data); rid = r.data[0]?.id || ""; setResumeId(rid); }
+      }
+      if (!s.session || !rid) {
+        setMsgs((m) => [...m, { role: "user", content: text }, { role: "assistant", content: "Upload or select your resume first to run the match. [Open my resume →](/resume)" }]);
+        return;
+      }
+      o = { ...o, target: tgt, roles: roleUrls };
+      (o as { rid?: string }).rid = rid;
+    }
+    const useResume = (o as { rid?: string } | undefined)?.rid || resumeId;
     setErr("");
     if (!keys.nebius) return setErr("Connect your Nebius key first (top right).");
     const next: Msg[] = [...msgs, { role: "user", content: text }];
@@ -130,12 +162,12 @@ export function ChatPanel({
     abort.current = new AbortController();
     try {
       let ctx = context || "";
-      if (deep) {
+      if (useDeep) {
         const { data: s } = await supabase.auth.getSession();
         if (!s.session) throw new Error("Sign in to use deep research with your resume.");
-        setStatus(target.trim() ? "Researching the role and company…" : "Reading your resume…");
-        void supabase.from("search_history").insert({ user_id: s.session.user.id, kind: "deep_chat", query: text.slice(0, 2000), company: company?.name || target.slice(0, 120), urls: picked.map((p) => p.url) });
-        const r = await research({ data: { resumeId: resumeId || undefined, target, roles: picked.length ? picked.map((p) => p.url) : undefined, tavilyKey: keys.tavily || undefined, nebiusKey: keys.nebius || undefined } });
+        setStatus(tgt.trim() ? "Researching the role and company…" : "Reading your resume…");
+        void supabase.from("search_history").insert({ user_id: s.session.user.id, kind: "deep_chat", query: text.slice(0, 2000), company: company?.name || tgt.slice(0, 120), urls: roleUrls });
+        const r = await research({ data: { resumeId: useResume || undefined, target: tgt, roles: roleUrls.length ? roleUrls : undefined, tavilyKey: keys.tavily || undefined, nebiusKey: keys.nebius || undefined } });
         if (!r.ok) throw new Error(r.error);
         ctx = `${ctx}\n\n${r.context}`.slice(0, 30000);
         setStatus(`${r.sourceCount} sources · ${r.resumeUsed ? "resume facts included" : "no resume"}${r.match ? ` · ${r.match.score}% semantic match` : ""}`);
@@ -185,7 +217,7 @@ export function ChatPanel({
   }
 
   return (
-    <div className={`flex min-w-0 flex-col rounded-lg glass-strong ${className}`}>
+    <div ref={root} className={`flex min-w-0 scroll-mt-4 flex-col rounded-lg glass-strong ${className}`}>
       <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
         <div className="min-w-0 break-words font-medium">{title}</div>
         <select
