@@ -54,7 +54,7 @@ function QuizPage() {
 
   async function start() {
     setErr(''); setBusy(true); setResult(null);
-    const r = await make({ data: { company, jobUrl: url, jobText, resumeId: resumeId || undefined, tavilyKey: keys.tavily || undefined, apiKey: keys.nebius || undefined, model: keys.model || undefined } });
+    const r = await make({ data: { company, jobUrl: url || undefined, jobText, resumeId: resumeId || undefined, apiKey: keys.nebius || undefined, model: keys.model || undefined } });
     setBusy(false);
     if (!r.ok) return setErr(r.error);
     setQuiz(r); setAnswers(['', '', '']); setPasted([false, false, false]); loadPast();
