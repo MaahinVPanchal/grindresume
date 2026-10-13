@@ -55,6 +55,9 @@ export function ProfileMenu() {
         <DropdownMenuItem onSelect={async () => { const n = await exportFineTuneDataset(); if (!n) alert("No saved chats or submitted quizzes yet."); }}>
           <Database className="mr-2 h-4 w-4" /> Export fine-tuning data (.jsonl)
         </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => navigate({ to: "/admin" })}>
+          <UserRound className="mr-2 h-4 w-4" /> Admin console
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => supabase.auth.signOut()}>
           <LogOut className="mr-2 h-4 w-4" /> Sign out
