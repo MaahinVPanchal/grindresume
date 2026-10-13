@@ -46,6 +46,12 @@ function CompanyPage() {
   const [filter, setFilter] = useState("");
   const [briefContext,setBriefContext]=useState('');
   const [trigger,setTrigger]=useState<{ id: number; mode: 'explore' | 'match'; text: string; target: string; url: string }>();
+  const [focusText,setFocusText]=useState('');
+  async function ask(mode: 'explore' | 'match', r: { url: string; title: string }, text: string) {
+    const x = await extract({ data: { apiKey: keys.tavily, url: r.url } }).catch(() => null);
+    setFocusText(x && x.ok ? x.content.slice(0, 9000) : '');
+    setTrigger({ id: Date.now(), mode, target: `${r.title} at ${name}`.slice(0,280), url: r.url, text });
+  }
   const focus = trigger ? res?.ok ? res.roles.find((r) => r.url === trigger.url) : undefined : undefined;
   const [selected, setSelected] = useState<{ url: string; title: string; content?: string; loading?: boolean; error?: string } | null>(null);
 
@@ -75,7 +81,7 @@ function CompanyPage() {
   const context = useMemo(() => {
     if (!res?.ok) return `Company: ${name}`;
     const parts = [
-      focus ? `FOCUS ROLE (the user clicked this exact job): ${focus.title} — ${focus.url}\n${focus.snippet}` : "",
+      focus ? `FOCUS ROLE (the user clicked this exact job): ${focus.title} — ${focus.url}\n${focus.snippet}${focusText ? `\n\nJob posting text:\n${focusText}` : ''}` : "",
       `Company: ${name}${domain ? ` (${domain})` : ""}. Filters: title=${title || "any"}, location=${location || "any"}.`,
       res.answer ? `Tavily summary: ${res.answer}` : "",
       "Career pages:\n" + res.careerPages.map((p) => `- ${p.title} ${p.url}: ${p.snippet}`).join("\n"),
@@ -84,7 +90,7 @@ function CompanyPage() {
       briefContext ? `Application brief based on candidate resume: ${briefContext}` : '',
     ];
     return parts.filter(Boolean).join("\n\n").slice(0, 24000);
-  }, [focus, res, selected, name, domain, title, location,briefContext]);
+  }, [focus, focusText, res, selected, name, domain, title, location,briefContext]);
 
   return (
     <Shell>
@@ -173,10 +179,10 @@ function CompanyPage() {
                       <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{r.snippet}</p>
                        <div className="mt-3 flex flex-wrap gap-2 text-xs">
                          <SaveRole company={name} title={r.title} url={r.url}/>
-                        <Button onClick={() => { setTrigger({ id: Date.now(), mode: 'explore', target: `${r.title} at ${name}`, url: r.url, text: `Explore the role: ${r.title} at ${name} (${r.url}). Break down the core roles and responsibilities, day-to-day expectations, required technical stack/skills, and what the hiring team looks for.` }); }} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-primary-foreground">
+                        <Button onClick={() => { void ask('explore', r, `Explore the role: ${r.title} at ${name} (${r.url}). Break down the core roles and responsibilities, day-to-day expectations, required technical stack/skills, and what the hiring team looks for.`); }} className="flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-primary-foreground">
                           <FileText className="h-3.5 w-3.5" /> Explore role
                         </Button>
-                        <Button onClick={() => setTrigger({ id: Date.now(), mode: 'match', target: `${r.title} at ${name}`.slice(0,280), url: r.url, text: `Match my resume against ${r.title} at ${name} (${r.url}): 1. Matching Responsibilities & Skills: What specific roles and achievements from my resume align with this job? 2. Fit Assessment & Gaps: Am I a strong, moderate, or stretch fit? What crucial requirements am I missing? 3. Actionable Practice Plan: Exactly what technical topics, case questions, or portfolio work should I practice to bridge the gaps and ace the interview?` })} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5">Match my resume</Button>
+                        <Button onClick={() => void ask('match', r, `Match my resume against ${r.title} at ${name} (${r.url}): 1. Matching Responsibilities & Skills: What specific roles and achievements from my resume align with this job? 2. Fit Assessment & Gaps: Am I a strong, moderate, or stretch fit? What crucial requirements am I missing? 3. Actionable Practice Plan: Exactly what technical topics, case questions, or portfolio work should I practice to bridge the gaps and ace the interview?`)} className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5">Match my resume</Button>
                         <a href={r.url} target="_blank" rel="noreferrer" className="flex items-center gap-1 rounded-lg bg-muted px-3 py-1.5">
                           <ExternalLink className="h-3.5 w-3.5" /> Source
                         </a>
