@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { User } from "@supabase/supabase-js";
-import { FileText, LogOut, UserRound } from "lucide-react";
+import { Database, FileText, LogOut, UserRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { exportFineTuneDataset } from "@/lib/finetune-export";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,6 +51,9 @@ export function ProfileMenu() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => navigate({ to: "/resume" })}>
           <FileText className="mr-2 h-4 w-4" /> My resume
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={async () => { const n = await exportFineTuneDataset(); if (!n) alert("No saved chats or submitted quizzes yet."); }}>
+          <Database className="mr-2 h-4 w-4" /> Export fine-tuning data (.jsonl)
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => supabase.auth.signOut()}>

@@ -43,6 +43,13 @@
       "when": 1791826768582,
       "tag": "0005_role_assessments_and_queries",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791890144015,
+      "tag": "0006_chat_interactions",
+      "breakpoints": true
     }
   ]
 }

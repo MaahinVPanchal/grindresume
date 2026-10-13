@@ -220,6 +220,14 @@ export function ChatPanel({
           }
         }
       }
+      // Persist the full exchange (with grounding context) for the user's history and fine-tuning exports.
+      if (acc) {
+        const { data: s } = await supabase.auth.getSession();
+        if (s.session) {
+          const { error: logErr } = await supabase.from("chat_interactions").insert({ user_id: s.session.user.id, kind: useDeep ? "deep_chat" : o?.prepare ? "explore_role" : "chat", company: company?.name || tgt.slice(0, 120) || title.slice(0, 120), model: keys.model, context: ctx.slice(0, 45000), messages: [...next, { role: "assistant", content: acc }] });
+          if (logErr) console.error("Chat history save failed", logErr.message);
+        }
+      }
     } catch (e) {
       if ((e as Error).name !== "AbortError") {
         setErr((e as Error).message.slice(0, 300));
