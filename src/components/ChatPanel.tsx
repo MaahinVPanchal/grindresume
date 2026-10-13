@@ -165,7 +165,7 @@ export function ChatPanel({
     setBusy(true);
     abort.current = new AbortController();
     try {
-      let ctx = context || "";
+      let ctx = (context || "").slice(0, 24000);
       if (useDeep) {
         const { data: s } = await supabase.auth.getSession();
         if (!s.session) throw new Error("Sign in to use deep research with your resume.");
@@ -173,7 +173,7 @@ export function ChatPanel({
         void supabase.from("search_history").insert({ user_id: s.session.user.id, kind: "deep_chat", query: text.slice(0, 2000), company: company?.name || tgt.slice(0, 120), urls: roleUrls });
         const r = await research({ data: { resumeId: useResume || undefined, target: tgt, roles: roleUrls.length ? roleUrls : undefined, tavilyKey: keys.tavily || undefined, nebiusKey: keys.nebius || undefined } });
         if (!r.ok) throw new Error(r.error);
-        ctx = `${ctx}\n\n${r.context}`.slice(0, 30000);
+        ctx = `${ctx}\n\n${r.context}`.slice(0, 45000);
         setStatus(`${r.sourceCount} sources · ${r.resumeUsed ? "resume facts included" : "no resume"}${r.match ? ` · ${r.match.score}% semantic match` : ""}`);
       }
       const res = await fetch("/api/chat", {
