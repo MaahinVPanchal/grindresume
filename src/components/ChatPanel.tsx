@@ -38,7 +38,7 @@ export function ChatPanel({
   className = "",
   trigger,
 }: {
-  trigger?: { id: number; mode: "explore" | "match"; text: string; target: string; url: string } | undefined;
+  trigger?: { id: number; mode: "explore" | "match"; text: string; target: string; url: string; prepare?: () => Promise<string> } | undefined;
   context?: string;
   title?: string;
   suggestions?: string[];
@@ -123,6 +123,7 @@ export function ChatPanel({
 
   const root = useRef<HTMLDivElement>(null);
   const handled = useRef(0);
+  const researchCache = useRef(new Map<string, Awaited<ReturnType<typeof deepResearch>>>());
   useEffect(() => {
     if (!trigger || handled.current === trigger.id) return;
     // A new action interrupts any reply still streaming, then runs once the chat is free.
@@ -133,11 +134,11 @@ export function ChatPanel({
       setDeep(true); setTarget(trigger.target);
       setPicked([{ title: trigger.target, url: trigger.url, source: "Selected role" }]);
       void send(trigger.text, { deep: true, target: trigger.target, roles: [trigger.url], needResume: true });
-    } else void send(trigger.text, { deep: false });
+    } else void send(trigger.text, { deep: false, prepare: trigger.prepare });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger?.id, busy]);
 
-  async function send(text: string, o?: { deep: boolean; target?: string; roles?: string[]; needResume?: boolean }) {
+  async function send(text: string, o?: { deep: boolean; target?: string; roles?: string[]; needResume?: boolean; prepare?: () => Promise<string> }) {
     if (!text.trim() || busy) return;
     const useDeep = o?.deep ?? deep;
     const tgt = o?.target ?? target;
@@ -163,16 +164,26 @@ export function ChatPanel({
     setMsgs([...next, { role: "assistant", content: "" }]);
     setInput("");
     setBusy(true);
+    setStatus("");
     abort.current = new AbortController();
     try {
       let ctx = (context || "").slice(0, 24000);
+      if (o?.prepare) {
+        setStatus("Reading the job posting…");
+        const extra = await o.prepare();
+        if (extra) ctx = `${extra}\n\n${ctx}`.slice(0, 34000);
+        setStatus("");
+      }
       if (useDeep) {
         const { data: s } = await supabase.auth.getSession();
         if (!s.session) throw new Error("Sign in to use deep research with your resume.");
         setStatus(tgt.trim() ? "Researching the role and company…" : "Reading your resume…");
         void supabase.from("search_history").insert({ user_id: s.session.user.id, kind: "deep_chat", query: text.slice(0, 2000), company: company?.name || tgt.slice(0, 120), urls: roleUrls });
-        const r = await research({ data: { resumeId: useResume || undefined, target: tgt, roles: roleUrls.length ? roleUrls : undefined, tavilyKey: keys.tavily || undefined, nebiusKey: keys.nebius || undefined } });
+        // Reuse research for follow-up questions about the same resume and job.
+        const cacheKey = JSON.stringify([useResume, tgt.trim(), roleUrls]);
+        const r = researchCache.current.get(cacheKey) ?? await research({ data: { resumeId: useResume || undefined, target: tgt, roles: roleUrls.length ? roleUrls : undefined, tavilyKey: keys.tavily || undefined, nebiusKey: keys.nebius || undefined } });
         if (!r.ok) throw new Error(r.error);
+        researchCache.current.set(cacheKey, r);
         ctx = `${ctx}\n\n${r.context}`.slice(0, 45000);
         setStatus(`${r.sourceCount} sources · ${r.resumeUsed ? "resume facts included" : "no resume"}${r.match ? ` · ${r.match.score}% semantic match` : ""}`);
       }
@@ -272,7 +283,7 @@ export function ChatPanel({
                   )}
                 </>
               ) : (
-                <span className="inline-flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{deep && status}</span>
+                <span className="inline-flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{status}</span>
               )}
             </div>
           ),
