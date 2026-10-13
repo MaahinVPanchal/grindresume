@@ -5,6 +5,10 @@ import { Download, Loader2, LogOut, ShieldCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Shell } from "@/components/Shell";
 import { Button } from "@/components/Button";
+import { buildLines, validateLines, splitLines, downloadParts, formatBytes, NEBIUS_MAX_BYTES, type ChatRow, type QuizRow, type Issue } from "@/lib/finetune-export";
+
+type Storage = { tables: { name: string; bytes: number }[]; files_bytes: number; files_count: number };
+const rpc = (n: string) => (supabase.rpc as unknown as (n: string) => Promise<{ data: unknown; error: unknown }>)(n);
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -113,7 +117,13 @@ function Dashboard({ stats, reload }: { stats: Stats; reload: () => void }) {
     ["Searches", stats.searches], ["Quizzes (submitted)", stats.quizzes_submitted], ["Resumes", stats.resumes], ["Saved roles", stats.saved_roles],
   ];
   const day = new Date().toISOString().slice(0, 10);
-  const jsonl = (stats.recent_chats as { messages: unknown }[]).map((c) => JSON.stringify({ messages: c.messages })).join("\n");
+  const [preview, setPreview] = useState<string[] | null>(null);
+  const openPreview = async () => {
+    const { data, error } = await rpc("admin_dataset");
+    if (error || !data) { alert("Dataset could not load."); return; }
+    const d = data as { chats: ChatRow[]; quizzes: QuizRow[] };
+    setPreview(buildLines(d.chats, d.quizzes));
+  };
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -128,8 +138,10 @@ function Dashboard({ stats, reload }: { stats: Stats; reload: () => void }) {
       </div>
       <div className="flex flex-wrap gap-2">
         <Button className={primary} onClick={() => download(`grinder-data-${day}.json`, JSON.stringify(stats, null, 2))}><Download className="h-4 w-4" />All data (.json)</Button>
-        <Button className={secondary} onClick={() => download(`grinder-chats-${day}.jsonl`, jsonl, "application/jsonl")}><Download className="h-4 w-4" />Chats (.jsonl)</Button>
+        <Button className={secondary} onClick={openPreview}><Download className="h-4 w-4" />Fine-tuning export (.jsonl)</Button>
       </div>
+      <StoragePanel />
+      {preview && <ExportPreview lines={preview} onClose={() => setPreview(null)} base={`grinder-finetune-all-${day}`} />}
       <section className="rounded-lg glass p-4">
         <h2 className="mb-3 font-semibold">Recent users</h2>
         <div className="max-h-64 overflow-y-auto text-sm">{stats.recent_users.map((u) => <div key={u.email + u.created_at} className="flex justify-between border-b py-2"><span>{u.email}</span><span className="text-xs text-muted-foreground">joined {new Date(u.created_at).toLocaleDateString()}</span></div>)}</div>
@@ -139,6 +151,58 @@ function Dashboard({ stats, reload }: { stats: Stats; reload: () => void }) {
           <Button key={k} onClick={() => setTab(k)} className={tab === k ? primary : secondary}>{l} ({stats[k].length})</Button>)}</div>
         <pre className="max-h-[32rem] overflow-auto rounded-md bg-muted p-3 text-xs">{JSON.stringify(stats[tab], null, 2)}</pre>
       </section>
+    </div>
+  );
+}
+
+function StoragePanel() {
+  const [s, setS] = useState<Storage | null>(null);
+  useEffect(() => { rpc("admin_storage").then(({ data }) => setS(data as Storage | null)); }, []);
+  if (!s) return <section className="rounded-lg glass p-4 text-sm text-muted-foreground">Loading storage…</section>;
+  const db = s.tables.reduce((a, t) => a + t.bytes, 0);
+  return (
+    <section className="rounded-lg glass p-4">
+      <h2 className="mb-3 font-semibold">Storage used</h2>
+      <div className="mb-3 grid grid-cols-3 gap-3 text-sm">
+        <div><p className="text-xs text-muted-foreground">Database</p><p className="text-xl font-semibold">{formatBytes(db)}</p></div>
+        <div><p className="text-xs text-muted-foreground">Uploaded files ({s.files_count})</p><p className="text-xl font-semibold">{formatBytes(s.files_bytes)}</p></div>
+        <div><p className="text-xs text-muted-foreground">Total</p><p className="text-xl font-semibold">{formatBytes(db + s.files_bytes)}</p></div>
+      </div>
+      <div className="text-xs">{s.tables.map((t) => <div key={t.name} className="flex justify-between border-b py-1"><span>{t.name.replace(/_/g, " ")}</span><span>{formatBytes(t.bytes)}</span></div>)}</div>
+    </section>
+  );
+}
+
+function ExportPreview({ lines, onClose, base }: { lines: string[]; onClose: () => void; base: string }) {
+  const issues: Issue[] = validateLines(lines);
+  const bytes = new TextEncoder().encode(lines.join("\n") + "\n").length;
+  const parts = splitLines(lines).length;
+  const [i, setI] = useState(0);
+  const sample = lines[i];
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-foreground/20 p-4" onClick={onClose}>
+      <div role="dialog" aria-modal="true" aria-label="Export preview" className="max-h-[90dvh] w-full max-w-3xl overflow-y-auto rounded-lg glass-strong p-6" onClick={(e) => e.stopPropagation()}>
+        <h2 className="font-display text-3xl">Check your export</h2>
+        <div className="my-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+          <div><p className="text-xs text-muted-foreground">Examples</p><p className="text-xl font-semibold">{lines.length}</p></div>
+          <div><p className="text-xs text-muted-foreground">File size</p><p className="text-xl font-semibold">{formatBytes(bytes)}</p></div>
+          <div><p className="text-xs text-muted-foreground">Files (max {formatBytes(NEBIUS_MAX_BYTES)} each)</p><p className="text-xl font-semibold">{parts}</p></div>
+          <div><p className="text-xs text-muted-foreground">Format</p><p className={`text-xl font-semibold ${issues.length ? "text-destructive" : ""}`}>{issues.length ? `${issues.length} issues` : "✓ Conversational"}</p></div>
+        </div>
+        {issues.length > 0 && <ul className="mb-3 max-h-32 overflow-y-auto rounded-md bg-muted p-3 text-xs text-destructive">{issues.slice(0, 50).map((x, k) => <li key={k}>Line {x.line}: {x.message}</li>)}</ul>}
+        {lines.length === 0 ? <p className="text-sm text-muted-foreground">No chats or submitted quizzes yet.</p> : <>
+          <div className="mb-2 flex items-center gap-2 text-sm">
+            <Button className={secondary} disabled={i === 0} onClick={() => setI(i - 1)}>Previous</Button>
+            <span>Line {i + 1} of {lines.length}</span>
+            <Button className={secondary} disabled={i >= lines.length - 1} onClick={() => setI(i + 1)}>Next</Button>
+          </div>
+          <pre className="max-h-80 overflow-auto whitespace-pre-wrap rounded-md bg-muted p-3 text-xs">{sample ? JSON.stringify(JSON.parse(sample), null, 2) : ""}</pre>
+        </>}
+        <div className="mt-4 flex justify-end gap-2">
+          <Button className={secondary} onClick={onClose}>Close</Button>
+          <Button className={primary} disabled={!lines.length} onClick={() => downloadParts(lines, base)}><Download className="h-4 w-4" />Download {parts > 1 ? `${parts} files` : "file"}</Button>
+        </div>
+      </div>
     </div>
   );
 }
