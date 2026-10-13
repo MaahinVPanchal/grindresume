@@ -23,3 +23,4 @@
 - Publish community companies only through the confirmed-domain catalog RPC and explicit per-employer approval; keep raw contributions owner-scoped and reuse the same company cards on Discover and YC Explorer.
 - Fetch company website metadata only in authenticated server functions with public-host/IP checks, revalidated redirects, bounded responses and deadlines; no private resume content is sent to websites.
 - Role discovery reads the official careers page and public ATS boards (Greenhouse/Ashby/Lever) first, using Tavily search/map only as fallback; why: search alone misses most exact listings.
+- Every chat exchange (question, answer, grounding context, model) is stored in chat_interactions; why: owner-scoped history and Nebius fine-tuning JSONL exports.
