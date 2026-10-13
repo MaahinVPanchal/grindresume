@@ -38,6 +38,39 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_interactions: {
+        Row: {
+          company: string
+          context: string
+          created_at: string
+          id: string
+          kind: string
+          messages: Json
+          model: string
+          user_id: string
+        }
+        Insert: {
+          company?: string
+          context?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          messages?: Json
+          model?: string
+          user_id?: string
+        }
+        Update: {
+          company?: string
+          context?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          messages?: Json
+          model?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       company_sharing: {
         Row: {
           share: boolean
