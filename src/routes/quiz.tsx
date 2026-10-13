@@ -78,10 +78,10 @@ function QuizPage() {
             {!quiz ? (
               <>
                 <input aria-label="Company" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Company, e.g. OpenAI" className={field} />
-                <input aria-label="Job link" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Job posting link (https://…)" className={field} />
-                <textarea aria-label="Job description (optional)" value={jobText} onChange={(e) => setJobText(e.target.value)} placeholder="Optional: paste the job description if the link can't be read" rows={4} className={field} />
-                {resumes.length > 0 && <select aria-label="Resume" value={resumeId} onChange={(e) => setResumeId(e.target.value)} className={field}>{resumes.map((r) => <option key={r.id} value={r.id}>Resume: {r.title}</option>)}<option value="">Don't use a resume</option></select>}
-                <Button onClick={start} disabled={busy || !company.trim() || !/^https?:\/\/\S+$/.test(url.trim())} className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60">{busy && <Loader2 className="h-4 w-4 animate-spin" />}Create my 3 questions</Button>
+                <textarea aria-label="Job description" value={jobText} onChange={(e) => setJobText(e.target.value)} placeholder="Paste the full job description (role, responsibilities, requirements)" rows={8} className={field} />
+                <p className="text-xs text-muted-foreground">{jobText.trim().length < 100 ? `Add at least ${100 - jobText.trim().length} more characters` : 'Looks good'}</p>
+                {resumes.length > 0 ? <select aria-label="Resume" value={resumeId} onChange={(e) => setResumeId(e.target.value)} className={field}>{resumes.map((r) => <option key={r.id} value={r.id}>Resume: {r.title}</option>)}<option value="">Don't use a resume</option></select> : <p className="text-xs text-muted-foreground">No saved resume yet — <Link to="/resume" className="underline">add one</Link> for questions based on your experience.</p>}
+                <Button onClick={start} disabled={busy || !company.trim() || jobText.trim().length < 100} className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60">{busy && <Loader2 className="h-4 w-4 animate-spin" />}Create my 3 questions</Button>
               </>
             ) : (
               <>
