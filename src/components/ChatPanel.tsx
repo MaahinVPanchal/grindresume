@@ -134,7 +134,7 @@ export function ChatPanel({
       setDeep(true); setTarget(trigger.target);
       setPicked([{ title: trigger.target, url: trigger.url, source: "Selected role" }]);
       void send(trigger.text, { deep: true, target: trigger.target, roles: [trigger.url], needResume: true });
-    } else void send(trigger.text, { deep: false, prepare: trigger.prepare });
+    } else void send(trigger.text, trigger.prepare ? { deep: false, prepare: trigger.prepare } : { deep: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger?.id, busy]);
 
