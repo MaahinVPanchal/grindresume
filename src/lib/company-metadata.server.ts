@@ -7,7 +7,7 @@ function publicAddress(ip: string) {
   const [a = 0, b = 0] = p;
   return !(a === 0 || a === 10 || a === 127 || a >= 224 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && [0, 168].includes(b)) || (a === 100 && b >= 64 && b <= 127) || (a === 198 && [18, 19, 51].includes(b)) || (a === 203 && b === 0));
 }
-async function checkHost(host: string) {
+export async function checkHost(host: string) {
   const results = await Promise.all(['A', 'AAAA'].map(async type => {
     const r = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(host)}&type=${type}`, { signal: AbortSignal.timeout(4000) });
     if (!r.ok) throw new Error('Website lookup unavailable.');
