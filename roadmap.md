@@ -1,5 +1,5 @@
 # Resume workspace
-- [ ] Create the GrinderResume hackathon README with real portal screenshots, verified feature walkthroughs and repository setup instructions.
+- [x] Create the GrinderResume hackathon README with real portal screenshots, verified feature walkthroughs and repository setup instructions.
 - [x] Replace the Discover company grid with four alternating ticker rows and verify motion, pause and company navigation.
 - [x] Add explicit employer website approval, metadata preview and removal without automatically publishing resume employers.
 - [x] Display confirmed community company cards on Discover and YC Explorer; verify sharing end-to-end.
