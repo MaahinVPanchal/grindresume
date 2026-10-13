@@ -38,7 +38,7 @@ export function ChatPanel({
   className = "",
   trigger,
 }: {
-  trigger?: { id: number; mode: "explore" | "match"; text: string; target: string; url: string };
+  trigger?: { id: number; mode: "explore" | "match"; text: string; target: string; url: string } | undefined;
   context?: string;
   title?: string;
   suggestions?: string[];
