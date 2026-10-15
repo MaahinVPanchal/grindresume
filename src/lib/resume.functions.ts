@@ -48,12 +48,14 @@ export const improveResume = createServerFn({ method: 'POST' })
   });
 
 const SectionGuidance = z.object({
-  companyInsights: z.array(z.string()),
-  keyTerms: z.array(z.string()),
-  tailoringTips: z.array(z.string()),
-  suggestedRevision: z.string(),
-  whyItWorks: z.string(),
-  competencyBridge: z.string().optional(),
+  formatRecommendation: z.string().describe('Strategic structural advice from a top recruiter on how to organize this content (e.g., if you have 18 items, highlight top 3 and summarize the rest in a short paragraph; or how to structure an impactful role overview)'),
+  whatToInclude: z.array(z.string()).describe('3-4 high-signal items that must be included (e.g., specific metrics, top 3 flagship projects, architectural decisions)'),
+  whatToCut: z.array(z.string()).describe('3-4 low-signal items or clutter to cut/avoid (e.g., laundry lists of 18 minor items, passive duty descriptions, generic buzzwords)'),
+  companyInsights: z.array(z.string()).describe('2-3 real engineering insights about the company or industry hiring standard'),
+  keyTerms: z.array(z.string()).describe('4-6 high-impact technical terms or metrics to include'),
+  suggestedRevision: z.string().describe('The recruiter-approved draft formatted according to the recommended blueprint (e.g. top highlights + concise summary)'),
+  whyItWorks: z.string().describe('Why this structure converts better in recruiter 6-second scans'),
+  competencyBridge: z.string().optional().describe('How to bridge missing experience honestly'),
 });
 
 export const getSectionCopilotGuidance = createServerFn({ method: 'POST' })
@@ -77,8 +79,7 @@ export const getSectionCopilotGuidance = createServerFn({ method: 'POST' })
       const role = data.role.trim();
       const key = data.tavilyKey || process.env['TAVILY_API_KEY'];
 
-      if (key && (company || role)) {
-        const queryTerm = company ? (role ? `"${company}" ${role}` : `"${company}" engineering`) : role;
+      if (key) {
         const call = async (query: string) => {
           try {
             const res = await fetch('https://api.tavily.com/search', {
@@ -94,34 +95,44 @@ export const getSectionCopilotGuidance = createServerFn({ method: 'POST' })
           }
         };
 
-        const [techResults, roleResults] = await Promise.all([
-          company ? call(`"${company}" engineering tech stack architecture blog`) : Promise.resolve([]),
-          call(`${queryTerm} requirements responsibilities skills`),
-        ]);
+        const queries: Promise<{ title: string; url: string; content: string }[]>[] = [];
+        if (company) {
+          queries.push(call(`"${company}" engineering hiring bar resume requirements`));
+          queries.push(call(`"${company}" tech stack architecture blog`));
+        } else {
+          queries.push(call(`top tech recruiter software engineer resume format what to include what to cut`));
+        }
+        if (role) {
+          queries.push(call(`${role} resume high signal impact what recruiters look for`));
+        }
 
-        for (const r of [...techResults, ...roleResults]) {
-          if (r.url && !sources.some(s => s.url === r.url)) {
-            sources.push({ title: String(r.title || 'Source'), url: String(r.url), content: String(r.content || '').slice(0, 2000) });
+        const searchResults = await Promise.all(queries);
+        for (const list of searchResults) {
+          for (const r of list) {
+            if (r.url && !sources.some(s => s.url === r.url)) {
+              sources.push({ title: String(r.title || 'Recruiter Insight'), url: String(r.url), content: String(r.content || '').slice(0, 2000) });
+            }
           }
         }
       }
 
       const { structuredAI } = await import('./resume-ai.server');
-      const instructions = `You are an elite technical career coach and hiring strategist for high-growth tech companies.
-Your goal is to help a candidate tailor a specific resume section or bullet point to a target company and role using live company web research.
+      const instructions = `You are a Principal Technical Recruiter and Head of Talent at a tier-1 tech company / YC accelerator.
+Your goal is to give the candidate candid, expert editorial and structural guidance on how to write and format this specific resume section/description.
 
-CRITICAL RULES:
-1. Never fabricate or invent candidate facts, dates, degrees, metrics, or technologies.
-2. Frame the candidate's existing experience using the strongest technical positioning, active verbs, and impact metrics.
-3. companyInsights: Provide 2-3 specific, factual insights about this company's real engineering focus, stack, or recent challenges from the research.
-4. keyTerms: 4-6 high-frequency technical skills, patterns, or architecture concepts that this employer looks for.
-5. tailoringTips: 2-3 concrete tips on how to position this specific section (${data.sectionHeading}) for this company.
-6. suggestedRevision: A high-impact rewrite of the candidate's current text.
-   - For experience/projects bullets: Use Google's formula "Accomplished [X] as measured by [Y] by doing [Z]" with strong action verbs.
-   - For summary: A tight 2-3 sentence elevator pitch connecting their verified strengths to this company's domain.
-   - For skills: Organized, clean skill list prioritizing company tech stack.
-7. whyItWorks: 1-2 sentences explaining why this revised phrasing catches a technical recruiter or hiring manager's attention.
-8. competencyBridge: If the target role emphasizes a technology the candidate lacks, explain how their existing background provides a credible bridge without lying.`;
+CRITICAL RECRUITER RULES:
+1. FORMAT RECOMMENDATION: Give definitive structural advice on HOW to organize this content.
+   - Example rule: If a candidate has done 18 hackathons, 15 projects, or endless responsibilities, NEVER list all 18. Instruct them: "Feature your Top 3 Flagship Wins with clear metrics and technical depth, then condense the other 15 into a punchy 1-sentence breadth summary."
+   - For work experience role description: "Lead with 1 scope/ownership sentence (team size, product mission), follow with 2-3 quantified flagship outcomes, and end with a tech stack summary."
+2. WHAT TO INCLUDE (3-4 bullet points): High-signal elements that make technical recruiters stop and interview the candidate (e.g., quantifiable scale, architecture tradeoffs, measurable business/system impact, top 2-3 flagship achievements).
+3. WHAT TO CUT / AVOID (3-4 bullet points): Low-signal fluff that weakens the resume (e.g., listing all 18 minor items, passive 'responsible for' duties, routine tasks like 'attended standups', generic buzzwords without context).
+4. COMPANY & RECRUITER INSIGHTS (2-3 bullet points): What engineering hiring managers in this domain care about based on the web research.
+5. KEY TERMS (4-6 terms): High-impact technical keywords and metrics to weave in.
+6. SUGGESTED REVISION: Write a polished, recruiter-approved draft that exemplifies your recommended format!
+   - Follow the structure you prescribed (e.g. Top 3 flagship highlights with metrics + 1-sentence breadth summary).
+   - Strictly preserve the candidate's real verified facts and metrics; never fabricate achievements.
+7. WHY IT WORKS: 1-2 sentences explaining why this format wins in 6-second recruiter scans.
+8. COMPETENCY BRIDGE: If an exact requirement is missing, explain how to honestly bridge adjacent experience.`;
 
       const prompt = JSON.stringify({
         company: data.company,
@@ -129,7 +140,7 @@ CRITICAL RULES:
         sectionKind: data.sectionKind,
         sectionHeading: data.sectionHeading,
         currentText: data.currentText,
-        userGoal: data.goal || 'Tailor for this specific company and role',
+        userGoal: data.goal || 'Give top recruiter formatting guidance: what to include, what to cut, and how to structure',
         candidateResumeFacts: data.resumeSummary || '',
         liveCompanyResearch: sources,
       });

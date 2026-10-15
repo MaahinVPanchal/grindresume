@@ -11,9 +11,11 @@ import {
   Target, 
   ArrowRight, 
   Info,
-  Lightbulb,
   Building2,
-  KeyRound
+  KeyRound,
+  Award,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from './Button';
 import { useKeys } from '@/lib/keys';
@@ -55,16 +57,18 @@ export function SectionCopilot({
 
   const [company, setCompany] = useState(initialCompany);
   const [role, setRole] = useState(initialRole);
-  const [goal, setGoal] = useState('Tailor for maximum relevance to this company and role');
+  const [goal, setGoal] = useState('How should a top recruiter format and curate this? Tell me what to include, what to cut, and structure.');
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
   const [applied, setApplied] = useState(false);
   const [error, setError] = useState('');
   
   type GuidanceData = {
+    formatRecommendation: string;
+    whatToInclude: string[];
+    whatToCut: string[];
     companyInsights: string[];
     keyTerms: string[];
-    tailoringTips: string[];
     suggestedRevision: string;
     whyItWorks: string;
     competencyBridge?: string;
@@ -144,11 +148,11 @@ export function SectionCopilot({
   }
 
   const promptChips = [
-    { label: 'Tailor to company', goal: `Tailor this to align with ${company || 'the target company'} and role requirements` },
-    { label: 'Google XYZ impact format', goal: 'Rewrite using Google formula: Accomplished [X] as measured by [Y] by doing [Z]' },
-    { label: 'Match tech stack', goal: 'Highlight matching architecture, tech stack, and technical depth' },
-    { label: 'Active voice & polish', goal: 'Strengthen action verbs and eliminate passive or generic phrasing' },
-    { label: 'Build competency bridge', goal: 'Bridge adjacent skills honestly if an exact requirement is missing' },
+    { label: '🏆 Recruiter curation & format', goal: 'How should a top recruiter format and curate this? Tell me what to include, what to cut (e.g. if 18 items, top 3 + summary), and structure.' },
+    { label: '✂️ What to include vs cut', goal: 'Analyze high-signal accomplishments to highlight vs low-signal fluff to cut' },
+    { label: '📊 Google XYZ metrics format', goal: 'Rewrite using Google formula: Accomplished [X] as measured by [Y] by doing [Z]' },
+    { label: '🎯 Tailor to target employer', goal: `Tailor this to align with ${company || 'the target employer'} tech stack and priorities` },
+    { label: '🌉 Competency bridge', goal: 'Bridge adjacent skills honestly if an exact requirement is missing' },
   ];
 
   return (
@@ -364,21 +368,50 @@ export function SectionCopilot({
               </div>
             )}
 
-            {/* Tailoring Tips for this Section */}
-            {result.guidance.tailoringTips.length > 0 && (
-              <div className="rounded-lg border bg-background/60 p-3 space-y-1.5">
-                <h3 className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
-                  <Lightbulb className="h-3.5 w-3.5 text-amber-500" /> Section Tips ({target?.sectionHeading})
+            {/* Top Recruiter Format & Curation Blueprint */}
+            {result.guidance.formatRecommendation && (
+              <div className="rounded-lg border bg-primary/5 border-primary/20 p-3 space-y-1.5">
+                <h3 className="text-xs font-semibold flex items-center gap-1.5 text-primary">
+                  <Award className="h-3.5 w-3.5" /> Recruiter Format & Curation Blueprint
                 </h3>
-                <ul className="space-y-1 text-xs text-muted-foreground pl-3">
-                  {result.guidance.tailoringTips.map((tip, idx) => (
-                    <li key={idx} className="list-disc leading-relaxed">
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-xs text-foreground/90 leading-relaxed font-medium">
+                  {result.guidance.formatRecommendation}
+                </p>
               </div>
             )}
+
+            {/* What to Include vs What to Cut */}
+            <div className="space-y-2.5">
+              {result.guidance.whatToInclude?.length > 0 && (
+                <div className="rounded-lg border bg-emerald-500/5 border-emerald-500/20 p-3 space-y-1.5">
+                  <h4 className="text-xs font-semibold flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> What to Include (High-Signal)
+                  </h4>
+                  <ul className="space-y-1 text-xs text-foreground/85 pl-3">
+                    {result.guidance.whatToInclude.map((item, idx) => (
+                      <li key={idx} className="list-disc leading-relaxed">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {result.guidance.whatToCut?.length > 0 && (
+                <div className="rounded-lg border bg-destructive/5 border-destructive/20 p-3 space-y-1.5">
+                  <h4 className="text-xs font-semibold flex items-center gap-1.5 text-destructive">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" /> What to Cut / Avoid (Low-Signal Fluff)
+                  </h4>
+                  <ul className="space-y-1 text-xs text-muted-foreground pl-3">
+                    {result.guidance.whatToCut.map((item, idx) => (
+                      <li key={idx} className="list-disc leading-relaxed">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
 
             {/* Competency Bridge (if any) */}
             {result.guidance.competencyBridge && (
