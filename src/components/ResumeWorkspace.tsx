@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useServerFn } from '@tanstack/react-start';
-import { Upload, FileText, Undo2, Redo2, Download, Sparkles, History, ArrowLeft, Loader2, Check, X } from 'lucide-react';
+import { Upload, FileText, Undo2, Redo2, Download, Sparkles, History, ArrowLeft, Loader2, Check, X, Award, CheckCircle2, AlertCircle, Copy, ExternalLink, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable';
 import type { Json } from '@/integrations/supabase/types';
@@ -10,12 +10,11 @@ import { structureResume, improveResume } from '@/lib/resume.functions';
 import { exportPDF, exportDOCX } from '@/lib/resume-layout';
 import { useKeys } from '@/lib/keys';
 import { Button } from './Button';
-import { Icon, ResumeEditor, ResumeField } from './ResumeEditor';
+import { Icon, ResumeEditor, ResumeField, type AssistantTarget } from './ResumeEditor';
 import { ResumePreview } from './ResumePreview';
 import { ResumeFormatting } from './ResumeFormatting';
 import { CompanySharing } from './CompanySharing';
 import { EmployerReview } from './EmployerReview';
-import { SectionCopilot, type CopilotTarget } from './SectionCopilot';
 import type { Session as AuthSession } from '@supabase/supabase-js';
 
 type Row = { id: string; title: string; data: Json; original_path: string | null; extracted_text: string; updated_at: string };
@@ -24,8 +23,6 @@ const primary='inline-flex items-center justify-center gap-2 rounded-md bg-prima
 const secondary='inline-flex items-center justify-center gap-2 rounded-md border bg-glass-strong px-3 py-2 text-sm disabled:opacity-50';
 
 export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; target?: string }) {
-  const initialCompany = target.includes(' at ') ? target.split(' at ')[1]?.trim() || '' : target;
-  const initialRole = target.includes(' at ') ? target.split(' at ')[0]?.trim() || '' : '';
   const [session,setSession]=useState<AuthSession|null>(null);
   const [authReady,setAuthReady]=useState(false);
   const [rows,setRows]=useState<Row[]>([]);
@@ -39,12 +36,11 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
   const [error,setError]=useState(''); const [saveStatus,setSaveStatus]=useState('Saved');
   const [tab,setTab]=useState('editor');
   const [modal,setModal]=useState<'ai'|'history'|'source'|null>(null);
+  const [assistantTarget, setAssistantTarget] = useState<AssistantTarget | null>(null);
   const [versions,setVersions]=useState<Version[]>([]);
   const [extracted,setExtracted]=useState('');
   const [reviewEmployers,setReviewEmployers]=useState(false);
   const [dragging,setDragging]=useState(false);
-  const [copilotOpen, setCopilotOpen] = useState(false);
-  const [copilotTarget, setCopilotTarget] = useState<CopilotTarget | null>(null);
   const input=useRef<HTMLInputElement>(null);
   const revision=useRef(0);
   const keys=useKeys(); const parse=useServerFn(structureResume);
@@ -83,27 +79,6 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
   },[saveStatus]);
 
   function change(next:Resume){if(resume)setPast(old=>[...old.slice(-49),resume]);setFuture([]);setResume(next);}
-  function handleApplyCopilotSuggestion(revision: string, t: CopilotTarget) {
-    if (!resume) return;
-    const nextSections = resume.sections.map((s) => {
-      if (s.id !== t.sectionId) return s;
-      if (!t.entryId) return { ...s, heading: revision };
-      return {
-        ...s,
-        entries: s.entries.map((e) => {
-          if (e.id !== t.entryId) return e;
-          if (t.field === 'bullets' && t.bulletIndex !== undefined) {
-            const nextBullets = [...e.bullets];
-            nextBullets[t.bulletIndex] = revision;
-            return { ...e, bullets: nextBullets };
-          }
-          return { ...e, details: revision };
-        }),
-      };
-    });
-    change({ ...resume, sections: nextSections });
-    setCopilotTarget((prev) => (prev ? { ...prev, text: revision } : null));
-  }
   function open(row:Row){const data=validateSaved(row.data);if(!data){setError('This saved resume could not be read.');return;}setActive(row);setResume(data);setTitle(row.title);setExtracted(row.extracted_text);setPast([]);setFuture([]);setSelected('');setError('');}
   async function create(data:Resume,original_path:string|null=null,text=''){
     if(!session)throw new Error('Sign in to save your resume.');
@@ -151,7 +126,7 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
       <div className="flex items-center justify-between border-b py-5"><h2 className="text-lg font-semibold">Your resumes</h2><Button className="flex items-center gap-2 text-sm" disabled={!!busy} onClick={()=>{setBusy('Creating resume');create(blankResume()).catch(e=>setError(e.message)).finally(()=>setBusy(''));}}>+ Create from scratch</Button></div>
       {loadingRows?<p className="py-8 text-sm text-muted-foreground">Loading resumes…</p>:rows.length===0?<p className="py-8 text-sm text-muted-foreground">No resumes yet.</p>:<div className="grid gap-3 py-5 sm:grid-cols-2 lg:grid-cols-3">{rows.map(row=><Button key={row.id} onClick={()=>open(row)} className="flex items-center gap-4 rounded-lg glass p-5 text-left"><FileText className="h-8 w-8 text-muted-foreground"/><div className="min-w-0"><div className="truncate font-medium">{row.title}</div><div className="mt-1 text-xs text-muted-foreground">Edited {new Date(row.updated_at).toLocaleDateString()}</div></div></Button>)}</div>}
     </>:<>
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 pt-3"><div className="flex min-w-0 items-center gap-3"><Icon label="Back to resumes" disabled={saveStatus==='Saving…'||saveStatus==='Unsaved changes'} onClick={()=>{setResume(null);setActive(null);}}><ArrowLeft/></Icon><div><input aria-label="Resume title" value={title} onChange={e=>setTitle(e.target.value)} className="max-w-52 bg-transparent font-semibold outline-none"/><p role="status" className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Check className="h-3 w-3"/>{saveStatus}</p></div></div><div className="flex flex-wrap items-center gap-2"><Icon label="Undo" disabled={!past.length} onClick={()=>{const previous=past[past.length-1];if(!previous)return;setFuture(f=>[resume,...f]);setPast(p=>p.slice(0,-1));setResume(previous);}}><Undo2/></Icon><Icon label="Redo" disabled={!future.length} onClick={()=>{const next=future[0];if(!next)return;setPast(p=>[...p,resume]);setFuture(f=>f.slice(1));setResume(next);}}><Redo2/></Icon><Icon label="Version history" onClick={history}><History/></Icon><Button className={secondary} onClick={snapshot} disabled={!!busy}>Save version</Button><Button className={copilotOpen ? `${primary} !bg-amber-600 hover:!bg-amber-700` : secondary} onClick={()=>setCopilotOpen(!copilotOpen)}><Sparkles className="h-4 w-4 text-amber-300"/>{copilotOpen ? 'Close Copilot' : 'Section Copilot'}</Button><Button className={secondary} onClick={()=>setModal('ai')}><Sparkles className="h-4 w-4"/>AI assistance</Button><Button className={primary} disabled={!!busy} onClick={()=>download('pdf')}><Download className="h-4 w-4"/>PDF</Button><Button className={secondary} disabled={!!busy} onClick={()=>download('docx')}>DOCX</Button></div></div>
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 pt-3"><div className="flex min-w-0 items-center gap-3"><Icon label="Back to resumes" disabled={saveStatus==='Saving…'||saveStatus==='Unsaved changes'} onClick={()=>{setResume(null);setActive(null);}}><ArrowLeft/></Icon><div><input aria-label="Resume title" value={title} onChange={e=>setTitle(e.target.value)} className="max-w-52 bg-transparent font-semibold outline-none"/><p role="status" className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Check className="h-3 w-3"/>{saveStatus}</p></div></div><div className="flex flex-wrap items-center gap-2"><Icon label="Undo" disabled={!past.length} onClick={()=>{const previous=past[past.length-1];if(!previous)return;setFuture(f=>[resume,...f]);setPast(p=>p.slice(0,-1));setResume(previous);}}><Undo2/></Icon><Icon label="Redo" disabled={!future.length} onClick={()=>{const next=future[0];if(!next)return;setPast(p=>[...p,resume]);setFuture(f=>f.slice(1));setResume(next);}}><Redo2/></Icon><Icon label="Version history" onClick={history}><History/></Icon><Button className={secondary} onClick={snapshot} disabled={!!busy}>Save version</Button><Button className={secondary} onClick={()=>{setAssistantTarget(null);setModal('ai');}}><Sparkles className="h-4 w-4 text-amber-500"/>AI assistance</Button><Button className={primary} disabled={!!busy} onClick={()=>download('pdf')}><Download className="h-4 w-4"/>PDF</Button><Button className={secondary} disabled={!!busy} onClick={()=>download('docx')}>DOCX</Button></div></div>
       <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-3 border-y py-3 text-xs">
         <Selector label="Page size" value={resume.format.pageSize} options={['A4','Letter']} onChange={v=>change({...resume,format:{...resume.format,pageSize:v as Format['pageSize']}})}/>
         <label className="flex items-center gap-2">Size<input aria-label="Font size" type="number" min={8} max={14} value={resume.format.fontSize} onChange={e=>change({...resume,format:{...resume.format,fontSize:Math.max(8,Math.min(14,Number(e.target.value)))}})} className="w-12 rounded border bg-glass-strong p-1"/></label>
@@ -163,51 +138,30 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
       <ResumeFormatting resume={resume} change={change}/>
       <CompanySharing resume={resume} userId={session.user.id}/>
       {resume.reviewNotes.length>0&&<details className="mb-4 rounded-md bg-peach/25 px-4 py-3 text-sm"><summary className="cursor-pointer font-medium">Review imported information ({resume.reviewNotes.length})</summary><ul className="mt-2 list-disc space-y-1 pl-5">{resume.reviewNotes.map((note,i)=><li key={i}>{note}</li>)}</ul></details>}
-      <div className="mb-3 flex border-b lg:hidden">{['editor',...(copilotOpen?['copilot']:[]),'preview'].map(t=><Button key={t} onClick={()=>setTab(t)} className={`flex-1 py-2 text-sm capitalize ${tab===t?'border-b-2 border-primary font-semibold':'text-muted-foreground'}`}>{t==='copilot'?'✨ Copilot':t}</Button>)}</div>
-      <div className={`resume-workspace grid overflow-hidden rounded-lg border bg-glass-strong ${copilotOpen ? 'lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,0.85fr)_380px_minmax(0,1fr)]' : 'lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]'}`}>
+      <div className="mb-3 flex border-b lg:hidden">{['editor','preview'].map(t=><Button key={t} onClick={()=>setTab(t)} className={`flex-1 py-2 text-sm capitalize ${tab===t?'border-b-2 border-primary font-semibold':'text-muted-foreground'}`}>{t}</Button>)}</div>
+      <div className="resume-workspace grid overflow-hidden rounded-lg border bg-glass-strong lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
         <div className={`min-w-0 overflow-y-auto border-r ${tab!=='editor'?'hidden lg:block':''}`}>
           <div className="flex h-12 items-center justify-between border-b px-5">
             <span className="text-xs font-semibold">RESUME EDITOR</span>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">{resume.sections.length} sections</span>
-              {!copilotOpen && (
-                <Button onClick={()=>setCopilotOpen(true)} className="text-xs text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1">
-                  <Sparkles className="h-3 w-3"/> Open Copilot
-                </Button>
-              )}
-            </div>
+            <span className="text-xs text-muted-foreground">{resume.sections.length} sections</span>
           </div>
           <ResumeEditor
             resume={resume}
             selected={selected}
             change={change}
-            onSelectCopilotTarget={(target)=>{
-              setCopilotTarget(target);
-              setCopilotOpen(true);
-              if (typeof window !== 'undefined' && window.innerWidth < 1024) setTab('copilot');
+            onOpenAssistant={(target)=>{
+              setAssistantTarget(target);
+              setModal('ai');
             }}
           />
         </div>
-        {copilotOpen && (
-          <div className={`min-w-0 ${tab!=='copilot'?'hidden lg:block':''}`}>
-            <SectionCopilot
-              resume={resume}
-              target={copilotTarget}
-              onApply={handleApplyCopilotSuggestion}
-              onClose={()=>setCopilotOpen(false)}
-              initialCompany={initialCompany}
-              initialRole={initialRole}
-              onSelectSection={(target)=>setCopilotTarget(target)}
-            />
-          </div>
-        )}
-        <div className={`min-h-0 min-w-0 ${tab!=='preview'?'hidden '+(copilotOpen?'xl:block':'lg:block'):''}`}>
+        <div className={`min-h-0 min-w-0 ${tab!=='preview'?'hidden lg:block':''}`}>
           <ResumePreview resume={resume} select={id=>{setSelected(id);setTab('editor');}}/>
         </div>
       </div>
     </>}
     {modal&&resume&&<div className="fixed inset-0 z-50 grid place-items-center bg-foreground/20 p-4" onClick={()=>setModal(null)}><div role="dialog" aria-modal="true" aria-label={modal==='ai'?'Resume assistance':modal==='history'?'Version history':'Original resume'} className="max-h-[90dvh] w-full max-w-xl overflow-y-auto rounded-lg glass-strong p-6" onClick={e=>e.stopPropagation()}><div className="mb-5 flex items-center justify-between"><h2 className="font-display text-3xl">{modal==='ai'?'A thoughtful second look':modal==='history'?'Version history':'Original resume'}</h2><Icon label="Close dialog" onClick={()=>setModal(null)}><X/></Icon></div>
-      {modal==='ai'&&<ResumeAssistant resume={resume} change={change} initialTarget={target} initialJob={jobURL} selected={selected}/>}
+      {modal==='ai'&&<ResumeAssistant resume={resume} change={change} initialTarget={target} initialJob={jobURL} selected={selected} targetItem={assistantTarget} onClose={()=>setModal(null)}/>}
       {modal==='history'&&<div className="space-y-3">{versions.length===0?<p className="text-sm text-muted-foreground">No saved versions yet.</p>:versions.map(v=><div key={v.id} className="flex items-center justify-between gap-4 border-b py-3"><div><p className="text-sm">{v.label}</p><p className="text-xs text-muted-foreground">{new Date(v.created_at).toLocaleString()}</p></div><Button className={secondary} onClick={()=>{const r=validateSaved(v.data);if(r){change(r);setModal(null);}}}>Restore</Button></div>)}</div>}
       {modal==='source'&&<><p className="mb-3 text-xs text-muted-foreground">Original extracted text</p><pre className="max-h-96 overflow-y-auto whitespace-pre-wrap font-sans text-sm">{extracted||'This resume was created from scratch.'}</pre>{active?.original_path&&<Button className={`${secondary} mt-4`} onClick={async()=>{if(!active.original_path)return;const {data,error}=await supabase.storage.from('resumes').download(active.original_path);if(error){setError('Original file could not download.');return;}const url=URL.createObjectURL(data);const a=document.createElement('a');a.href=url;a.download=active.original_path.split('/').pop()||'original';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}}>Download original</Button>}</>}
     </div></div>}
@@ -218,27 +172,432 @@ function ResumeAuth({onError}:{onError:(e:string)=>void}){
   const [signup,setSignup]=useState(false);const [email,setEmail]=useState('');const [password,setPassword]=useState('');const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');
   return <div className="rounded-lg glass p-6"><h2 className="mb-4 text-lg font-semibold">{signup?'Create your private workspace':'Sign in to your resume workspace'}</h2><Button className={`${secondary} w-full`} onClick={async()=>{const result=await lovable.auth.signInWithOAuth('google',{redirect_uri:window.location.origin+'/resume'});if(result.error)onError(result.error.message);}}>Continue with Google</Button><div className="my-4 flex items-center gap-3 text-xs text-muted-foreground"><span className="flex-1 border-t"/>or<span className="flex-1 border-t"/></div><form className="space-y-4" onSubmit={async e=>{e.preventDefault();setBusy(true);onError('');try{const result=signup?await supabase.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin+'/resume'}}):await supabase.auth.signInWithPassword({email,password});if(result.error)onError(result.error.message);else if(signup&&!result.data.session)setMessage('Check your email to confirm your account, then sign in.');}finally{setBusy(false);}}}><label className="block text-xs">Email<input required type="email" value={email} onChange={e=>setEmail(e.target.value)} aria-label="Email" className="mt-1 w-full rounded-md border bg-glass-strong p-3 text-sm"/></label><label className="block text-xs">Password<input required minLength={8} type="password" value={password} onChange={e=>setPassword(e.target.value)} aria-label="Password" className="mt-1 w-full rounded-md border bg-glass-strong p-3 text-sm"/></label><Button disabled={busy} type="submit" className={`${primary} w-full`}>{busy?'Please wait…':signup?'Create account':'Sign in'}</Button></form>{message&&<p role="status" className="mt-3 text-sm">{message}</p>}<div className="mt-4 flex flex-wrap justify-between gap-3 text-xs"><Button onClick={()=>setSignup(!signup)}>{signup?'Already have an account? Sign in':'New here? Create an account'}</Button><Button onClick={async()=>{if(!email){onError('Enter your email first.');return;}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/reset-password'});if(error)onError(error.message);else setMessage('Password reset email sent.');}}>Forgot password?</Button></div></div>;
 }
-function ResumeAssistant({resume,change,initialTarget,initialJob,selected}:{resume:Resume;change:(r:Resume)=>void;initialTarget:string;initialJob:string;selected:string}){
-  const keys=useKeys(); const improve=useServerFn(improveResume);
-  const [sectionId,setSectionId]=useState(resume.sections.find(s=>s.id===selected)?.id||resume.sections[0]?.id||'');
-  const section=resume.sections.find(s=>s.id===sectionId);
-  const [entryId,setEntryId]=useState(section?.entries[0]?.id||'');
-  const entry=section?.entries.find(e=>e.id===entryId)||section?.entries[0];
-  const [field,setField]=useState('details');
-  const original=entry?(field==='bullets'?entry.bullets.join('\n'):entry.details):'';
-  const [request,setRequest]=useState('Make this clearer and more relevant without adding any facts.');
-  const [target,setTarget]=useState(initialTarget);const [job,setJob]=useState(initialJob);const [research,setResearch]=useState(false);
-  const [busy,setBusy]=useState(false);const [result,setResult]=useState<Awaited<ReturnType<typeof improveResume>>|{ok:false;error:string}|null>(null);const [revision,setRevision]=useState('');const [sourceText,setSourceText]=useState('');
-  return <div className="space-y-4">
-    <p className="text-xs text-muted-foreground">{keys.nebius&&keys.model?`Nebius · ${keys.model}`:'Lovable AI'}</p>
-    <label className="block space-y-1 text-xs">Section<select aria-label="Section" value={sectionId} onChange={e=>{const id=e.target.value;setSectionId(id);setEntryId(resume.sections.find(s=>s.id===id)?.entries[0]?.id||'');setResult(null);}} className="w-full rounded-md border bg-glass-strong p-2 text-sm">{resume.sections.map(s=><option key={s.id} value={s.id}>{s.heading}</option>)}</select></label>
-    <select aria-label="Resume entry" value={entry?.id||''} onChange={e=>{setEntryId(e.target.value);setResult(null);}} className="w-full rounded-md border bg-glass-strong p-2 text-sm">{section?.entries.map((e,i)=><option key={e.id} value={e.id}>{e.title||`${section.heading} ${i+1}`}</option>)}</select>
-    <Selector label="Content" value={field} options={['details','bullets']} onChange={v=>{setField(v);setResult(null);}}/>
-    <p className="whitespace-pre-wrap rounded-md bg-muted p-3 text-sm">{original||'Add content to this section first.'}</p>
-    <ResumeField label="Your request" value={request} multiline onChange={setRequest}/><ResumeField label="Target role / company" value={target} onChange={setTarget}/><ResumeField label="Job description or source URL" value={job} multiline onChange={setJob}/>
-    <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={research} onChange={e=>setResearch(e.target.checked)}/>Research current requirements with Tavily</label>
-    <Button className={primary} disabled={busy||!original||!request.trim()} onClick={async()=>{setBusy(true);setResult(null);setSourceText(original);try{const r=await improve({data:{text:original,request,target,job,research,tavilyKey:keys.tavily||undefined,apiKey:keys.nebius||undefined,model:keys.model||undefined}});setResult(r);if(r.ok)setRevision(r.suggestion.revision);}catch{setResult({ok:false,error:'Assistance could not finish. Your resume is unchanged.'});}finally{setBusy(false);}}}>{busy?<Loader2 className="h-4 w-4 animate-spin"/>:<Sparkles className="h-4 w-4"/>}{busy?'Reviewing…':'Get a recommendation'}</Button>
-    {result&&!result.ok&&<p role="alert" className="text-sm text-destructive">{result.error}</p>}
-    {result?.ok&&<div className="space-y-3 border-t pt-4"><h3 className="font-semibold">Recommended revision</h3><ResumeField label="Edit suggestion" value={revision} multiline onChange={setRevision}/><p className="text-sm">{result.suggestion.explanation}</p>{result.suggestion.missingInformation.length>0&&<ul className="list-disc pl-5 text-sm">{result.suggestion.missingInformation.map((m,i)=><li key={i}>{m}</li>)}</ul>}{result.sources.map(s=><a key={s.url} href={s.url} target="_blank" rel="noreferrer" className="block text-xs underline">{s.title}</a>)}<div className="flex gap-2"><Button className={primary} onClick={()=>{if(!section||!entry)return;if(original!==sourceText){setResult({ok:false,error:'This section changed. Request a fresh recommendation before applying.'});return;}change({...resume,sections:resume.sections.map(s=>s.id===section.id?{...s,entries:s.entries.map(e=>e.id===entry.id?{...e,...(field==='bullets'?{bullets:revision.split('\n').filter(Boolean)}:{details:revision})}:e)}:s)});setResult(null);}}>Apply change</Button><Button className={secondary} onClick={()=>setResult(null)}>Reject</Button></div></div>}
-  </div>;
+function ResumeAssistant({
+  resume,
+  change,
+  initialTarget,
+  initialJob,
+  selected,
+  targetItem,
+  onClose,
+}: {
+  resume: Resume;
+  change: (r: Resume) => void;
+  initialTarget: string;
+  initialJob: string;
+  selected: string;
+  targetItem?: AssistantTarget | null;
+  onClose?: () => void;
+}) {
+  const keys = useKeys();
+  const improve = useServerFn(improveResume);
+
+  const [sectionId, setSectionId] = useState(
+    targetItem?.sectionId || resume.sections.find((s) => s.id === selected)?.id || resume.sections[0]?.id || ''
+  );
+  const section = resume.sections.find((s) => s.id === sectionId);
+
+  const [entryId, setEntryId] = useState(
+    targetItem?.entryId || section?.entries[0]?.id || ''
+  );
+  const entry = section?.entries.find((e) => e.id === entryId) || section?.entries[0];
+
+  const [field, setField] = useState<'details' | 'bullets' | 'heading'>(
+    targetItem?.field || 'details'
+  );
+  const [bulletIndex, setBulletIndex] = useState<number | undefined>(
+    targetItem?.bulletIndex
+  );
+
+  const computeOriginal = () => {
+    if (targetItem?.text !== undefined) return targetItem.text;
+    if (field === 'heading') return section?.heading || '';
+    if (!entry) return '';
+    if (field === 'bullets') {
+      if (bulletIndex !== undefined && entry.bullets[bulletIndex] !== undefined) {
+        return entry.bullets[bulletIndex];
+      }
+      return entry.bullets.join('\n');
+    }
+    return entry.details;
+  };
+
+  const [original, setOriginal] = useState(computeOriginal());
+
+  useEffect(() => {
+    if (targetItem?.text && sectionId === targetItem.sectionId && entryId === targetItem.entryId) {
+      return;
+    }
+    if (field === 'heading') {
+      setOriginal(section?.heading || '');
+    } else if (entry) {
+      if (field === 'bullets') {
+        if (bulletIndex !== undefined && entry.bullets[bulletIndex] !== undefined) {
+          setOriginal(entry.bullets[bulletIndex]);
+        } else {
+          setOriginal(entry.bullets.join('\n'));
+        }
+      } else {
+        setOriginal(entry.details);
+      }
+    }
+  }, [sectionId, entryId, field, bulletIndex]);
+
+  const defaultRequest =
+    targetItem?.request ||
+    'How should a top recruiter format and curate this? Tell me what to include, what to cut, and suggest an exact revision.';
+
+  const [request, setRequest] = useState(defaultRequest);
+  const [target, setTarget] = useState(initialTarget);
+  const [job, setJob] = useState(initialJob);
+  const [research, setResearch] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<Awaited<ReturnType<typeof improveResume>> | { ok: false; error: string } | null>(null);
+  const [revision, setRevision] = useState('');
+  const [sourceText, setSourceText] = useState('');
+  const [copied, setCopied] = useState(false);
+  const [applied, setApplied] = useState(false);
+
+  const promptChips = [
+    { label: '🏆 Recruiter format & curation', prompt: 'How should a top recruiter format and curate this? Tell me what to include, what to cut (e.g. if 18 items, top 3 + summary), and structure.' },
+    { label: '✂️ What to include vs cut', prompt: 'Analyze high-signal accomplishments to highlight vs low-signal fluff to cut' },
+    { label: '📊 Google XYZ impact format', prompt: 'Rewrite using Google formula: Accomplished [X] as measured by [Y] by doing [Z]' },
+    { label: '🎯 Tailor to target employer', prompt: `Tailor this to align with ${target || 'the target employer'} requirements and tech stack` },
+  ];
+
+  async function handleGetRecommendation(customRequest?: string) {
+    const activeReq = customRequest || request;
+    if (!original.trim() || !activeReq.trim() || busy) return;
+    setBusy(true);
+    setResult(null);
+    setApplied(false);
+    setSourceText(original);
+    try {
+      const r = await improve({
+        data: {
+          text: original,
+          request: activeReq,
+          target,
+          job,
+          research,
+          tavilyKey: keys.tavily || undefined,
+          apiKey: keys.nebius || undefined,
+          model: keys.model || undefined,
+        },
+      });
+      setResult(r);
+      if (r.ok) {
+        setRevision(r.suggestion.revision);
+      }
+    } catch {
+      setResult({ ok: false, error: 'Assistance could not finish. Your resume is unchanged.' });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function handleApply() {
+    if (!section || !revision.trim()) return;
+    const nextSections = resume.sections.map((s) => {
+      if (s.id !== section.id) return s;
+      if (field === 'heading') return { ...s, heading: revision };
+      return {
+        ...s,
+        entries: s.entries.map((e) => {
+          if (e.id !== entry?.id) return e;
+          if (field === 'bullets') {
+            if (bulletIndex !== undefined && bulletIndex >= 0) {
+              const nextBullets = [...e.bullets];
+              nextBullets[bulletIndex] = revision;
+              return { ...e, bullets: nextBullets };
+            }
+            return { ...e, bullets: revision.split('\n').filter(Boolean) };
+          }
+          return { ...e, details: revision };
+        }),
+      };
+    });
+
+    change({ ...resume, sections: nextSections });
+    setApplied(true);
+    setTimeout(() => {
+      if (onClose) onClose();
+    }, 900);
+  }
+
+  function handleCopy() {
+    if (!revision) return;
+    navigator.clipboard.writeText(revision);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b pb-2 text-xs">
+        <span className="text-muted-foreground">
+          {keys.nebius && keys.model ? `Nebius · ${keys.model}` : 'Lovable AI'}
+        </span>
+        <span className={`flex items-center gap-1 font-medium ${keys.tavily ? 'text-sage' : 'text-amber-600'}`}>
+          <Globe className="h-3 w-3" />
+          {keys.tavily ? 'Tavily web research connected' : 'AI mode (add Tavily key in header for live research)'}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label className="block space-y-1 text-xs">
+          Section
+          <select
+            aria-label="Section"
+            value={sectionId}
+            onChange={(e) => {
+              const id = e.target.value;
+              setSectionId(id);
+              const nextSec = resume.sections.find((s) => s.id === id);
+              setEntryId(nextSec?.entries[0]?.id || '');
+              setBulletIndex(undefined);
+              setResult(null);
+            }}
+            className="w-full rounded-md border bg-glass-strong p-2 text-sm"
+          >
+            {resume.sections.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.heading}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {section && section.entries.length > 0 && field !== 'heading' && (
+          <label className="block space-y-1 text-xs">
+            Entry
+            <select
+              aria-label="Resume entry"
+              value={entry?.id || ''}
+              onChange={(e) => {
+                setEntryId(e.target.value);
+                setBulletIndex(undefined);
+                setResult(null);
+              }}
+              className="w-full rounded-md border bg-glass-strong p-2 text-sm"
+            >
+              {section.entries.map((e, i) => (
+                <option key={e.id} value={e.id}>
+                  {e.title || `${section.heading} ${i + 1}`}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
+
+      {field !== 'heading' && (
+        <div className="flex items-center gap-3 text-xs">
+          <Selector
+            label="Target content"
+            value={field}
+            options={['details', 'bullets']}
+            onChange={(v) => {
+              setField(v as 'details' | 'bullets');
+              setBulletIndex(undefined);
+              setResult(null);
+            }}
+          />
+          {field === 'bullets' && bulletIndex !== undefined && (
+            <span className="rounded bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+              Bullet #{bulletIndex + 1} selected
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Current Text to Improve */}
+      <div>
+        <span className="text-xs font-medium text-muted-foreground block mb-1">
+          Current text to improve
+        </span>
+        <p className="whitespace-pre-wrap rounded-md bg-muted/60 p-3 text-xs leading-relaxed max-h-36 overflow-y-auto border">
+          {original || <span className="italic text-muted-foreground">Add content to this section first.</span>}
+        </p>
+      </div>
+
+      {/* Preset Chips */}
+      <div className="space-y-1.5">
+        <span className="text-[11px] font-semibold text-muted-foreground">Recruiter Focus Presets</span>
+        <div className="flex flex-wrap gap-1.5">
+          {promptChips.map((chip, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => {
+                setRequest(chip.prompt);
+                void handleGetRecommendation(chip.prompt);
+              }}
+              className="rounded-full border border-border/70 bg-background/80 hover:bg-muted px-2.5 py-1 text-[11px] text-foreground/80 hover:text-foreground transition"
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <ResumeField label="Your request or instructions" value={request} multiline onChange={setRequest} />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <ResumeField label="Target role / company" value={target} onChange={setTarget} />
+        <ResumeField label="Job description or careers URL" value={job} multiline onChange={setJob} />
+      </div>
+
+      <label className="flex items-center gap-2 text-xs">
+        <input type="checkbox" checked={research} onChange={(e) => setResearch(e.target.checked)} />
+        Research hiring bar & requirements with Tavily
+      </label>
+
+      <Button
+        className={primary}
+        disabled={busy || !original.trim() || !request.trim()}
+        onClick={() => void handleGetRecommendation()}
+      >
+        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+        {busy ? 'Researching with Tavily & reviewing…' : 'Get recommended changes & exact revision'}
+      </Button>
+
+      {result && !result.ok && (
+        <p role="alert" className="text-sm text-destructive rounded bg-destructive/10 p-3">
+          {result.error}
+        </p>
+      )}
+
+      {result?.ok && (
+        <div className="space-y-3.5 border-t pt-4">
+          {/* Recruiter Format Blueprint */}
+          {result.suggestion.formatRecommendation && (
+            <div className="rounded-lg border bg-primary/5 border-primary/20 p-3 space-y-1.5">
+              <h3 className="text-xs font-semibold flex items-center gap-1.5 text-primary">
+                <Award className="h-3.5 w-3.5" /> Top Recruiter Format & Curation Blueprint
+              </h3>
+              <p className="text-xs text-foreground/90 leading-relaxed font-medium">
+                {result.suggestion.formatRecommendation}
+              </p>
+            </div>
+          )}
+
+          {/* What to Include vs What to Cut */}
+          {((result.suggestion.whatToInclude && result.suggestion.whatToInclude.length > 0) ||
+            (result.suggestion.whatToCut && result.suggestion.whatToCut.length > 0)) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {result.suggestion.whatToInclude && result.suggestion.whatToInclude.length > 0 && (
+                <div className="rounded-lg border bg-emerald-500/5 border-emerald-500/20 p-3 space-y-1">
+                  <h4 className="text-xs font-semibold flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> What to Include (High-Signal)
+                  </h4>
+                  <ul className="space-y-1 text-xs text-foreground/85 pl-3">
+                    {result.suggestion.whatToInclude.map((item, idx) => (
+                      <li key={idx} className="list-disc leading-relaxed">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {result.suggestion.whatToCut && result.suggestion.whatToCut.length > 0 && (
+                <div className="rounded-lg border bg-destructive/5 border-destructive/20 p-3 space-y-1">
+                  <h4 className="text-xs font-semibold flex items-center gap-1.5 text-destructive">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" /> What to Cut / Avoid
+                  </h4>
+                  <ul className="space-y-1 text-xs text-muted-foreground pl-3">
+                    {result.suggestion.whatToCut.map((item, idx) => (
+                      <li key={idx} className="list-disc leading-relaxed">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Recommended Revision */}
+          <div className="space-y-2 rounded-lg border bg-background/80 p-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-xs flex items-center gap-1.5 text-foreground">
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> Recommended Revision
+              </h3>
+              <Button
+                onClick={handleCopy}
+                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1"
+              >
+                {copied ? <Check className="h-3 w-3 text-sage" /> : <Copy className="h-3 w-3" />}
+                {copied ? 'Copied' : 'Copy'}
+              </Button>
+            </div>
+
+            <ResumeField label="Edit suggestion before applying" value={revision} multiline onChange={setRevision} />
+
+            {result.suggestion.explanation && (
+              <p className="text-xs text-muted-foreground bg-muted/40 rounded p-2.5 leading-relaxed">
+                <span className="font-semibold text-foreground">Why it works: </span>
+                {result.suggestion.explanation}
+              </p>
+            )}
+
+            {result.suggestion.missingInformation.length > 0 && (
+              <div className="rounded border bg-amber-500/10 border-amber-500/20 p-2.5 text-xs text-amber-700 dark:text-amber-400 space-y-1">
+                <span className="font-semibold block">Facts or metrics to verify:</span>
+                <ul className="list-disc pl-4 space-y-0.5">
+                  {result.suggestion.missingInformation.map((m, i) => (
+                    <li key={i}>{m}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {result.sources.length > 0 && (
+              <div className="pt-1 space-y-1">
+                <span className="text-[10px] uppercase font-mono text-muted-foreground block">
+                  Tavily Research Sources
+                </span>
+                <div className="space-y-1">
+                  {result.sources.map((s, idx) => (
+                    <a
+                      key={idx}
+                      href={s.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between gap-1 text-[11px] text-muted-foreground hover:text-foreground hover:underline truncate"
+                    >
+                      <span className="truncate">{s.title || s.url}</span>
+                      <ExternalLink className="h-3 w-3 shrink-0" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 pt-2">
+              <Button
+                className={`${primary} flex-1`}
+                onClick={handleApply}
+                disabled={applied}
+              >
+                {applied ? (
+                  <>
+                    <Check className="h-4 w-4 text-emerald-400" /> Applied to Resume!
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4" /> Apply change
+                  </>
+                )}
+              </Button>
+              <Button className={secondary} onClick={() => setResult(null)}>
+                Reject
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

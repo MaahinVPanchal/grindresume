@@ -2,13 +2,23 @@ import { Button } from './Button';
 import { Plus, Trash2, ArrowUp, ArrowDown, Sparkles } from 'lucide-react';
 import { blankEntry, uid, type Resume, type Section, type Entry } from '@/lib/resume-model';
 import { useEffect } from 'react';
-import type { CopilotTarget } from './SectionCopilot';
+export type AssistantTarget = {
+  sectionId: string;
+  sectionKind: string;
+  sectionHeading: string;
+  entryId?: string;
+  entryTitle?: string;
+  field?: 'details' | 'bullets' | 'heading';
+  bulletIndex?: number;
+  text: string;
+  request?: string;
+};
 
 export function ResumeField({ label, value, onChange, multiline = false }: { label: string; value: string; onChange: (v: string) => void; multiline?: boolean }) {
   const props = { value, onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => onChange(e.target.value), className: 'w-full rounded-md border bg-glass-strong px-3 py-2 text-sm outline-none', 'aria-label': label };
   return <label className="block space-y-1.5"><span className="text-xs font-medium text-muted-foreground">{label}</span>{multiline ? <textarea {...props} rows={4} /> : <input {...props} />}</label>;
 }
-export function ResumeEditor({ resume, change, selected, onSelectCopilotTarget }: { resume: Resume; change: (r: Resume) => void; selected: string; onSelectCopilotTarget?: (target: CopilotTarget) => void }) {
+export function ResumeEditor({ resume, change, selected, onOpenAssistant }: { resume: Resume; change: (r: Resume) => void; selected: string; onOpenAssistant?: (target: AssistantTarget) => void }) {
   useEffect(()=>{if(selected)document.getElementById(`resume-section-${selected}`)?.scrollIntoView({block:'nearest',behavior:'smooth'});},[selected]);
   const sectionChange = (s: Section) => change({ ...resume, sections: resume.sections.map(old => old.id === s.id ? s : old) });
   const moveSection = (index: number, delta: number) => { const arr = [...resume.sections]; const other = arr[index+delta]; const current=arr[index]; if (!other || !current) return; arr[index]=other; arr[index+delta]=current; change({ ...resume, sections: arr }); };
@@ -17,10 +27,10 @@ export function ResumeEditor({ resume, change, selected, onSelectCopilotTarget }
     {resume.sections.map((s,index) => <details id={`resume-section-${s.id}`} key={`${s.id}-${selected === s.id}`} open={selected === s.id || !selected} className="resume-section">
       <summary><span>{s.heading || 'Untitled section'}</span><span className="text-xs font-normal text-muted-foreground">{s.entries.length}</span></summary>
       <div className="space-y-4 pt-4">
-        <div className="flex items-end gap-2"><div className="flex-1"><ResumeField label="Section heading" value={s.heading} onChange={heading=>sectionChange({ ...s,heading })}/></div>{onSelectCopilotTarget && <Icon label="Tailor section with Copilot" onClick={()=>onSelectCopilotTarget({ sectionId: s.id, sectionKind: s.kind, sectionHeading: s.heading, entryId: s.entries[0]?.id, entryTitle: s.entries[0]?.title || s.heading, field: s.entries[0]?.bullets?.length ? 'bullets' : 'details', bulletIndex: 0, text: s.entries[0]?.bullets?.[0] || s.entries[0]?.details || '' })}><Sparkles className="text-amber-500"/></Icon>}<Icon label="Move section up" disabled={index===0} onClick={()=>moveSection(index,-1)}><ArrowUp/></Icon><Icon label="Move section down" disabled={index===resume.sections.length-1} onClick={()=>moveSection(index,1)}><ArrowDown/></Icon><Icon label="Remove section" onClick={()=>change({ ...resume,sections:resume.sections.filter(x=>x.id!==s.id) })}><Trash2/></Icon></div>
+        <div className="flex items-end gap-2"><div className="flex-1"><ResumeField label="Section heading" value={s.heading} onChange={heading=>sectionChange({ ...s,heading })}/></div>{onOpenAssistant && <Icon label="Tailor section with AI assistance" onClick={()=>onOpenAssistant({ sectionId: s.id, sectionKind: s.kind, sectionHeading: s.heading, field: 'heading', text: s.heading, request: `How should a top recruiter format and curate this ${s.heading} section? Tell me what to include, what to cut, and structure.` })}><Sparkles className="text-amber-500"/></Icon>}<Icon label="Move section up" disabled={index===0} onClick={()=>moveSection(index,-1)}><ArrowUp/></Icon><Icon label="Move section down" disabled={index===resume.sections.length-1} onClick={()=>moveSection(index,1)}><ArrowDown/></Icon><Icon label="Remove section" onClick={()=>change({ ...resume,sections:resume.sections.filter(x=>x.id!==s.id) })}><Trash2/></Icon></div>
         {s.entries.map((e, ei) => <div key={e.id} className="space-y-3 border-t pt-4">
-          <div className="flex items-center justify-between"><span className="text-xs font-semibold">{e.title || `Entry ${ei+1}`}</span><div className="flex gap-1">{onSelectCopilotTarget && <Icon label="Tailor entry with Copilot" onClick={()=>onSelectCopilotTarget({ sectionId: s.id, sectionKind: s.kind, sectionHeading: s.heading, entryId: e.id, entryTitle: e.title || `${s.heading} ${ei+1}`, field: e.bullets?.length ? 'bullets' : 'details', bulletIndex: 0, text: e.bullets?.[0] || e.details || '' })}><Sparkles className="text-amber-500"/></Icon>}{[-1,1].map(delta=><Icon key={delta} label={delta===-1?'Move entry up':'Move entry down'} disabled={ei+delta<0||ei+delta>=s.entries.length} onClick={()=>{ const entries=[...s.entries]; const a=entries[ei]; const b=entries[ei+delta]; if(a&&b){entries[ei]=b;entries[ei+delta]=a;sectionChange({...s,entries});} }}>{delta===-1?<ArrowUp/>:<ArrowDown/>}</Icon>)}<Icon label="Remove entry" onClick={()=>sectionChange({...s,entries:s.entries.filter(x=>x.id!==e.id)})}><Trash2/></Icon></div></div>
-          <EntryFields entry={e} section={s} update={next=>sectionChange({...s,entries:s.entries.map(x=>x.id===e.id?next:x)})} onSelectCopilotTarget={onSelectCopilotTarget}/>
+          <div className="flex items-center justify-between"><span className="text-xs font-semibold">{e.title || `Entry ${ei+1}`}</span><div className="flex gap-1">{onOpenAssistant && <Icon label="Tailor entry with AI assistance" onClick={()=>onOpenAssistant({ sectionId: s.id, sectionKind: s.kind, sectionHeading: s.heading, entryId: e.id, entryTitle: e.title || `${s.heading} ${ei+1}`, field: e.bullets?.length ? 'bullets' : 'details', bulletIndex: e.bullets?.length ? 0 : undefined, text: e.bullets?.length ? e.bullets.join('\n') : e.details, request: `How should a top recruiter format and curate this entry (${e.title || s.heading})? Tell me high-signal points to include, what to cut (e.g. if many items, top 3 + summary), and provide an exact revision.` })}><Sparkles className="text-amber-500"/></Icon>}{[-1,1].map(delta=><Icon key={delta} label={delta===-1?'Move entry up':'Move entry down'} disabled={ei+delta<0||ei+delta>=s.entries.length} onClick={()=>{ const entries=[...s.entries]; const a=entries[ei]; const b=entries[ei+delta]; if(a&&b){entries[ei]=b;entries[ei+delta]=a;sectionChange({...s,entries});} }}>{delta===-1?<ArrowUp/>:<ArrowDown/>}</Icon>)}<Icon label="Remove entry" onClick={()=>sectionChange({...s,entries:s.entries.filter(x=>x.id!==e.id)})}><Trash2/></Icon></div></div>
+          <EntryFields entry={e} section={s} update={next=>sectionChange({...s,entries:s.entries.map(x=>x.id===e.id?next:x)})} onOpenAssistant={onOpenAssistant}/>
         </div>)}
         <Button onClick={()=>sectionChange({...s,entries:[...s.entries,blankEntry()]})} className="flex items-center gap-2 text-sm font-medium"><Plus className="h-4 w-4"/>Add {s.kind==='experience'?'position':'entry'}</Button>
       </div>
@@ -28,7 +38,7 @@ export function ResumeEditor({ resume, change, selected, onSelectCopilotTarget }
     <label className="flex items-center gap-3 border-t pt-4 text-sm"><Plus className="h-4 w-4"/><select aria-label="Add section" value="" onChange={e=>{const kind=e.target.value as Section['kind']; if(!kind)return; change({...resume,sections:[...resume.sections,{id:uid(),kind,heading:({summary:'Professional summary',experience:'Work experience',projects:'Projects',skills:'Skills',education:'Education',certifications:'Certifications & awards',additional:'Additional section'})[kind],entries:[blankEntry()]}]});}} className="min-w-0 flex-1 rounded-md border bg-glass-strong p-2"><option value="">Add a section…</option>{['summary','experience','projects','skills','education','certifications','additional'].map(k=><option key={k} value={k}>{k[0]?.toUpperCase()}{k.slice(1)}</option>)}</select></label>
   </div>;
 }
-function EntryFields({entry:e,section:s,update,onSelectCopilotTarget}:{entry:Entry;section:Section;update:(e:Entry)=>void;onSelectCopilotTarget?:(target:CopilotTarget)=>void}) {
+function EntryFields({entry:e,section:s,update,onOpenAssistant}:{entry:Entry;section:Section;update:(e:Entry)=>void;onOpenAssistant?:(target:AssistantTarget)=>void}) {
   const textOnly=s.kind==='summary'||s.kind==='skills';
   const hasBullets = e.bullets.length > 0;
   const hasDetails = !!e.details.trim();
@@ -83,15 +93,15 @@ function EntryFields({entry:e,section:s,update,onSelectCopilotTarget}:{entry:Ent
     {(textOnly || hasDetails || !hasBullets) && (
       <div className="space-y-1">
         <ResumeField label={s.kind==='skills'?'Skills':s.kind==='summary'?'Summary':s.kind==='experience'?'Role description':'Description / coursework'} value={e.details} multiline onChange={details=>update({...e,details})}/>
-        {onSelectCopilotTarget && e.details && (
-          <Button className="text-[11px] text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1" onClick={()=>onSelectCopilotTarget({ sectionId: s.id, sectionKind: s.kind, sectionHeading: s.heading, entryId: e.id, entryTitle: e.title || s.heading, field: 'details', text: e.details })}>
-            <Sparkles className="h-3 w-3 text-amber-500" /> Tailor this {s.kind==='skills'?'skills block':s.kind==='summary'?'summary':'description'} with Copilot
+        {onOpenAssistant && e.details && (
+          <Button className="text-[11px] text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1" onClick={()=>onOpenAssistant({ sectionId: s.id, sectionKind: s.kind, sectionHeading: s.heading, entryId: e.id, entryTitle: e.title || s.heading, field: 'details', text: e.details, request: `Format and curate this role description as a top recruiter: highlight top flagship wins with metrics, what to cut, and provide an exact revision.` })}>
+            <Sparkles className="h-3 w-3 text-amber-500" /> Tailor with AI assistance & Tavily
           </Button>
         )}
       </div>
     )}
 
-    {e.bullets.map((b,i)=><div key={i} className="flex items-end gap-1"><div className="flex-1"><ResumeField label={`Bullet point ${i+1}`} value={b} multiline onChange={v=>update({...e,bullets:e.bullets.map((old,n)=>n===i?v:old)})}/></div>{onSelectCopilotTarget && <Icon label="Tailor bullet with Copilot" onClick={()=>onSelectCopilotTarget({ sectionId: s.id, sectionKind: s.kind, sectionHeading: s.heading, entryId: e.id, entryTitle: e.title || s.heading, field: 'bullets', bulletIndex: i, text: b })}><Sparkles className="text-amber-500"/></Icon>}<Icon label="Move bullet up" disabled={i===0} onClick={()=>{const bullets=[...e.bullets];const a=bullets[i];const b=bullets[i-1];if(a!==undefined&&b!==undefined){bullets[i]=b;bullets[i-1]=a;update({...e,bullets});}}}><ArrowUp/></Icon><Icon label="Remove bullet" onClick={()=>update({...e,bullets:e.bullets.filter((_,n)=>n!==i)})}><Trash2/></Icon></div>)}
+    {e.bullets.map((b,i)=><div key={i} className="flex items-end gap-1"><div className="flex-1"><ResumeField label={`Bullet point ${i+1}`} value={b} multiline onChange={v=>update({...e,bullets:e.bullets.map((old,n)=>n===i?v:old)})}/></div>{onOpenAssistant && <Icon label="Tailor bullet with AI assistance" onClick={()=>onOpenAssistant({ sectionId: s.id, sectionKind: s.kind, sectionHeading: s.heading, entryId: e.id, entryTitle: e.title || s.heading, field: 'bullets', bulletIndex: i, text: b, request: `Rewrite this bullet using Google XYZ impact format (Accomplished [X] by [Y] with [Z]). Suggest high-signal metrics and eliminate passive phrasing.` })}><Sparkles className="text-amber-500"/></Icon>}<Icon label="Move bullet up" disabled={i===0} onClick={()=>{const bullets=[...e.bullets];const a=bullets[i];const b=bullets[i-1];if(a!==undefined&&b!==undefined){bullets[i]=b;bullets[i-1]=a;update({...e,bullets});}}}><ArrowUp/></Icon><Icon label="Remove bullet" onClick={()=>update({...e,bullets:e.bullets.filter((_,n)=>n!==i)})}><Trash2/></Icon></div>)}
 
     {!textOnly && (
       <div className="flex flex-wrap items-center gap-3 pt-1">
