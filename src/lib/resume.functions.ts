@@ -46,3 +46,97 @@ export const improveResume = createServerFn({ method: 'POST' })
       return { ok: true as const, suggestion, sources: sources.map(({ title,url }) => ({ title,url })) };
     } catch { return { ok: false as const, error: 'AI assistance is unavailable. Your resume has not changed; check the selected provider and retry later.' }; }
   });
+
+const SectionGuidance = z.object({
+  companyInsights: z.array(z.string()),
+  keyTerms: z.array(z.string()),
+  tailoringTips: z.array(z.string()),
+  suggestedRevision: z.string(),
+  whyItWorks: z.string(),
+  competencyBridge: z.string().optional(),
+});
+
+export const getSectionCopilotGuidance = createServerFn({ method: 'POST' })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(d => z.object({
+    company: z.string().max(120).default(''),
+    role: z.string().max(200).default(''),
+    sectionKind: z.string().max(50).default('experience'),
+    sectionHeading: z.string().max(100).default('Experience'),
+    currentText: z.string().max(4000).default(''),
+    resumeSummary: z.string().max(8000).optional(),
+    goal: z.string().max(500).optional(),
+    tavilyKey: z.string().optional(),
+    apiKey: z.string().optional(),
+    model: z.string().optional(),
+  }).parse(d))
+  .handler(async ({ data }) => {
+    try {
+      const sources: { title: string; url: string; content: string }[] = [];
+      const company = data.company.trim();
+      const role = data.role.trim();
+      const key = data.tavilyKey || process.env['TAVILY_API_KEY'];
+
+      if (key && (company || role)) {
+        const queryTerm = company ? (role ? `"${company}" ${role}` : `"${company}" engineering`) : role;
+        const call = async (query: string) => {
+          try {
+            const res = await fetch('https://api.tavily.com/search', {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query, max_results: 3, search_depth: 'advanced' }),
+            });
+            if (!res.ok) return [];
+            const json = await res.json();
+            return (json.results || []) as { title: string; url: string; content: string }[];
+          } catch {
+            return [];
+          }
+        };
+
+        const [techResults, roleResults] = await Promise.all([
+          company ? call(`"${company}" engineering tech stack architecture blog`) : Promise.resolve([]),
+          call(`${queryTerm} requirements responsibilities skills`),
+        ]);
+
+        for (const r of [...techResults, ...roleResults]) {
+          if (r.url && !sources.some(s => s.url === r.url)) {
+            sources.push({ title: String(r.title || 'Source'), url: String(r.url), content: String(r.content || '').slice(0, 2000) });
+          }
+        }
+      }
+
+      const { structuredAI } = await import('./resume-ai.server');
+      const instructions = `You are an elite technical career coach and hiring strategist for high-growth tech companies.
+Your goal is to help a candidate tailor a specific resume section or bullet point to a target company and role using live company web research.
+
+CRITICAL RULES:
+1. Never fabricate or invent candidate facts, dates, degrees, metrics, or technologies.
+2. Frame the candidate's existing experience using the strongest technical positioning, active verbs, and impact metrics.
+3. companyInsights: Provide 2-3 specific, factual insights about this company's real engineering focus, stack, or recent challenges from the research.
+4. keyTerms: 4-6 high-frequency technical skills, patterns, or architecture concepts that this employer looks for.
+5. tailoringTips: 2-3 concrete tips on how to position this specific section (${data.sectionHeading}) for this company.
+6. suggestedRevision: A high-impact rewrite of the candidate's current text.
+   - For experience/projects bullets: Use Google's formula "Accomplished [X] as measured by [Y] by doing [Z]" with strong action verbs.
+   - For summary: A tight 2-3 sentence elevator pitch connecting their verified strengths to this company's domain.
+   - For skills: Organized, clean skill list prioritizing company tech stack.
+7. whyItWorks: 1-2 sentences explaining why this revised phrasing catches a technical recruiter or hiring manager's attention.
+8. competencyBridge: If the target role emphasizes a technology the candidate lacks, explain how their existing background provides a credible bridge without lying.`;
+
+      const prompt = JSON.stringify({
+        company: data.company,
+        role: data.role,
+        sectionKind: data.sectionKind,
+        sectionHeading: data.sectionHeading,
+        currentText: data.currentText,
+        userGoal: data.goal || 'Tailor for this specific company and role',
+        candidateResumeFacts: data.resumeSummary || '',
+        liveCompanyResearch: sources,
+      });
+
+      const guidance = await structuredAI(SectionGuidance, instructions, prompt, data.apiKey, data.model);
+      return { ok: true as const, guidance, sources: sources.map(({ title, url }) => ({ title, url })) };
+    } catch (e) {
+      return { ok: false as const, error: e instanceof Error ? e.message : 'Section guidance could not finish.' };
+    }
+  });

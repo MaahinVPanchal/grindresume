@@ -15,6 +15,7 @@ import { ResumePreview } from './ResumePreview';
 import { ResumeFormatting } from './ResumeFormatting';
 import { CompanySharing } from './CompanySharing';
 import { EmployerReview } from './EmployerReview';
+import { SectionCopilot, type CopilotTarget } from './SectionCopilot';
 import type { Session as AuthSession } from '@supabase/supabase-js';
 
 type Row = { id: string; title: string; data: Json; original_path: string | null; extracted_text: string; updated_at: string };
@@ -23,6 +24,8 @@ const primary='inline-flex items-center justify-center gap-2 rounded-md bg-prima
 const secondary='inline-flex items-center justify-center gap-2 rounded-md border bg-glass-strong px-3 py-2 text-sm disabled:opacity-50';
 
 export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; target?: string }) {
+  const initialCompany = target.includes(' at ') ? target.split(' at ')[1]?.trim() || '' : target;
+  const initialRole = target.includes(' at ') ? target.split(' at ')[0]?.trim() || '' : '';
   const [session,setSession]=useState<AuthSession|null>(null);
   const [authReady,setAuthReady]=useState(false);
   const [rows,setRows]=useState<Row[]>([]);
@@ -40,6 +43,8 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
   const [extracted,setExtracted]=useState('');
   const [reviewEmployers,setReviewEmployers]=useState(false);
   const [dragging,setDragging]=useState(false);
+  const [copilotOpen, setCopilotOpen] = useState(false);
+  const [copilotTarget, setCopilotTarget] = useState<CopilotTarget | null>(null);
   const input=useRef<HTMLInputElement>(null);
   const revision=useRef(0);
   const keys=useKeys(); const parse=useServerFn(structureResume);
@@ -78,6 +83,27 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
   },[saveStatus]);
 
   function change(next:Resume){if(resume)setPast(old=>[...old.slice(-49),resume]);setFuture([]);setResume(next);}
+  function handleApplyCopilotSuggestion(revision: string, t: CopilotTarget) {
+    if (!resume) return;
+    const nextSections = resume.sections.map((s) => {
+      if (s.id !== t.sectionId) return s;
+      if (!t.entryId) return { ...s, heading: revision };
+      return {
+        ...s,
+        entries: s.entries.map((e) => {
+          if (e.id !== t.entryId) return e;
+          if (t.field === 'bullets' && t.bulletIndex !== undefined) {
+            const nextBullets = [...e.bullets];
+            nextBullets[t.bulletIndex] = revision;
+            return { ...e, bullets: nextBullets };
+          }
+          return { ...e, details: revision };
+        }),
+      };
+    });
+    change({ ...resume, sections: nextSections });
+    setCopilotTarget((prev) => (prev ? { ...prev, text: revision } : null));
+  }
   function open(row:Row){const data=validateSaved(row.data);if(!data){setError('This saved resume could not be read.');return;}setActive(row);setResume(data);setTitle(row.title);setExtracted(row.extracted_text);setPast([]);setFuture([]);setSelected('');setError('');}
   async function create(data:Resume,original_path:string|null=null,text=''){
     if(!session)throw new Error('Sign in to save your resume.');
@@ -125,7 +151,7 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
       <div className="flex items-center justify-between border-b py-5"><h2 className="text-lg font-semibold">Your resumes</h2><Button className="flex items-center gap-2 text-sm" disabled={!!busy} onClick={()=>{setBusy('Creating resume');create(blankResume()).catch(e=>setError(e.message)).finally(()=>setBusy(''));}}>+ Create from scratch</Button></div>
       {loadingRows?<p className="py-8 text-sm text-muted-foreground">Loading resumes…</p>:rows.length===0?<p className="py-8 text-sm text-muted-foreground">No resumes yet.</p>:<div className="grid gap-3 py-5 sm:grid-cols-2 lg:grid-cols-3">{rows.map(row=><Button key={row.id} onClick={()=>open(row)} className="flex items-center gap-4 rounded-lg glass p-5 text-left"><FileText className="h-8 w-8 text-muted-foreground"/><div className="min-w-0"><div className="truncate font-medium">{row.title}</div><div className="mt-1 text-xs text-muted-foreground">Edited {new Date(row.updated_at).toLocaleDateString()}</div></div></Button>)}</div>}
     </>:<>
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 pt-3"><div className="flex min-w-0 items-center gap-3"><Icon label="Back to resumes" disabled={saveStatus==='Saving…'||saveStatus==='Unsaved changes'} onClick={()=>{setResume(null);setActive(null);}}><ArrowLeft/></Icon><div><input aria-label="Resume title" value={title} onChange={e=>setTitle(e.target.value)} className="max-w-52 bg-transparent font-semibold outline-none"/><p role="status" className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Check className="h-3 w-3"/>{saveStatus}</p></div></div><div className="flex flex-wrap items-center gap-2"><Icon label="Undo" disabled={!past.length} onClick={()=>{const previous=past[past.length-1];if(!previous)return;setFuture(f=>[resume,...f]);setPast(p=>p.slice(0,-1));setResume(previous);}}><Undo2/></Icon><Icon label="Redo" disabled={!future.length} onClick={()=>{const next=future[0];if(!next)return;setPast(p=>[...p,resume]);setFuture(f=>f.slice(1));setResume(next);}}><Redo2/></Icon><Icon label="Version history" onClick={history}><History/></Icon><Button className={secondary} onClick={snapshot} disabled={!!busy}>Save version</Button><Button className={secondary} onClick={()=>setModal('ai')}><Sparkles className="h-4 w-4"/>AI assistance</Button><Button className={primary} disabled={!!busy} onClick={()=>download('pdf')}><Download className="h-4 w-4"/>PDF</Button><Button className={secondary} disabled={!!busy} onClick={()=>download('docx')}>DOCX</Button></div></div>
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 pt-3"><div className="flex min-w-0 items-center gap-3"><Icon label="Back to resumes" disabled={saveStatus==='Saving…'||saveStatus==='Unsaved changes'} onClick={()=>{setResume(null);setActive(null);}}><ArrowLeft/></Icon><div><input aria-label="Resume title" value={title} onChange={e=>setTitle(e.target.value)} className="max-w-52 bg-transparent font-semibold outline-none"/><p role="status" className="mt-1 flex items-center gap-1 text-xs text-muted-foreground"><Check className="h-3 w-3"/>{saveStatus}</p></div></div><div className="flex flex-wrap items-center gap-2"><Icon label="Undo" disabled={!past.length} onClick={()=>{const previous=past[past.length-1];if(!previous)return;setFuture(f=>[resume,...f]);setPast(p=>p.slice(0,-1));setResume(previous);}}><Undo2/></Icon><Icon label="Redo" disabled={!future.length} onClick={()=>{const next=future[0];if(!next)return;setPast(p=>[...p,resume]);setFuture(f=>f.slice(1));setResume(next);}}><Redo2/></Icon><Icon label="Version history" onClick={history}><History/></Icon><Button className={secondary} onClick={snapshot} disabled={!!busy}>Save version</Button><Button className={copilotOpen ? `${primary} !bg-amber-600 hover:!bg-amber-700` : secondary} onClick={()=>setCopilotOpen(!copilotOpen)}><Sparkles className="h-4 w-4 text-amber-300"/>{copilotOpen ? 'Close Copilot' : 'Section Copilot'}</Button><Button className={secondary} onClick={()=>setModal('ai')}><Sparkles className="h-4 w-4"/>AI assistance</Button><Button className={primary} disabled={!!busy} onClick={()=>download('pdf')}><Download className="h-4 w-4"/>PDF</Button><Button className={secondary} disabled={!!busy} onClick={()=>download('docx')}>DOCX</Button></div></div>
       <div className="mb-4 flex flex-wrap items-center gap-x-5 gap-y-3 border-y py-3 text-xs">
         <Selector label="Page size" value={resume.format.pageSize} options={['A4','Letter']} onChange={v=>change({...resume,format:{...resume.format,pageSize:v as Format['pageSize']}})}/>
         <label className="flex items-center gap-2">Size<input aria-label="Font size" type="number" min={8} max={14} value={resume.format.fontSize} onChange={e=>change({...resume,format:{...resume.format,fontSize:Math.max(8,Math.min(14,Number(e.target.value)))}})} className="w-12 rounded border bg-glass-strong p-1"/></label>
@@ -137,10 +163,47 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
       <ResumeFormatting resume={resume} change={change}/>
       <CompanySharing resume={resume} userId={session.user.id}/>
       {resume.reviewNotes.length>0&&<details className="mb-4 rounded-md bg-peach/25 px-4 py-3 text-sm"><summary className="cursor-pointer font-medium">Review imported information ({resume.reviewNotes.length})</summary><ul className="mt-2 list-disc space-y-1 pl-5">{resume.reviewNotes.map((note,i)=><li key={i}>{note}</li>)}</ul></details>}
-      <div className="mb-3 flex border-b lg:hidden">{['editor','preview'].map(t=><Button key={t} onClick={()=>setTab(t)} className={`flex-1 py-2 text-sm capitalize ${tab===t?'border-b-2 border-primary font-semibold':'text-muted-foreground'}`}>{t}</Button>)}</div>
-      <div className="resume-workspace grid overflow-hidden rounded-lg border bg-glass-strong lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-        <div className={`min-w-0 overflow-y-auto border-r ${tab!=='editor'?'hidden lg:block':''}`}><div className="flex h-12 items-center justify-between border-b px-5"><span className="text-xs font-semibold">RESUME EDITOR</span><span className="text-xs text-muted-foreground">{resume.sections.length} sections</span></div><ResumeEditor resume={resume} selected={selected} change={change}/></div>
-        <div className={`min-h-0 min-w-0 ${tab!=='preview'?'hidden lg:block':''}`}><ResumePreview resume={resume} select={id=>{setSelected(id);setTab('editor');}}/></div>
+      <div className="mb-3 flex border-b lg:hidden">{['editor',...(copilotOpen?['copilot']:[]),'preview'].map(t=><Button key={t} onClick={()=>setTab(t)} className={`flex-1 py-2 text-sm capitalize ${tab===t?'border-b-2 border-primary font-semibold':'text-muted-foreground'}`}>{t==='copilot'?'✨ Copilot':t}</Button>)}</div>
+      <div className={`resume-workspace grid overflow-hidden rounded-lg border bg-glass-strong ${copilotOpen ? 'lg:grid-cols-[minmax(0,1fr)_380px] xl:grid-cols-[minmax(0,0.85fr)_380px_minmax(0,1fr)]' : 'lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]'}`}>
+        <div className={`min-w-0 overflow-y-auto border-r ${tab!=='editor'?'hidden lg:block':''}`}>
+          <div className="flex h-12 items-center justify-between border-b px-5">
+            <span className="text-xs font-semibold">RESUME EDITOR</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">{resume.sections.length} sections</span>
+              {!copilotOpen && (
+                <Button onClick={()=>setCopilotOpen(true)} className="text-xs text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1">
+                  <Sparkles className="h-3 w-3"/> Open Copilot
+                </Button>
+              )}
+            </div>
+          </div>
+          <ResumeEditor
+            resume={resume}
+            selected={selected}
+            change={change}
+            onSelectCopilotTarget={(target)=>{
+              setCopilotTarget(target);
+              setCopilotOpen(true);
+              if (typeof window !== 'undefined' && window.innerWidth < 1024) setTab('copilot');
+            }}
+          />
+        </div>
+        {copilotOpen && (
+          <div className={`min-w-0 ${tab!=='copilot'?'hidden lg:block':''}`}>
+            <SectionCopilot
+              resume={resume}
+              target={copilotTarget}
+              onApply={handleApplyCopilotSuggestion}
+              onClose={()=>setCopilotOpen(false)}
+              initialCompany={initialCompany}
+              initialRole={initialRole}
+              onSelectSection={(target)=>setCopilotTarget(target)}
+            />
+          </div>
+        )}
+        <div className={`min-h-0 min-w-0 ${tab!=='preview'?'hidden '+(copilotOpen?'xl:block':'lg:block'):''}`}>
+          <ResumePreview resume={resume} select={id=>{setSelected(id);setTab('editor');}}/>
+        </div>
       </div>
     </>}
     {modal&&resume&&<div className="fixed inset-0 z-50 grid place-items-center bg-foreground/20 p-4" onClick={()=>setModal(null)}><div role="dialog" aria-modal="true" aria-label={modal==='ai'?'Resume assistance':modal==='history'?'Version history':'Original resume'} className="max-h-[90dvh] w-full max-w-xl overflow-y-auto rounded-lg glass-strong p-6" onClick={e=>e.stopPropagation()}><div className="mb-5 flex items-center justify-between"><h2 className="font-display text-3xl">{modal==='ai'?'A thoughtful second look':modal==='history'?'Version history':'Original resume'}</h2><Icon label="Close dialog" onClick={()=>setModal(null)}><X/></Icon></div>
