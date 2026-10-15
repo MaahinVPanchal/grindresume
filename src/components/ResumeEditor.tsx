@@ -30,19 +30,81 @@ export function ResumeEditor({ resume, change, selected, onSelectCopilotTarget }
 }
 function EntryFields({entry:e,section:s,update,onSelectCopilotTarget}:{entry:Entry;section:Section;update:(e:Entry)=>void;onSelectCopilotTarget?:(target:CopilotTarget)=>void}) {
   const textOnly=s.kind==='summary'||s.kind==='skills';
+  const hasBullets = e.bullets.length > 0;
+  const hasDetails = !!e.details.trim();
+
+  function mergeBulletsToDescription() {
+    const combined = [e.details.trim(), ...e.bullets.map(b => b.trim())].filter(Boolean).join('\n\n');
+    update({ ...e, details: combined, bullets: [] });
+  }
+
+  function splitDescriptionToBullets() {
+    const raw = e.details.trim();
+    if (!raw) return;
+    const split = raw
+      .split(/\n+|(?<=[.!?])\s+(?=[A-Z0-9])/)
+      .map(x => x.replace(/^[•\-\*]\s*/, '').trim())
+      .filter(Boolean);
+    update({ ...e, details: '', bullets: split.length ? split : [raw] });
+  }
+
   return <>
     {!textOnly && <div className="grid grid-cols-2 gap-3"><ResumeField label={s.kind==='experience'?'Job title':s.kind==='education'?'Degree / field':'Title / project name'} value={e.title} onChange={title=>update({...e,title})}/><ResumeField label={s.kind==='experience'?'Employer / employment type':s.kind==='education'?'Institution':'Organization / technologies'} value={e.subtitle} onChange={subtitle=>update({...e,subtitle})}/><ResumeField label="Location" value={e.location} onChange={location=>update({...e,location})}/><ResumeField label="Link" value={e.link} onChange={link=>update({...e,link})}/><ResumeField label="Start date" value={e.start} onChange={start=>update({...e,start})}/><ResumeField label="End date" value={e.end} onChange={end=>update({...e,end})}/>{s.kind==='experience'&&<label className="col-span-2 flex items-center gap-2 text-xs"><input type="checkbox" checked={e.current} onChange={event=>update({...e,current:event.target.checked})}/>Current role</label>}</div>}
     {textOnly && <ResumeField label={s.kind==='skills'?'Skill category':'Subheading (optional)'} value={e.title} onChange={title=>update({...e,title})}/>}
-    <div className="space-y-1">
-      <ResumeField label={s.kind==='skills'?'Skills':s.kind==='summary'?'Summary':s.kind==='experience'?'Role description':'Description / coursework'} value={e.details} multiline onChange={details=>update({...e,details})}/>
-      {onSelectCopilotTarget && e.details && (
-        <Button className="text-[11px] text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1" onClick={()=>onSelectCopilotTarget({ sectionId: s.id, sectionKind: s.kind, sectionHeading: s.heading, entryId: e.id, entryTitle: e.title || s.heading, field: 'details', text: e.details })}>
-          <Sparkles className="h-3 w-3 text-amber-500" /> Tailor this {s.kind==='skills'?'skills block':s.kind==='summary'?'summary':'description'} with Copilot
+    
+    {!textOnly && (hasBullets || hasDetails) && (
+      <div className="flex flex-wrap items-center justify-between gap-2 border-y py-1.5 text-xs">
+        <span className="text-[11px] font-medium text-muted-foreground">
+          Format: {hasBullets ? `${e.bullets.length} bullet points` : 'Single role description (paragraph)'}
+        </span>
+        <div className="flex items-center gap-2">
+          {hasBullets && (
+            <Button
+              className="text-[11px] text-primary hover:underline font-medium"
+              onClick={mergeBulletsToDescription}
+              title="Combine all bullets into a single role description paragraph"
+            >
+              ⇄ Convert to role description (remove bullet points)
+            </Button>
+          )}
+          {!hasBullets && hasDetails && (
+            <Button
+              className="text-[11px] text-primary hover:underline font-medium"
+              onClick={splitDescriptionToBullets}
+              title="Split this description into bullet points"
+            >
+              ⇄ Split into bullet points
+            </Button>
+          )}
+        </div>
+      </div>
+    )}
+
+    {(textOnly || hasDetails || !hasBullets) && (
+      <div className="space-y-1">
+        <ResumeField label={s.kind==='skills'?'Skills':s.kind==='summary'?'Summary':s.kind==='experience'?'Role description':'Description / coursework'} value={e.details} multiline onChange={details=>update({...e,details})}/>
+        {onSelectCopilotTarget && e.details && (
+          <Button className="text-[11px] text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1" onClick={()=>onSelectCopilotTarget({ sectionId: s.id, sectionKind: s.kind, sectionHeading: s.heading, entryId: e.id, entryTitle: e.title || s.heading, field: 'details', text: e.details })}>
+            <Sparkles className="h-3 w-3 text-amber-500" /> Tailor this {s.kind==='skills'?'skills block':s.kind==='summary'?'summary':'description'} with Copilot
+          </Button>
+        )}
+      </div>
+    )}
+
+    {e.bullets.map((b,i)=><div key={i} className="flex items-end gap-1"><div className="flex-1"><ResumeField label={`Bullet point ${i+1}`} value={b} multiline onChange={v=>update({...e,bullets:e.bullets.map((old,n)=>n===i?v:old)})}/></div>{onSelectCopilotTarget && <Icon label="Tailor bullet with Copilot" onClick={()=>onSelectCopilotTarget({ sectionId: s.id, sectionKind: s.kind, sectionHeading: s.heading, entryId: e.id, entryTitle: e.title || s.heading, field: 'bullets', bulletIndex: i, text: b })}><Sparkles className="text-amber-500"/></Icon>}<Icon label="Move bullet up" disabled={i===0} onClick={()=>{const bullets=[...e.bullets];const a=bullets[i];const b=bullets[i-1];if(a!==undefined&&b!==undefined){bullets[i]=b;bullets[i-1]=a;update({...e,bullets});}}}><ArrowUp/></Icon><Icon label="Remove bullet" onClick={()=>update({...e,bullets:e.bullets.filter((_,n)=>n!==i)})}><Trash2/></Icon></div>)}
+
+    {!textOnly && (
+      <div className="flex flex-wrap items-center gap-3 pt-1">
+        <Button className="text-xs text-muted-foreground hover:text-foreground" onClick={()=>update({...e,bullets:[...e.bullets,'']})}>
+          + Add bullet point
         </Button>
-      )}
-    </div>
-    {e.bullets.map((b,i)=><div key={i} className="flex items-end gap-1"><div className="flex-1"><ResumeField label={`${s.kind==='experience'?'Responsibility / result':'Bullet point'} ${i+1}`} value={b} multiline onChange={v=>update({...e,bullets:e.bullets.map((old,n)=>n===i?v:old)})}/></div>{onSelectCopilotTarget && <Icon label="Tailor bullet with Copilot" onClick={()=>onSelectCopilotTarget({ sectionId: s.id, sectionKind: s.kind, sectionHeading: s.heading, entryId: e.id, entryTitle: e.title || s.heading, field: 'bullets', bulletIndex: i, text: b })}><Sparkles className="text-amber-500"/></Icon>}<Icon label="Move bullet up" disabled={i===0} onClick={()=>{const bullets=[...e.bullets];const a=bullets[i];const b=bullets[i-1];if(a!==undefined&&b!==undefined){bullets[i]=b;bullets[i-1]=a;update({...e,bullets});}}}><ArrowUp/></Icon><Icon label="Remove bullet" onClick={()=>update({...e,bullets:e.bullets.filter((_,n)=>n!==i)})}><Trash2/></Icon></div>)}
-    {!textOnly&&<Button className="text-xs text-muted-foreground" onClick={()=>update({...e,bullets:[...e.bullets,'']})}>+ Add bullet point</Button>}
+        {!hasDetails && hasBullets && (
+          <Button className="text-xs text-muted-foreground hover:text-foreground underline" onClick={()=>update({...e,details:' '})}>
+            + Add role description
+          </Button>
+        )}
+      </div>
+    )}
   </>;
 }
 export function Icon({label,children,...props}:{label:string;children:React.ReactNode}&React.ButtonHTMLAttributes<HTMLButtonElement>){return <Button {...props} aria-label={label} title={label} className="grid h-8 w-8 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-muted disabled:opacity-30 [&_svg]:h-4 [&_svg]:w-4">{children}</Button>;}
