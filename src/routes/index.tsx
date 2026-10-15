@@ -43,8 +43,19 @@ function Index() {
           <a
             href="https://github.com/MaahinVPanchal/grindresume"
             target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-foreground hover:bg-muted"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              try {
+                if (window.self !== window.top) {
+                  e.preventDefault();
+                  window.open("https://github.com/MaahinVPanchal/grindresume", "_blank", "noopener,noreferrer");
+                }
+              } catch {
+                e.preventDefault();
+                window.open("https://github.com/MaahinVPanchal/grindresume", "_blank", "noopener,noreferrer");
+              }
+            }}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-foreground hover:bg-muted"
           >
             <Github className="h-4 w-4" />
             <span>GitHub</span>
@@ -52,17 +63,39 @@ function Index() {
           <a
             href="https://devpost.com/software/grinderresume"
             target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-teal-600 dark:text-teal-400 hover:bg-muted"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              try {
+                if (window.self !== window.top) {
+                  e.preventDefault();
+                  window.open("https://devpost.com/software/grinderresume", "_blank", "noopener,noreferrer");
+                }
+              } catch {
+                e.preventDefault();
+                window.open("https://devpost.com/software/grinderresume", "_blank", "noopener,noreferrer");
+              }
+            }}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-teal-600 dark:text-teal-400 hover:bg-muted"
           >
             <DevpostIcon className="h-4 w-4" />
             <span>Devpost</span>
           </a>
           <a
-            href="https://youtu.be/83adL-GZ4IY"
+            href="https://www.youtube.com/watch?v=83adL-GZ4IY"
             target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-red-600 dark:text-red-400 hover:bg-muted"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              try {
+                if (window.self !== window.top) {
+                  e.preventDefault();
+                  window.open("https://www.youtube.com/watch?v=83adL-GZ4IY", "_blank", "noopener,noreferrer");
+                }
+              } catch {
+                e.preventDefault();
+                window.open("https://www.youtube.com/watch?v=83adL-GZ4IY", "_blank", "noopener,noreferrer");
+              }
+            }}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-red-600 dark:text-red-400 hover:bg-muted"
           >
             <Youtube className="h-4 w-4" />
             <span>Demo Video</span>
@@ -70,8 +103,19 @@ function Index() {
           <a
             href="https://www.linkedin.com/feed/update/urn:li:activity:7516032835724484609/"
             target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-blue-600 dark:text-blue-400 hover:bg-muted"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              try {
+                if (window.self !== window.top) {
+                  e.preventDefault();
+                  window.open("https://www.linkedin.com/feed/update/urn:li:activity:7516032835724484609/", "_blank", "noopener,noreferrer");
+                }
+              } catch {
+                e.preventDefault();
+                window.open("https://www.linkedin.com/feed/update/urn:li:activity:7516032835724484609/", "_blank", "noopener,noreferrer");
+              }
+            }}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-blue-600 dark:text-blue-400 hover:bg-muted"
           >
             <Linkedin className="h-4 w-4" />
             <span>LinkedIn</span>

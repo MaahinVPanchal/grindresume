@@ -59,49 +59,6 @@ export function Shell({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="hidden items-center gap-1 sm:flex">
-            <a
-              href="https://github.com/MaahinVPanchal/grindresume"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="GitHub Repository"
-              title="GitHub Repository"
-              className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong text-muted-foreground hover:text-foreground transition"
-            >
-              <Github className="h-4 w-4" />
-            </a>
-            <a
-              href="https://devpost.com/software/grinderresume"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Devpost Project"
-              title="Devpost Project"
-              className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong text-muted-foreground hover:text-teal-500 transition"
-            >
-              <DevpostIcon className="h-4 w-4" />
-            </a>
-            <a
-              href="https://youtu.be/83adL-GZ4IY"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Demo Video on YouTube"
-              title="Watch Demo Video"
-              className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong text-muted-foreground hover:text-red-500 transition"
-            >
-              <Youtube className="h-4 w-4" />
-            </a>
-            <a
-              href="https://www.linkedin.com/feed/update/urn:li:activity:7516032835724484609/"
-              target="_blank"
-              rel="noreferrer"
-              aria-label="LinkedIn Post"
-              title="LinkedIn Update"
-              className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong text-muted-foreground hover:text-blue-500 transition"
-            >
-              <Linkedin className="h-4 w-4" />
-            </a>
-          </div>
-
           <Button aria-label="Ask Grinder" title="Ask Grinder" className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong" onClick={()=>setAsk(true)}><MessageCircle className="h-4 w-4"/></Button>
           <Button
             onClick={() => setOpen(true)}
@@ -145,9 +102,9 @@ export function Shell({ children }: { children: ReactNode }) {
               <span>Devpost</span>
             </a>
             <a
-              href="https://youtu.be/83adL-GZ4IY"
+              href="https://www.youtube.com/watch?v=83adL-GZ4IY"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 rounded-full glass-strong px-3 py-1.5 hover:text-foreground transition font-medium text-red-600 dark:text-red-400"
             >
               <Youtube className="h-3.5 w-3.5" />
