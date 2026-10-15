@@ -1,14 +1,21 @@
 import { Button } from "@/components/Button";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Eye, EyeOff, KeyRound, Loader2, Check } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Loader2, Check, MessageCircle, X, Github, Linkedin, Youtube } from "lucide-react";
 import bg from "@/assets/landscape.webp.asset.json";
 import { saveKeys, useKeys } from "@/lib/keys";
 import { useServerFn } from "@tanstack/react-start";
 import { validateTavily, listNebiusModels } from "@/lib/research.functions";
 import { ProfileMenu } from "@/components/ProfileMenu";
 import { ChatPanel } from './ChatPanel';
-import { MessageCircle, X } from 'lucide-react';
+
+export function DevpostIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M6.002 1.61L0 12.004 6.002 22.39h11.996L24 12.004 17.998 1.61H6.002zm1.593 4.084h3.947c2.75 0 4.802 1.42 4.802 4.083 0 2.663-2.052 4.083-4.802 4.083H7.595V5.694zm2.585 2.122v4.005h1.22c1.393 0 2.27-.69 2.27-2.003 0-1.312-.877-2.002-2.27-2.002h-1.22z" />
+    </svg>
+  );
+}
 
 export function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -51,7 +58,50 @@ export function Shell({ children }: { children: ReactNode }) {
             </Link>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="hidden items-center gap-1 sm:flex">
+            <a
+              href="https://github.com/MaahinVPanchal/grindresume"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="GitHub Repository"
+              title="GitHub Repository"
+              className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong text-muted-foreground hover:text-foreground transition"
+            >
+              <Github className="h-4 w-4" />
+            </a>
+            <a
+              href="https://devpost.com/software/grinderresume"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Devpost Project"
+              title="Devpost Project"
+              className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong text-muted-foreground hover:text-teal-500 transition"
+            >
+              <DevpostIcon className="h-4 w-4" />
+            </a>
+            <a
+              href="https://youtu.be/83adL-GZ4IY"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Demo Video on YouTube"
+              title="Watch Demo Video"
+              className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong text-muted-foreground hover:text-red-500 transition"
+            >
+              <Youtube className="h-4 w-4" />
+            </a>
+            <a
+              href="https://www.linkedin.com/feed/update/urn:li:activity:7516032835724484609/"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="LinkedIn Post"
+              title="LinkedIn Update"
+              className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong text-muted-foreground hover:text-blue-500 transition"
+            >
+              <Linkedin className="h-4 w-4" />
+            </a>
+          </div>
+
           <Button aria-label="Ask Grinder" title="Ask Grinder" className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong" onClick={()=>setAsk(true)}><MessageCircle className="h-4 w-4"/></Button>
           <Button
             onClick={() => setOpen(true)}
@@ -64,7 +114,57 @@ export function Shell({ children }: { children: ReactNode }) {
           <ProfileMenu />
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-5 pb-16">{children}</main>
+      <main className="mx-auto max-w-7xl px-5 pb-8">{children}</main>
+      <footer className="mx-auto max-w-7xl border-t border-border/40 px-5 py-8 text-xs text-muted-foreground">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="grid h-6 w-6 place-items-center rounded-md bg-primary font-display text-sm text-primary-foreground">
+              g
+            </span>
+            <span className="font-semibold text-foreground">Grinder</span>
+            <span className="text-muted-foreground">/ Careers & Resume Workspace</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <a
+              href="https://github.com/MaahinVPanchal/grindresume"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full glass-strong px-3 py-1.5 hover:text-foreground transition font-medium"
+            >
+              <Github className="h-3.5 w-3.5" />
+              <span>GitHub</span>
+            </a>
+            <a
+              href="https://devpost.com/software/grinderresume"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full glass-strong px-3 py-1.5 hover:text-foreground transition font-medium text-teal-600 dark:text-teal-400"
+            >
+              <DevpostIcon className="h-3.5 w-3.5" />
+              <span>Devpost</span>
+            </a>
+            <a
+              href="https://youtu.be/83adL-GZ4IY"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full glass-strong px-3 py-1.5 hover:text-foreground transition font-medium text-red-600 dark:text-red-400"
+            >
+              <Youtube className="h-3.5 w-3.5" />
+              <span>Demo Video</span>
+            </a>
+            <a
+              href="https://www.linkedin.com/feed/update/urn:li:activity:7516032835724484609/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full glass-strong px-3 py-1.5 hover:text-foreground transition font-medium text-blue-600 dark:text-blue-400"
+            >
+              <Linkedin className="h-3.5 w-3.5" />
+              <span>LinkedIn</span>
+            </a>
+          </div>
+        </div>
+      </footer>
       {open && <Settings onClose={() => setOpen(false)} />}
       {ask&&<div className="fixed inset-0 z-50 grid place-items-center bg-foreground/20 p-4" onClick={()=>setAsk(false)}><div role="dialog" aria-label="Ask Grinder" aria-modal="true" className="w-full max-w-xl" onClick={e=>e.stopPropagation()}><Button aria-label="Close assistant" title="Close assistant" onClick={()=>setAsk(false)} className="mb-2 ml-auto grid h-8 w-8 place-items-center rounded-full bg-glass-strong"><X className="h-4 w-4"/></Button><ChatPanel title="Ask Grinder" context="Ask which company or role the user wants to explore if no employer context is provided. Do not invent candidate experience." className="h-[65dvh]" suggestions={['Help me choose a company to explore.','What role should I research next?']}/></div></div>}
     </div>

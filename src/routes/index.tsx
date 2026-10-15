@@ -1,8 +1,8 @@
 import { Button } from "@/components/Button";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Building2, Globe, MapPin, Briefcase, Search, Upload, ArrowRight } from "lucide-react";
-import { Shell } from "@/components/Shell";
+import { Building2, Globe, MapPin, Briefcase, Search, Upload, ArrowRight, Github, Linkedin, Youtube } from "lucide-react";
+import { Shell, DevpostIcon } from "@/components/Shell";
 import { CompanyTicker } from "@/components/CompanyTicker";
 import { CommunityCatalog } from "@/components/CommunityCatalog";
 import { FeaturedCatalog } from "@/components/FeaturedCatalog";
@@ -39,6 +39,44 @@ function Index() {
           Your experience stays. Your applications get smarter. Discover opportunities, understand what employers need,
           and improve your application with research.
         </p>
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
+          <a
+            href="https://github.com/MaahinVPanchal/grindresume"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-foreground hover:bg-muted"
+          >
+            <Github className="h-4 w-4" />
+            <span>GitHub</span>
+          </a>
+          <a
+            href="https://devpost.com/software/grinderresume"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-teal-600 dark:text-teal-400 hover:bg-muted"
+          >
+            <DevpostIcon className="h-4 w-4" />
+            <span>Devpost</span>
+          </a>
+          <a
+            href="https://youtu.be/83adL-GZ4IY"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-red-600 dark:text-red-400 hover:bg-muted"
+          >
+            <Youtube className="h-4 w-4" />
+            <span>Demo Video</span>
+          </a>
+          <a
+            href="https://www.linkedin.com/feed/update/urn:li:activity:7516032835724484609/"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-blue-600 dark:text-blue-400 hover:bg-muted"
+          >
+            <Linkedin className="h-4 w-4" />
+            <span>LinkedIn</span>
+          </a>
+        </div>
       </section>
 
       <div className="mx-auto mt-6 flex max-w-4xl flex-wrap items-center justify-between gap-4 border-y border-border py-4 text-left">
