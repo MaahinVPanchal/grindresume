@@ -72,16 +72,16 @@ function QuizPage() {
       setAnswers(parsedAnswers);
 
       const fb = (row.feedback as Record<string, any>) || {};
-      const parsedPasted = Array.isArray(fb.pasted) && fb.pasted.length === 3
-        ? (fb.pasted as boolean[])
+      const parsedPasted = Array.isArray(fb["pasted"]) && fb["pasted"].length === 3
+        ? (fb["pasted"] as boolean[])
         : [false, false, false];
       setPasted(parsedPasted);
 
       if (row.submitted_at && row.score !== null) {
         setResult({
           score: row.score,
-          perQuestion: Array.isArray(fb.perQuestion) ? fb.perQuestion : [],
-          summary: typeof fb.summary === 'string' ? fb.summary : '',
+          perQuestion: Array.isArray(fb["perQuestion"]) ? fb["perQuestion"] : [],
+          summary: typeof fb["summary"] === 'string' ? fb["summary"] : '',
         });
       } else {
         setResult(null);
