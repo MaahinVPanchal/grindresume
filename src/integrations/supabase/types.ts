@@ -89,6 +89,27 @@ export type Database = {
         }
         Relationships: []
       }
+      demo_usage: {
+        Row: {
+          bucket: string
+          day: string
+          kind: string
+          used: number
+        }
+        Insert: {
+          bucket: string
+          day?: string
+          kind: string
+          used?: number
+        }
+        Update: {
+          bucket?: string
+          day?: string
+          kind?: string
+          used?: number
+        }
+        Relationships: []
+      }
       resume_versions: {
         Row: {
           created_at: string
@@ -370,6 +391,11 @@ export type Database = {
           people: number
         }[]
       }
+      demo_consume: {
+        Args: { _bucket: string; _kind: string; _limit: number }
+        Returns: number
+      }
+      demo_used: { Args: { _bucket: string; _kind: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

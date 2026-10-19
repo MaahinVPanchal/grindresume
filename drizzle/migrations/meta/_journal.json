@@ -57,6 +57,13 @@
       "when": 1791891356814,
       "tag": "0007_admin_storage_and_dataset",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792414576375,
+      "tag": "0008_demo_usage",
+      "breakpoints": true
     }
   ]
 }
