@@ -62,7 +62,7 @@ export const findCareers = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      const key = tavilyKey(data.apiKey);
+      const key = await (await import("./demo.server")).demoKey(data.apiKey, "TAVILY_API_KEY", "search");
       const { rejectReason, careerHost, matcher } = await import("./role-match");
       const { harvestCareersPage, atsBoards, atsJobs, rankRoles } = await import("./careers-harvest.server");
       const company = data.company.trim();
@@ -160,7 +160,7 @@ export const extractPage = createServerFn({ method: "POST" })
   .inputValidator((d) => z.object({ apiKey: z.string().optional(), url: z.string().url() }).parse(d))
   .handler(async ({ data }) => {
     try {
-      const r = await tavily("extract", tavilyKey(data.apiKey), { urls: [data.url] });
+      const r = await tavily("extract", await (await import("./demo.server")).demoKey(data.apiKey, "TAVILY_API_KEY", "extract"), { urls: [data.url] });
       const first = r.results?.[0];
       if (!first) return { ok: false as const, error: "That page could not be read." };
       return { ok: true as const, content: String(first.raw_content || "").slice(0, 12000) };

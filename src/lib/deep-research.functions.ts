@@ -19,8 +19,9 @@ export const deepResearch = createServerFn({ method: 'POST' })
       const sources: { title: string; url: string; content: string }[] = [];
       const target = data.target.trim();
       if (target || data.roles?.length) {
-        const key = data.tavilyKey || process.env['TAVILY_API_KEY'];
-        if (!key) return { ok: false as const, error: 'Connect your Tavily key (top right) to use deep research.' };
+        let key: string;
+        try { key = await (await import('./demo.server')).demoKey(data.tavilyKey, 'TAVILY_API_KEY', 'research'); }
+        catch (e) { return { ok: false as const, error: (e as Error).message }; }
         const call = async (path: string, body: Record<string, unknown>) => {
           const res = await fetch(`https://api.tavily.com/${path}`, { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
           if (!res.ok) throw new Error(res.status === 401 ? 'Tavily rejected this API key.' : `Tavily research failed (${res.status}).`);

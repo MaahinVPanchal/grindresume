@@ -6,10 +6,10 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const Route = createFileRoute('/reset-password')({
   head: () => ({ meta: [
-    { title: 'Reset your password — Grinder' },
-    { name: 'description', content: 'Choose a new password for your Grinder account.' },
-    { property: 'og:title', content: 'Reset your password — Grinder' },
-    { property: 'og:description', content: 'Securely set a new password for your Grinder workspace.' },
+    { title: 'Reset your password - GrinderResume' },
+    { name: 'description', content: 'Choose a new password for your GrinderResume account.' },
+    { property: 'og:title', content: 'Reset your password - GrinderResume' },
+    { property: 'og:description', content: 'Securely set a new password for your GrinderResume workspace.' },
     { property: 'og:type', content: 'website' },
     { name: 'twitter:card', content: 'summary' },
   ] }),

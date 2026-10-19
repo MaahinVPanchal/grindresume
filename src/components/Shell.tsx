@@ -22,6 +22,11 @@ export function Shell({ children }: { children: ReactNode }) {
   const [ask, setAsk] = useState(false);
   const keys = useKeys();
   const ready = !!keys.tavily && !!keys.nebius;
+  useEffect(() => {
+    const h = () => setOpen(true);
+    window.addEventListener("grinder-open-keys", h);
+    return () => window.removeEventListener("grinder-open-keys", h);
+  }, []);
   return (
     <div className="relative isolate min-h-screen">
       <div
@@ -35,7 +40,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary font-display text-xl text-primary-foreground">
             g
           </span>
-          <span className="text-xl font-semibold tracking-normal">grinder</span>
+          <span className="text-xl font-semibold tracking-normal">GrinderResume</span>
           <span className="hidden font-display text-lg italic text-muted-foreground sm:inline">/careers</span>
         </Link>
         <nav className="order-3 flex w-full flex-wrap items-center justify-center gap-1 rounded-full glass p-1 text-sm lg:order-none lg:w-auto">
@@ -59,7 +64,7 @@ export function Shell({ children }: { children: ReactNode }) {
           ))}
         </nav>
         <div className="flex items-center gap-1.5 sm:gap-2">
-          <Button aria-label="Ask Grinder" title="Ask Grinder" className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong" onClick={()=>setAsk(true)}><MessageCircle className="h-4 w-4"/></Button>
+          <Button aria-label="Ask GrinderResume" title="Ask GrinderResume" className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong" onClick={()=>setAsk(true)}><MessageCircle className="h-4 w-4"/></Button>
           <Button
             onClick={() => setOpen(true)}
             className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
@@ -78,7 +83,7 @@ export function Shell({ children }: { children: ReactNode }) {
             <span className="grid h-6 w-6 place-items-center rounded-md bg-primary font-display text-sm text-primary-foreground">
               g
             </span>
-            <span className="font-semibold text-foreground">Grinder</span>
+            <span className="font-semibold text-foreground">GrinderResume</span>
             <span className="text-muted-foreground">/ Careers & Resume Workspace</span>
           </div>
 
@@ -123,7 +128,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
       </footer>
       {open && <Settings onClose={() => setOpen(false)} />}
-      {ask&&<div className="fixed inset-0 z-50 grid place-items-center bg-foreground/20 p-4" onClick={()=>setAsk(false)}><div role="dialog" aria-label="Ask Grinder" aria-modal="true" className="w-full max-w-xl" onClick={e=>e.stopPropagation()}><Button aria-label="Close assistant" title="Close assistant" onClick={()=>setAsk(false)} className="mb-2 ml-auto grid h-8 w-8 place-items-center rounded-full bg-glass-strong"><X className="h-4 w-4"/></Button><ChatPanel title="Ask Grinder" context="Ask which company or role the user wants to explore if no employer context is provided. Do not invent candidate experience." className="h-[65dvh]" suggestions={['Help me choose a company to explore.','What role should I research next?']}/></div></div>}
+      {ask&&<div className="fixed inset-0 z-50 grid place-items-center bg-foreground/20 p-4" onClick={()=>setAsk(false)}><div role="dialog" aria-label="Ask GrinderResume" aria-modal="true" className="w-full max-w-xl" onClick={e=>e.stopPropagation()}><Button aria-label="Close assistant" title="Close assistant" onClick={()=>setAsk(false)} className="mb-2 ml-auto grid h-8 w-8 place-items-center rounded-full bg-glass-strong"><X className="h-4 w-4"/></Button><ChatPanel title="Ask GrinderResume" context="Ask which company or role the user wants to explore if no employer context is provided. Do not invent candidate experience." className="h-[65dvh]" suggestions={['Help me choose a company to explore.','What role should I research next?']}/></div></div>}
     </div>
   );
 }

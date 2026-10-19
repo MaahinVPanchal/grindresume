@@ -20,7 +20,7 @@ export const createApplicationBrief=createServerFn({method:'POST'})
       const cached=!data.refresh&&cache&&Date.now()-Date.parse(cache.checked_at)<3600000&&evidence.success;
       let checkedAt=cache?.checked_at||new Date().toISOString();
       if(!cached){
-        const key=data.tavilyKey||process.env['TAVILY_API_KEY'];
+        const key=data.research?await (await import('./demo.server')).demoKey(data.tavilyKey,'TAVILY_API_KEY','research').catch(()=>undefined):data.tavilyKey||process.env['TAVILY_API_KEY'];
         let job=data.job;
         const sources:{title:string;url:string;content:string}[]=[];
         const request=async(path:string,body:Record<string,unknown>)=>{

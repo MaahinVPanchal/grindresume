@@ -1,3 +1,4 @@
+import { companyLink } from "@/lib/company-slug";
 import { Button } from "@/components/Button";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -11,9 +12,9 @@ import { resolveCompany } from "@/lib/role-match";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Grinder — Discover careers & open roles" },
+      { title: "GrinderResume — Discover careers & open roles" },
       { name: "description", content: "Pick a company and research its official careers site and current open roles with Tavily." },
-      { property: "og:title", content: "Grinder — Discover careers & open roles" },
+      { property: "og:title", content: "GrinderResume — Discover careers & open roles" },
       { property: "og:description", content: "Research-powered company and job discovery." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -29,12 +30,12 @@ function Index() {
   const [location, setLocation] = useState("");
 
   const go = (name: string, domain?: string) =>
-    nav({ to: "/company/$name", params: { name }, search: { domain, title: title || undefined, location: location || undefined } });
+    nav({ ...companyLink(name, domain), search: { title: title || undefined, location: location || undefined } });
 
   return (
     <Shell>
       <section className="mx-auto max-w-4xl pt-5 text-center">
-        <h1 className="font-display text-5xl leading-tight tracking-normal sm:text-6xl">Grind Your Resume</h1>
+        <h1 className="font-display text-5xl leading-tight tracking-normal sm:text-6xl">GrinderResume</h1>
         <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
           Your experience stays. Your applications get smarter. Discover opportunities, understand what employers need,
           and improve your application with research.

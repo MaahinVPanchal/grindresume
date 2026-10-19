@@ -1,3 +1,5 @@
+import { companyLink } from "@/lib/company-slug";
+import { cleanDomain } from "@/lib/companies";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -11,9 +13,9 @@ import { FeaturedCatalog } from "@/components/FeaturedCatalog";
 export const Route = createFileRoute("/yc")({
   head: () => ({
     meta: [
-      { title: "YC Explorer — Grinder" },
+      { title: "YC Explorer - GrinderResume" },
       { name: "description", content: "Browse hiring Y Combinator startups and research their open roles." },
-      { property: "og:title", content: "YC Explorer — Grinder" },
+      { property: "og:title", content: "YC Explorer - GrinderResume" },
       { property: "og:description", content: "Browse hiring Y Combinator startups." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -83,9 +85,7 @@ function YCPage() {
         {res?.companies.map((c) => (
           <Link
             key={c.slug}
-            to="/company/$name"
-            params={{ name: c.name }}
-            search={{ domain: c.website }}
+            {...companyLink(c.name, cleanDomain(c.website))}
             className="group rounded-lg glass p-4 transition hover:-translate-y-0.5 hover:bg-glass-strong"
           >
             <div className="flex items-center gap-3">

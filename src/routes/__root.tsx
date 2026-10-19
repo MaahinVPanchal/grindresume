@@ -78,9 +78,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Grinder — Research-powered careers" },
+      { title: "GrinderResume — Research-powered careers" },
       { name: "description", content: "Discover companies, open roles and YC startups with Tavily research and Nebius AI chat." },
-      { property: "og:title", content: "Grinder — Research-powered careers" },
+      { property: "og:title", content: "GrinderResume — Research-powered careers" },
       { property: "og:description", content: "Discover companies, open roles and YC startups." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

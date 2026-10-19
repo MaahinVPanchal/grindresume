@@ -5,9 +5,9 @@ import { ChatPanel } from "@/components/ChatPanel";
 export const Route = createFileRoute("/chat")({
   head: () => ({
     meta: [
-      { title: "Chat — Grinder" },
+      { title: "Chat - GrinderResume" },
       { name: "description", content: "Chat with Nebius AI models about careers, companies and applications." },
-      { property: "og:title", content: "Chat — Grinder" },
+      { property: "og:title", content: "Chat - GrinderResume" },
       { property: "og:description", content: "Career chat powered by Nebius models." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const SYSTEM = "You are Grinder's career copilot. Ground every claim in the candidate's resume and the provided job/company context. Never invent experience; flag gaps honestly.";
+const SYSTEM = "You are GrinderResume's career copilot. Ground every claim in the candidate's resume and the provided job/company context. Never invent experience; flag gaps honestly.";
 type M = { role: string; content: string };
 export type ChatRow = { context: string; messages: unknown };
 export type QuizRow = { company: string; role: string; questions: unknown; answers: unknown; score: number | null; feedback: unknown };

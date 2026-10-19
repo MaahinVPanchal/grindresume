@@ -7,6 +7,7 @@ import { saveKeys, useKeys } from "@/lib/keys";
 import { findCareers, listNebiusModels } from "@/lib/research.functions";
 import { FEATURED } from "@/lib/companies";
 import { deepResearch } from "@/lib/deep-research.functions";
+import { getDemoStatus } from "@/lib/demo.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from '@tanstack/react-router';
 
@@ -57,6 +58,14 @@ export function ChatPanel({
   const box = useRef<HTMLDivElement>(null);
   const ta = useRef<HTMLTextAreaElement>(null);
   const list = useServerFn(listNebiusModels);
+  const demoStatus = useServerFn(getDemoStatus);
+  const [demoLeft, setDemoLeft] = useState<number | null>(null);
+  const [demoOut, setDemoOut] = useState(false);
+  useEffect(() => {
+    if (keys.nebius) return;
+    demoStatus().then((r) => { setDemoLeft(r.remaining); setDemoOut(r.remaining <= 0); }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keys.nebius]);
   const research = useServerFn(deepResearch);
   const [deep, setDeep] = useState(false);
   const [resumes, setResumes] = useState<{ id: string; title: string }[]>([]);
@@ -159,7 +168,7 @@ export function ChatPanel({
     }
     const useResume = (o as { rid?: string } | undefined)?.rid || resumeId;
     setErr("");
-    if (!keys.nebius) return setErr("Connect your Nebius key first (top right).");
+    if (!keys.nebius && demoOut) return;
     const next: Msg[] = [...msgs, { role: "user", content: text }];
     setMsgs([...next, { role: "assistant", content: "" }]);
     setInput("");
@@ -191,8 +200,11 @@ export function ChatPanel({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         signal: abort.current.signal,
-        body: JSON.stringify({ apiKey: keys.nebius, model: keys.model, messages: next, context: ctx || undefined }),
+        body: JSON.stringify({ apiKey: keys.nebius || undefined, model: keys.model || "demo", messages: next, context: ctx || undefined }),
       });
+      if (res.status === 429 && res.headers.get("X-Demo-Limit")) { setDemoLeft(0); setDemoOut(true); setMsgs(msgs); return; }
+      const left = res.headers.get("X-Demo-Remaining");
+      if (left !== null) { setDemoLeft(Number(left)); if (Number(left) <= 0) setDemoOut(true); }
       if (!res.ok || !res.body) throw new Error((await res.text()) || `Error ${res.status}`);
       const reader = res.body.getReader();
       const dec = new TextDecoder();
@@ -329,6 +341,19 @@ export function ChatPanel({
           {matches.map(([n, d]) => <Button type="button" role="option" key={n} onClick={() => pickCompany(n, d)} className="block w-full rounded px-2 py-1 text-left hover:bg-accent">@{n} <span className="text-xs text-muted-foreground">{d}</span></Button>)}
         </div>
       )}
+      {!keys.nebius && demoOut && (
+        <div role="alert" className="mx-3 mt-2 rounded-lg border border-border bg-muted/60 p-3 text-xs">
+          <p className="font-medium">You've used your 3 free checks for today. Add your own free Nebius and Tavily keys in Settings to keep going - it takes 2 minutes.</p>
+          <ul className="mt-2 list-disc space-y-1 pl-4 text-muted-foreground">
+            <li>Nebius: sign up at <a className="underline" href="https://tokenfactory.nebius.com" target="_blank" rel="noreferrer">tokenfactory.nebius.com</a>, open API keys and create a key.</li>
+            <li>Tavily: sign up at <a className="underline" href="https://app.tavily.com" target="_blank" rel="noreferrer">app.tavily.com</a> and copy your free API key from the dashboard.</li>
+          </ul>
+          <Button type="button" onClick={() => window.dispatchEvent(new Event("grinder-open-keys"))} className="mt-2 rounded-lg bg-primary px-3 py-1.5 font-medium text-primary-foreground">Add my keys</Button>
+        </div>
+      )}
+      {!keys.nebius && !demoOut && demoLeft !== null && (
+        <p className="mx-3 mt-2 text-xs text-muted-foreground" aria-live="polite">{demoLeft} free check{demoLeft === 1 ? "" : "s"} left today · <button type="button" className="underline" onClick={() => window.dispatchEvent(new Event("grinder-open-keys"))}>use my own keys</button></p>
+      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -359,7 +384,7 @@ export function ChatPanel({
               send(input);
             }
           }}
-          placeholder={deep ? "e.g. Write a cover letter for this role…" : "Message Grinder… type @ to pick a company"}
+          placeholder={deep ? "e.g. Write a cover letter for this role…" : "Message GrinderResume… type @ to pick a company"}
           className="flex-1 resize-none bg-transparent px-2 py-1 text-sm outline-none"
         />
         {busy ? (

@@ -11,7 +11,7 @@ import { createQuiz, submitQuiz } from '@/lib/quiz.functions';
 
 export const Route = createFileRoute('/quiz')({
   validateSearch: (s) => z.object({ company: z.string().optional(), url: z.string().optional(), id: z.string().optional() }).parse(s),
-  head: () => ({ meta: [{ title: 'Fit quiz — Grinder' }, { name: 'description', content: 'Answer three role-specific questions in your own words and get a fit score before you apply.' }, { property: 'og:title', content: 'Fit quiz — Grinder' }, { property: 'og:description', content: 'Prove your fit for a specific role in your own words.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }] }),
+  head: () => ({ meta: [{ title: 'Fit quiz - GrinderResume' }, { name: 'description', content: 'Answer three role-specific questions in your own words and get a fit score before you apply.' }, { property: 'og:title', content: 'Fit quiz - GrinderResume' }, { property: 'og:description', content: 'Prove your fit for a specific role in your own words.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }] }),
   component: QuizPage,
 });
 

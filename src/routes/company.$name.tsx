@@ -22,9 +22,9 @@ export const Route = createFileRoute("/company/$name")({
   validateSearch: search,
   head: ({ params }) => ({
     meta: [
-      { title: `${params.name} careers & open roles — Grinder` },
+      { title: `${params.name} careers & open roles - GrinderResume` },
       { name: "description", content: `Official careers pages and current open roles at ${params.name}, researched live with Tavily.` },
-      { property: "og:title", content: `${params.name} careers — Grinder` },
+      { property: "og:title", content: `${params.name} careers - GrinderResume` },
       { property: "og:description", content: `Research open roles at ${params.name}.` },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
