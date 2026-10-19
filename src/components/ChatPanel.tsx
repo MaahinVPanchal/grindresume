@@ -204,7 +204,7 @@ export function ChatPanel({
       });
       if (res.status === 429 && res.headers.get("X-Demo-Limit")) { setDemoLeft(0); setDemoOut(true); setMsgs(msgs); return; }
       const left = res.headers.get("X-Demo-Remaining");
-      if (left !== null) { setDemoLeft(Number(left)); if (Number(left) <= 0) setDemoOut(false); }
+      if (left !== null) { setDemoLeft(Number(left)); if (Number(left) <= 0) setDemoOut(true); }
       if (!res.ok || !res.body) throw new Error((await res.text()) || `Error ${res.status}`);
       const reader = res.body.getReader();
       const dec = new TextDecoder();
