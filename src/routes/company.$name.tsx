@@ -80,9 +80,8 @@ function CompanyPage() {
   const [selected, setSelected] = useState<{ url: string; title: string; content?: string; loading?: boolean; error?: string } | null>(null);
 
   async function run() {
-    if (!keys.tavily) return;
     setLoading(true);
-    setRes(await find({ data: { apiKey: keys.tavily, company: name, domain: cleanDomain(domain), title, location } }));
+    setRes(await find({ data: { apiKey: keys.tavily || undefined, company: name, domain: cleanDomain(domain), title, location } }));
     setLoading(false);
   }
   useEffect(() => {
@@ -130,16 +129,12 @@ function CompanyPage() {
             </div>
             <Button
               onClick={run}
-              disabled={loading || !keys.tavily}
+              disabled={loading}
               className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
             >
               <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Refresh
             </Button>
           </div>
-
-          {!keys.tavily && (
-            <Notice>Connect your Tavily key (top right) to research this company's open roles.</Notice>
-          )}
           {loading && (
             <div className="flex items-center gap-3 rounded-lg glass p-8 text-muted-foreground">
               <Loader2 className="h-5 w-5 animate-spin" /> Searching official careers pages and job boards…
