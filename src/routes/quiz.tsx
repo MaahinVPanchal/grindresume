@@ -8,10 +8,16 @@ import { Button } from '@/components/Button';
 import { supabase } from '@/integrations/supabase/client';
 import { useKeys } from '@/lib/keys';
 import { createQuiz, submitQuiz } from '@/lib/quiz.functions';
+import { pageHead } from '@/lib/seo';
 
 export const Route = createFileRoute('/quiz')({
   validateSearch: (s) => z.object({ company: z.string().optional(), url: z.string().optional(), id: z.string().optional() }).parse(s),
-  head: () => ({ meta: [{ title: 'Fit quiz - GrinderResume' }, { name: 'description', content: 'Answer three role-specific questions in your own words and get a fit score before you apply.' }, { property: 'og:title', content: 'Fit quiz - GrinderResume' }, { property: 'og:description', content: 'Prove your fit for a specific role in your own words.' }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' }] }),
+  head: () =>
+    pageHead({
+      title: 'Fit Quiz — GrinderResume',
+      description: 'Answer role-specific questions in your own words and evaluate your candidate fit before you apply.',
+      path: '/quiz',
+    }),
   component: QuizPage,
 });
 

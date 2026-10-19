@@ -3,16 +3,16 @@ import { useEffect, useState } from 'react';
 import { Shell } from '@/components/Shell';
 import { Button } from '@/components/Button';
 import { supabase } from '@/integrations/supabase/client';
+import { pageHead } from '@/lib/seo';
 
 export const Route = createFileRoute('/reset-password')({
-  head: () => ({ meta: [
-    { title: 'Reset your password - GrinderResume' },
-    { name: 'description', content: 'Choose a new password for your GrinderResume account.' },
-    { property: 'og:title', content: 'Reset your password - GrinderResume' },
-    { property: 'og:description', content: 'Securely set a new password for your GrinderResume workspace.' },
-    { property: 'og:type', content: 'website' },
-    { name: 'twitter:card', content: 'summary' },
-  ] }),
+  head: () =>
+    pageHead({
+      title: 'Reset Your Password — GrinderResume',
+      description: 'Choose a new password for your GrinderResume account.',
+      path: '/reset-password',
+      noindex: true,
+    }),
   component: ResetPasswordPage,
 });
 

@@ -1,5 +1,5 @@
 import { Button } from "@/components/Button";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { ExternalLink, Loader2, RefreshCw, ArrowLeft, FileText, AlertCircle } from "lucide-react";
@@ -11,6 +11,8 @@ import { findCareers, extractPage } from "@/lib/research.functions";
 import { logoFor, cleanDomain } from "@/lib/companies";
 import { SaveRole } from '@/components/SaveRole';
 import { ApplicationBrief } from '@/components/ApplicationBrief';
+import { companySlug, companyFromSlug, rememberCompany } from "@/lib/company-slug";
+import { pageHead } from "@/lib/seo";
 
 const search = z.object({
   domain: z.string().optional(),
@@ -20,24 +22,43 @@ const search = z.object({
 
 export const Route = createFileRoute("/company/$name")({
   validateSearch: search,
-  head: ({ params }) => ({
-    meta: [
-      { title: `${params.name} careers & open roles - GrinderResume` },
-      { name: "description", content: `Official careers pages and current open roles at ${params.name}, researched live with Tavily.` },
-      { property: "og:title", content: `${params.name} careers - GrinderResume` },
-      { property: "og:description", content: `Research open roles at ${params.name}.` },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  beforeLoad: ({ params, search }) => {
+    const slug = companySlug(params.name);
+    // If old ?domain= param is present or name was unslugified, remember company domain and 301 redirect
+    if (search.domain || params.name !== slug) {
+      if (search.domain) {
+        rememberCompany(params.name, search.domain);
+      }
+      throw redirect({
+        to: "/company/$name",
+        params: { name: slug },
+        search: {
+          title: search.title || undefined,
+          location: search.location || undefined,
+        },
+        statusCode: 301,
+      });
+    }
+  },
+  head: ({ params }) => {
+    const info = companyFromSlug(params.name);
+    return pageHead({
+      title: `${info.name} careers & open roles — GrinderResume`,
+      description: `Official careers pages and current verified open roles at ${info.name}, researched live with Tavily and GrinderResume.`,
+      path: `/company/${params.name}`,
+    });
+  },
   component: CompanyPage,
 });
 
 type Result = Awaited<ReturnType<typeof findCareers>>;
 
 function CompanyPage() {
-  const { name } = Route.useParams();
-  const { domain, title, location } = Route.useSearch();
+  const { name: slug } = Route.useParams();
+  const { domain: searchDomain, title, location } = Route.useSearch();
+  const info = useMemo(() => companyFromSlug(slug), [slug]);
+  const name = info.name;
+  const domain = searchDomain || info.domain;
   const keys = useKeys();
   const find = useServerFn(findCareers);
   const extract = useServerFn(extractPage);

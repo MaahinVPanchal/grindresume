@@ -4,8 +4,16 @@ import { useEffect, useState } from 'react';
 import { Bookmark, Trash2 } from 'lucide-react';
 import { Shell } from '@/components/Shell';
 import { Button } from '@/components/Button';
-import { supabase } from '@/integrations/supabase/client';
-export const Route=createFileRoute('/saved')({head:()=>({meta:[{title:'Saved roles - GrinderResume'},{name:'description',content:'Keep selected company roles and your application progress privately in GrinderResume.'},{property:'og:title',content:'Saved roles - GrinderResume'},{property:'og:description',content:'Revisit roles and prepare research-grounded applications.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),component:SavedPage});
+import { pageHead } from '@/lib/seo';
+export const Route = createFileRoute('/saved')({
+  head: () =>
+    pageHead({
+      title: 'Saved Roles — GrinderResume',
+      description: 'Keep selected company roles and your application progress privately in GrinderResume.',
+      path: '/saved',
+    }),
+  component: SavedPage,
+});
 function SavedPage(){
   const [rows,setRows]=useState<{id:string;company:string;title:string;url:string;status:string}[]>([]);const [ready,setReady]=useState(false);const [signedIn,setSignedIn]=useState(false);const [error,setError]=useState('');
   useEffect(()=>{let cancelled=false;supabase.auth.getSession().then(async({data})=>{if(cancelled)return;setSignedIn(!!data.session);if(data.session){const r=await supabase.from('saved_roles').select('*').order('created_at',{ascending:false});if(cancelled)return;if(r.error)setError('Saved roles could not load.');else setRows(r.data||[]);}setReady(true);});return()=>{cancelled=true;};},[]);

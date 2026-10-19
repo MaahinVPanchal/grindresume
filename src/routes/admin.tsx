@@ -10,18 +10,16 @@ import { buildLines, validateLines, splitLines, downloadParts, formatBytes, NEBI
 type Storage = { tables: { name: string; bytes: number }[]; files_bytes: number; files_count: number };
 const rpc = (n: string) => (supabase.rpc as unknown as (n: string) => Promise<{ data: unknown; error: unknown }>)(n);
 
+import { pageHead } from "@/lib/seo";
+
 export const Route = createFileRoute("/admin")({
-  head: () => ({
-    meta: [
-      { title: "Admin console - GrinderResume" },
-      { name: "description", content: "Private admin console for GrinderResume usage metrics and data exports." },
-      { property: "og:title", content: "Admin console - GrinderResume" },
-      { property: "og:description", content: "Users, queries and dataset exports for GrinderResume admins." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-      { name: "robots", content: "noindex" },
-    ],
-  }),
+  head: () =>
+    pageHead({
+      title: "Admin Console — GrinderResume",
+      description: "Private admin console for GrinderResume usage metrics and dataset exports.",
+      path: "/admin",
+      noindex: true,
+    }),
   component: AdminPage,
 });
 

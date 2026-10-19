@@ -10,17 +10,15 @@ import { Button } from "@/components/Button";
 import { CommunityCatalog } from "@/components/CommunityCatalog";
 import { FeaturedCatalog } from "@/components/FeaturedCatalog";
 
+import { pageHead } from "@/lib/seo";
+
 export const Route = createFileRoute("/yc")({
-  head: () => ({
-    meta: [
-      { title: "YC Explorer - GrinderResume" },
-      { name: "description", content: "Browse hiring Y Combinator startups and research their open roles." },
-      { property: "og:title", content: "YC Explorer - GrinderResume" },
-      { property: "og:description", content: "Browse hiring Y Combinator startups." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  head: () =>
+    pageHead({
+      title: "YC Explorer — GrinderResume",
+      description: "Browse hiring Y Combinator startups and research their open roles with live Tavily research.",
+      path: "/yc",
+    }),
   component: YCPage,
 });
 

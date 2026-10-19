@@ -1,7 +1,16 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { Shell } from '@/components/Shell';
 import { Search, FileText, MessageCircle, ArrowRight } from 'lucide-react';
-export const Route=createFileRoute('/focus')({head:()=>({meta:[{title:'Our focus - GrinderResume'},{name:'description',content:'GrinderResume researches the company and role, finds the proof in your experience, and tells you what to say — and why.'},{property:'og:title',content:'Our focus - GrinderResume'},{property:'og:description',content:'Company-first research, actual resume evidence and approval-only application guidance.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'}]}),component:FocusPage});
+import { pageHead } from '@/lib/seo';
+export const Route = createFileRoute('/focus')({
+  head: () =>
+    pageHead({
+      title: 'Our Focus — GrinderResume',
+      description: 'GrinderResume researches the company and role, finds the proof in your experience, and tells you what to say — and why.',
+      path: '/focus',
+    }),
+  component: FocusPage,
+});
 function FocusPage(){return <Shell>
   <section className="max-w-3xl py-9"><p className="text-xs font-semibold uppercase text-muted-foreground">Our focus</p><h1 className="mt-3 font-display text-5xl">Apply like you’ve done your homework.</h1><p className="mt-5 text-lg">Most tools help you send more applications. GrinderResume helps you send a better one: it studies the company and the role, finds the proof in your own experience, and tells you what to say — and why.</p></section>
   <div className="grid gap-6 border-y py-7 md:grid-cols-3">{[{Icon:Search,title:'Know the company',text:'Tavily reads the live job post, careers pages and recent company news, with links so you can check every fact yourself.'},{Icon:FileText,title:'Know your proof',text:'Each requirement is matched to something you have actually done. If the proof is missing, we say so — we never invent experience.'},{Icon:MessageCircle,title:'Know what to say',text:'Your chosen Nebius model turns that into one clear message, an editable cover letter and suggested resume edits that change only when you approve them.'}].map(({Icon,title,text})=><section key={title}><Icon className="mb-3 h-5 w-5"/><h2 className="font-semibold">{title}</h2><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{text}</p></section>)}</div>

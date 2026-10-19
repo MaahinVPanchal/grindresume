@@ -2,17 +2,15 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Shell } from "@/components/Shell";
 import { ChatPanel } from "@/components/ChatPanel";
 
+import { pageHead } from "@/lib/seo";
+
 export const Route = createFileRoute("/chat")({
-  head: () => ({
-    meta: [
-      { title: "Chat - GrinderResume" },
-      { name: "description", content: "Chat with Nebius AI models about careers, companies and applications." },
-      { property: "og:title", content: "Chat - GrinderResume" },
-      { property: "og:description", content: "Career chat powered by Nebius models." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  head: () =>
+    pageHead({
+      title: "Career Chat — GrinderResume",
+      description: "Chat with Nebius AI models about careers, companies, and grounded job applications.",
+      path: "/chat",
+    }),
   component: () => (
     <Shell>
       <ChatPanel
