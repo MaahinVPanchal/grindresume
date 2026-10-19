@@ -1,3 +1,4 @@
+import { companyLink } from "@/lib/company-slug";
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Sparkles } from 'lucide-react';
@@ -21,7 +22,7 @@ export function FeaturedCatalog({ query = '' }: { query?: string }) {
       <p className="mt-1 text-xs text-muted-foreground">{list.length} companies · showing {p * PER_PAGE + 1}–{p * PER_PAGE + shown.length}</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {shown.map(([name, domain]) => (
-          <Link key={name} to="/company/$name" params={{ name }} search={{ domain }} className="flex min-h-28 flex-col rounded-lg glass p-4 transition hover:-translate-y-0.5 hover:bg-glass-strong">
+          <Link key={name} {...companyLink(name, domain)} className="flex min-h-28 flex-col rounded-lg glass p-4 transition hover:-translate-y-0.5 hover:bg-glass-strong">
             <div className="flex items-center gap-3"><CompanyMark website={`https://${domain}`} name={name} /><div className="min-w-0"><div className="break-words font-medium">{name}</div><div className="text-xs text-muted-foreground">{domain}</div></div></div>
             <p className="mt-auto pt-3 text-xs text-muted-foreground">Research open roles →</p>
           </Link>

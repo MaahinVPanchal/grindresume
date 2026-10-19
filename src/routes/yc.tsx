@@ -1,3 +1,5 @@
+import { companyLink } from "@/lib/company-slug";
+import { cleanDomain } from "@/lib/companies";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -83,9 +85,7 @@ function YCPage() {
         {res?.companies.map((c) => (
           <Link
             key={c.slug}
-            to="/company/$name"
-            params={{ name: c.name }}
-            search={{ domain: c.website }}
+            {...companyLink(c.name, cleanDomain(c.website))}
             className="group rounded-lg glass p-4 transition hover:-translate-y-0.5 hover:bg-glass-strong"
           >
             <div className="flex items-center gap-3">

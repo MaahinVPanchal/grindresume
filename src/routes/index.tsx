@@ -1,3 +1,4 @@
+import { companyLink } from "@/lib/company-slug";
 import { Button } from "@/components/Button";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -29,7 +30,7 @@ function Index() {
   const [location, setLocation] = useState("");
 
   const go = (name: string, domain?: string) =>
-    nav({ to: "/company/$name", params: { name }, search: { domain, title: title || undefined, location: location || undefined } });
+    nav({ ...companyLink(name, domain), search: { title: title || undefined, location: location || undefined } });
 
   return (
     <Shell>
