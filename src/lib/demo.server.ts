@@ -46,7 +46,7 @@ export async function useDemoCheck(): Promise<number> {
   const a = await consume(`v:${v}`, "check", DEMO_CHECKS);
   const b = await consume(`ip:${ip()}`, "check", IP_CHECKS);
   if (a < 0 || b < 0) throw new Error(DEMO_LIMIT_MESSAGE);
-  return Math.min(a, IP_CHECKS - (IP_CHECKS - b));
+  return Math.min(a, b);
 }
 
 /** Supporting demo calls (role search, page reads, research) are allowed only while checks remain, with their own caps. */
