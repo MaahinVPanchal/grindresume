@@ -11,9 +11,9 @@ import { FeaturedCatalog } from "@/components/FeaturedCatalog";
 export const Route = createFileRoute("/yc")({
   head: () => ({
     meta: [
-      { title: "YC Explorer — Grinder" },
+      { title: "YC Explorer - GrinderResume" },
       { name: "description", content: "Browse hiring Y Combinator startups and research their open roles." },
-      { property: "og:title", content: "YC Explorer — Grinder" },
+      { property: "og:title", content: "YC Explorer - GrinderResume" },
       { property: "og:description", content: "Browse hiring Y Combinator startups." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

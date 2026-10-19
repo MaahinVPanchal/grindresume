@@ -13,10 +13,10 @@ const rpc = (n: string) => (supabase.rpc as unknown as (n: string) => Promise<{ 
 export const Route = createFileRoute("/admin")({
   head: () => ({
     meta: [
-      { title: "Admin console — Grinder" },
-      { name: "description", content: "Private admin console for Grinder usage metrics and data exports." },
-      { property: "og:title", content: "Admin console — Grinder" },
-      { property: "og:description", content: "Users, queries and dataset exports for Grinder admins." },
+      { title: "Admin console - GrinderResume" },
+      { name: "description", content: "Private admin console for GrinderResume usage metrics and data exports." },
+      { property: "og:title", content: "Admin console - GrinderResume" },
+      { property: "og:description", content: "Users, queries and dataset exports for GrinderResume admins." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },

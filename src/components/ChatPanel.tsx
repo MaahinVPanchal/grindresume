@@ -384,7 +384,7 @@ export function ChatPanel({
               send(input);
             }
           }}
-          placeholder={deep ? "e.g. Write a cover letter for this role…" : "Message Grinder… type @ to pick a company"}
+          placeholder={deep ? "e.g. Write a cover letter for this role…" : "Message GrinderResume… type @ to pick a company"}
           className="flex-1 resize-none bg-transparent px-2 py-1 text-sm outline-none"
         />
         {busy ? (
