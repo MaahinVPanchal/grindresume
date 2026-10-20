@@ -9,7 +9,7 @@ export type AssistantTarget = {
   entryId?: string;
   entryTitle?: string;
   field?: 'details' | 'bullets' | 'heading';
-  bulletIndex?: number;
+  bulletIndex?: number | undefined;
   text: string;
   request?: string;
 };
@@ -38,7 +38,7 @@ export function ResumeEditor({ resume, change, selected, onOpenAssistant }: { re
     <label className="flex items-center gap-3 border-t pt-4 text-sm"><Plus className="h-4 w-4"/><select aria-label="Add section" value="" onChange={e=>{const kind=e.target.value as Section['kind']; if(!kind)return; change({...resume,sections:[...resume.sections,{id:uid(),kind,heading:({summary:'Professional summary',experience:'Work experience',projects:'Projects',skills:'Skills',education:'Education',certifications:'Certifications & awards',additional:'Additional section'})[kind],entries:[blankEntry()]}]});}} className="min-w-0 flex-1 rounded-md border bg-glass-strong p-2"><option value="">Add a section…</option>{['summary','experience','projects','skills','education','certifications','additional'].map(k=><option key={k} value={k}>{k[0]?.toUpperCase()}{k.slice(1)}</option>)}</select></label>
   </div>;
 }
-function EntryFields({entry:e,section:s,update,onOpenAssistant}:{entry:Entry;section:Section;update:(e:Entry)=>void;onOpenAssistant?:(target:AssistantTarget)=>void}) {
+function EntryFields({entry:e,section:s,update,onOpenAssistant}:{entry:Entry;section:Section;update:(e:Entry)=>void;onOpenAssistant?:((target:AssistantTarget)=>void) | undefined}) {
   const textOnly=s.kind==='summary'||s.kind==='skills';
   const hasBullets = e.bullets.length > 0;
   const hasDetails = !!e.details.trim();
