@@ -24,12 +24,21 @@ export const Route = createFileRoute("/api/chat")({
         let key = parsed.data.apiKey;
         let demoLeft: number | null = null;
         if (!key) {
-          // Demo mode: the owner's server key powers a few free checks per visitor per day.
+          // Demo mode: the owner's server key powers 3 free checks per signed-in user per day.
           key = process.env["NEBIUS_API_KEY"];
           if (!key) return new Response("Add your Nebius API key in Settings.", { status: 401 });
           const demo = await import("@/lib/demo.server");
-          try { demoLeft = await demo.useDemoCheck(); }
-          catch (e) { return new Response((e as Error).message, { status: 429, headers: { "X-Demo-Limit": "1" } }); }
+          try {
+            const authHeader = request.headers.get("authorization");
+            demoLeft = await demo.useDemoCheck(authHeader);
+          } catch (e) {
+            const msg = (e as Error).message;
+            const isAuthReq = msg.includes("Sign up free") || msg.includes("Sign in");
+            return new Response(msg, {
+              status: isAuthReq ? 401 : 429,
+              headers: isAuthReq ? { "X-Auth-Required": "1" } : { "X-Demo-Limit": "1" },
+            });
+          }
           model = process.env["DEMO_MODEL"] || "meta-llama/Llama-3.3-70B-Instruct";
         }
 
@@ -63,7 +72,11 @@ export const Route = createFileRoute("/api/chat")({
           return new Response(t.slice(0, 500) || "Nebius error", { status: upstream.status });
         }
         return new Response(upstream.body, {
-          headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache, no-transform", ...(demoLeft !== null ? { "X-Demo-Remaining": String(demoLeft) } : {}) },
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache, no-transform",
+            ...(demoLeft !== null ? { "X-Demo-Remaining": String(demoLeft) } : {}),
+          },
         });
       },
     },

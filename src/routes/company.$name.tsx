@@ -247,9 +247,16 @@ function CompanyPage() {
 }
 
 function Notice({ children }: { children: React.ReactNode }) {
+  const isSignIn = typeof children === 'string' && children.toLowerCase().includes('sign in');
   return (
-    <div className="flex items-center gap-3 rounded-lg p-5 text-sm">
-      <AlertCircle className="h-5 w-5 text-muted-foreground" /> {children}
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-muted/60 p-4 text-sm">
+      <AlertCircle className="h-5 w-5 text-muted-foreground" />
+      <span className="flex-1">{children}</span>
+      {isSignIn && (
+        <Link to="/resume" className="rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90">
+          Sign in
+        </Link>
+      )}
     </div>
   );
 }

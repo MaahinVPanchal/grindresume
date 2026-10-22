@@ -16,7 +16,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "How does the free demo mode work?",
-    a: "Visitors get 3 free AI checks per day without needing their own API keys. Free demo checks are processed on the server using owner-scoped Nebius AI (powered by Llama 3.3 70B) and Tavily search, bounded by privacy-safe rate limits. Private keys and tokens never leave the server or reach visitor browsers.",
+    a: "Sign up free to get 3 checks daily without needing your own API keys. Free checks are tied to your account and processed on the server using owner-scoped Nebius AI (powered by Llama 3.3 70B) and Tavily search, bounded by privacy-safe daily limits. Private keys and tokens never leave the server or reach visitor browsers.",
   },
   {
     q: "Can I connect my own API keys?",
@@ -313,7 +313,7 @@ function Index() {
               <h3 className="text-base font-semibold">Free Demo & Private BYO Keys</h3>
             </div>
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-              Try GrinderResume immediately with 3 free checks daily run on server-side Nebius (Llama 3.3 70B) and Tavily keys without setting up accounts. Add your own free keys anytime for unlimited usage.
+              Sign up free to get 3 checks daily run on server-side Nebius (Llama 3.3 70B) and Tavily keys. Add your own free keys anytime for unlimited usage.
             </p>
           </div>
         </div>
