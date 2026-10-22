@@ -13,6 +13,28 @@ const Body = z.object({
 
 const BASES = ["https://api.tokenfactory.nebius.com/v1", "https://api.studio.nebius.com/v1"];
 
+// Demo replies use the first preferred model the owner's Nebius account can access.
+const PREFERRED = [/Llama-3\.3-70B/i, /Llama-3\.1-70B/i, /DeepSeek-V3/i, /Qwen.*Instruct/i, /Instruct/i];
+let demoModel: string | null = null;
+async function pickDemoModel(key: string): Promise<string> {
+  if (demoModel) return demoModel;
+  for (const base of BASES) {
+    try {
+      const r = await fetch(`${base}/models`, { headers: { Authorization: `Bearer ${key}` } });
+      if (!r.ok) continue;
+      const ids: string[] = ((await r.json()).data ?? []).map((m: { id: string }) => m.id);
+      for (const re of PREFERRED) {
+        const hit = ids.find((id) => re.test(id) && !/embed|vision|-VL/i.test(id));
+        if (hit) return (demoModel = hit);
+      }
+      if (ids[0]) return (demoModel = ids[0]);
+    } catch {
+      /* try next base */
+    }
+  }
+  return "meta-llama/Llama-3.3-70B-Instruct";
+}
+
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
@@ -30,7 +52,7 @@ export const Route = createFileRoute("/api/chat")({
           const demo = await import("@/lib/demo.server");
           try { demoLeft = await demo.useDemoCheck(); }
           catch (e) { return new Response((e as Error).message, { status: 429, headers: { "X-Demo-Limit": "1" } }); }
-          model = process.env["DEMO_MODEL"] || "meta-llama/Llama-3.3-70B-Instruct";
+          model = process.env["DEMO_MODEL"] || (await pickDemoModel(key));
         }
 
         const system =
