@@ -8,49 +8,43 @@ export const DEMO_CHECKS = 3;
 const IP_CHECKS = 6;
 const LIMITS: Record<string, number> = { search: 15, extract: 15, research: 6 };
 const COOKIE = "gr_demo";
+export const DEMO_SIGNUP_MESSAGE = "Sign up free to get 3 free checks a day - no API keys needed.";
+export const SIGN_IN_REQUIRED_MESSAGE = DEMO_SIGNUP_MESSAGE;
 export const DEMO_LIMIT_MESSAGE =
   "You've used your 3 free checks for today. Add your own free Nebius and Tavily keys in Settings to keep going - it takes 2 minutes.";
-export const SIGN_IN_REQUIRED_MESSAGE =
-  "Sign up free to get 3 free checks a day - no API keys needed.";
 
-export async function getAuthUserId(customAuthHeader?: string | null): Promise<string | null> {
-  let header = customAuthHeader;
-  if (!header) {
+void getCookie; void setCookie; void COOKIE;
+
+/** Demo checks belong to a signed-in account; returns the verified user id or null. */
+export async function demoUser(customAuthHeader?: string | null): Promise<string | null> {
+  let auth = customAuthHeader;
+  if (!auth) {
     try {
-      header = getRequestHeader("authorization") ?? null;
+      auth = getRequestHeader("authorization") || "";
     } catch {
-      header = null;
+      auth = "";
     }
   }
-  if (!header || !header.startsWith("Bearer ")) return null;
-  const token = header.slice(7).trim();
-  if (!token || token.split(".").length !== 3) return null;
-  try {
-    const claimsRes = await supabaseAdmin.auth.getClaims(token);
-    if (claimsRes.data?.claims?.sub) return String(claimsRes.data.claims.sub);
-  } catch {
-    /* fallback to getUser */
-  }
-  try {
-    const userRes = await supabaseAdmin.auth.getUser(token);
-    if (userRes.data?.user?.id) return String(userRes.data.user.id);
-  } catch {
-    return null;
-  }
-  return null;
+  const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  if (!token) return null;
+  const { data, error } = await supabaseAdmin.auth.getUser(token);
+  return error || !data?.user ? null : data.user.id;
 }
 
-function visitor(): string {
-  let id = getCookie(COOKIE);
-  if (!id || !/^[a-f0-9-]{36}$/.test(id)) {
-    id = crypto.randomUUID();
-    setCookie(COOKIE, id, { httpOnly: true, sameSite: "lax", secure: true, path: "/", maxAge: 60 * 60 * 24 * 365 });
-  }
+export const getAuthUserId = demoUser;
+
+async function visitor(customAuthHeader?: string | null): Promise<string> {
+  const id = await demoUser(customAuthHeader);
+  if (!id) throw new Error(DEMO_SIGNUP_MESSAGE);
   return id;
 }
 
 function ip(): string {
-  return (getRequestHeader("cf-connecting-ip") || getRequestHeader("x-forwarded-for") || "unknown").split(",")[0]!.trim();
+  try {
+    return (getRequestHeader("cf-connecting-ip") || getRequestHeader("x-forwarded-for") || "unknown").split(",")[0]!.trim();
+  } catch {
+    return "unknown";
+  }
 }
 
 async function used(bucket: string, kind: string) {
@@ -64,20 +58,19 @@ async function consume(bucket: string, kind: string, limit: number) {
   return Number(data);
 }
 
-/** Free checks left today for this user (0 for signed-out visitors). */
+/** Free checks left today for this signed-in user (0 for signed-out visitors). */
 export async function demoRemaining(userId?: string | null): Promise<number> {
-  const uid = userId !== undefined ? userId : await getAuthUserId();
-  if (!uid) return 0;
-  const [a, b] = await Promise.all([used(`u:${uid}`, "check"), used(`ip:${ip()}`, "check")]);
+  const v = userId !== undefined ? userId : await demoUser();
+  if (!v) return 0;
+  const [a, b] = await Promise.all([used(`v:${v}`, "check"), used(`ip:${ip()}`, "check")]);
   return Math.max(0, Math.min(DEMO_CHECKS - a, IP_CHECKS - b));
 }
 
 /** Use one free check (a copilot reply). Returns remaining, or throws when not signed in or limit hit. */
 export async function useDemoCheck(customAuthHeader?: string | null): Promise<number> {
-  const uid = await getAuthUserId(customAuthHeader);
-  if (!uid) throw new Error(SIGN_IN_REQUIRED_MESSAGE);
-  if ((await demoRemaining(uid)) <= 0) throw new Error(DEMO_LIMIT_MESSAGE);
-  const a = await consume(`u:${uid}`, "check", DEMO_CHECKS);
+  const v = await visitor(customAuthHeader);
+  if ((await demoRemaining(v)) <= 0) throw new Error(DEMO_LIMIT_MESSAGE);
+  const a = await consume(`v:${v}`, "check", DEMO_CHECKS);
   const b = await consume(`ip:${ip()}`, "check", IP_CHECKS);
   if (a < 0 || b < 0) throw new Error(DEMO_LIMIT_MESSAGE);
   return Math.min(a, b);
@@ -85,14 +78,14 @@ export async function useDemoCheck(customAuthHeader?: string | null): Promise<nu
 
 /** Supporting demo calls (role search, page reads, research) require sign-in and are allowed only while checks remain. */
 export async function allowDemo(kind: keyof typeof LIMITS, customAuthHeader?: string | null): Promise<void> {
-  const uid = await getAuthUserId(customAuthHeader);
-  if (!uid) {
+  const v = await demoUser(customAuthHeader);
+  if (!v) {
     if (kind === "search") throw new Error("Sign in to search roles for free, or add your own Tavily key in Settings.");
     if (kind === "extract") throw new Error("Sign in to read job postings for free, or add your own Tavily key in Settings.");
-    throw new Error("Sign in to use free tools, or add your own keys in Settings.");
+    throw new Error(DEMO_SIGNUP_MESSAGE);
   }
-  if ((await demoRemaining(uid)) <= 0) throw new Error(DEMO_LIMIT_MESSAGE);
-  if ((await consume(`u:${uid}`, kind, LIMITS[kind]!)) < 0) throw new Error(DEMO_LIMIT_MESSAGE);
+  if ((await demoRemaining(v)) <= 0) throw new Error(DEMO_LIMIT_MESSAGE);
+  if ((await consume(`v:${v}`, kind, LIMITS[kind]!)) < 0) throw new Error(DEMO_LIMIT_MESSAGE);
 }
 
 /** Resolve a provider key: the user's own key, or the owner's server key under demo limits. */

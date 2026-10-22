@@ -62,24 +62,15 @@ export function ChatPanel({
   const demoStatus = useServerFn(getDemoStatus);
   const [demoLeft, setDemoLeft] = useState<number | null>(null);
   const [demoOut, setDemoOut] = useState(false);
-  const [session, setSession] = useState<Session | null>(null);
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      setSession(s);
-    });
-    return () => sub.subscription.unsubscribe();
-  }, []);
+  const [needSignup, setNeedSignup] = useState(false);
   useEffect(() => {
     if (keys.nebius) return;
-    if (!session) {
-      setDemoLeft(0);
-      setDemoOut(false);
-      return;
-    }
-    demoStatus().then((r) => { setDemoLeft(r.remaining); setDemoOut(r.remaining <= 0); }).catch(() => {});
+    const load = () => demoStatus().then((r) => { setNeedSignup(!r.signedIn); setDemoLeft(r.signedIn ? r.remaining : null); setDemoOut(r.signedIn && r.remaining <= 0); }).catch(() => {});
+    load();
+    const { data } = supabase.auth.onAuthStateChange(() => { load(); });
+    return () => data.subscription.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keys.nebius, session]);
+  }, [keys.nebius]);
   const research = useServerFn(deepResearch);
   const [deep, setDeep] = useState(false);
   const [resumes, setResumes] = useState<{ id: string; title: string }[]>([]);
@@ -182,7 +173,7 @@ export function ChatPanel({
     }
     const useResume = (o as { rid?: string } | undefined)?.rid || resumeId;
     setErr("");
-    if (!keys.nebius && !session) { setErr("Sign up free to get 3 free checks a day - no API keys needed."); return; }
+    if (!keys.nebius && needSignup) { setErr("Sign up free to get 3 free checks a day - no API keys needed."); return; }
     if (!keys.nebius && demoOut) return;
     const next: Msg[] = [...msgs, { role: "user", content: text }];
     setMsgs([...next, { role: "assistant", content: "" }]);
@@ -211,13 +202,14 @@ export function ChatPanel({
         ctx = `${ctx}\n\n${r.context}`.slice(0, 45000);
         setStatus(`${r.sourceCount} sources · ${r.resumeUsed ? "resume facts included" : "no resume"}${r.match ? ` · ${r.match.score}% semantic match` : ""}`);
       }
+      const token = (await supabase.auth.getSession()).data.session?.access_token;
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         signal: abort.current.signal,
         body: JSON.stringify({ apiKey: keys.nebius || undefined, model: keys.model || "demo", messages: next, context: ctx || undefined }),
       });
-      if (res.status === 401 && res.headers.get("X-Auth-Required")) { setErr("Sign up free to get 3 free checks a day - no API keys needed."); setMsgs(msgs); return; }
+      if (res.status === 401 && (res.headers.get("X-Demo-Signup") || res.headers.get("X-Auth-Required"))) { setNeedSignup(true); setErr("Sign up free to get 3 free checks a day - no API keys needed."); setMsgs(msgs); return; }
       if (res.status === 429 && res.headers.get("X-Demo-Limit")) { setDemoLeft(0); setDemoOut(true); setMsgs(msgs); return; }
       const left = res.headers.get("X-Demo-Remaining");
       if (left !== null) { setDemoLeft(Number(left)); if (Number(left) <= 0) setDemoOut(true); }
@@ -357,27 +349,26 @@ export function ChatPanel({
           {matches.map(([n, d]) => <Button type="button" role="option" key={n} onClick={() => pickCompany(n, d)} className="block w-full rounded px-2 py-1 text-left hover:bg-accent">@{n} <span className="text-xs text-muted-foreground">{d}</span></Button>)}
         </div>
       )}
-      {!keys.nebius && !session && (
-        <div role="status" className="mx-3 mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/60 p-2.5 text-xs">
-          <span className="font-medium">Sign up free to get 3 free checks a day - no API keys needed.</span>
-          <div className="flex items-center gap-2">
-            <Link to="/resume" className="rounded-md bg-primary px-2.5 py-1 font-medium text-primary-foreground hover:bg-primary/90">
+      {!keys.nebius && needSignup && (
+        <div role="alert" className="mx-3 mt-2 rounded-lg border border-border bg-muted/60 p-3 text-xs">
+          <p className="font-medium">Sign up free to get 3 free checks a day - no API keys needed.</p>
+          <div className="mt-2 flex items-center gap-2">
+            <Link to="/resume" className="rounded-md bg-primary px-3 py-1.5 font-medium text-primary-foreground hover:bg-primary/90">
               Sign up or sign in
             </Link>
-            <span className="text-muted-foreground">·</span>
             <button
               type="button"
-              className="underline text-muted-foreground hover:text-foreground"
+              className="ml-2 underline text-muted-foreground hover:text-foreground"
               onClick={() => window.dispatchEvent(new Event("grinder-open-keys"))}
             >
-              use own keys
+              or use my own keys
             </button>
           </div>
         </div>
       )}
-      {!keys.nebius && session && demoOut && (
+      {!keys.nebius && !needSignup && demoOut && (
         <div role="alert" className="mx-3 mt-2 rounded-lg border border-border bg-muted/60 p-3 text-xs">
-          <p className="font-medium">You've used your 3 free checks for today. Add your own free Nebius and Tavily keys in Settings to keep going - it takes 2 minutes.</p>
+          <p className="font-medium">You've used your 3 free checks for today for today. Add your own free Nebius and Tavily keys in Settings to keep going - it takes 2 minutes.</p>
           <ul className="mt-2 list-disc space-y-1 pl-4 text-muted-foreground">
             <li>Nebius: sign up at <a className="underline" href="https://tokenfactory.nebius.com" target="_blank" rel="noreferrer">tokenfactory.nebius.com</a>, open API keys and create a key.</li>
             <li>Tavily: sign up at <a className="underline" href="https://app.tavily.com" target="_blank" rel="noreferrer">app.tavily.com</a> and copy your free API key from the dashboard.</li>
@@ -385,7 +376,7 @@ export function ChatPanel({
           <Button type="button" onClick={() => window.dispatchEvent(new Event("grinder-open-keys"))} className="mt-2 rounded-lg bg-primary px-3 py-1.5 font-medium text-primary-foreground">Add my keys</Button>
         </div>
       )}
-      {!keys.nebius && session && !demoOut && demoLeft !== null && (
+      {!keys.nebius && !needSignup && !demoOut && demoLeft !== null && (
         <p className="mx-3 mt-2 text-xs text-muted-foreground" aria-live="polite">
           {demoLeft} free check{demoLeft === 1 ? "" : "s"} left today · <button type="button" className="underline" onClick={() => window.dispatchEvent(new Event("grinder-open-keys"))}>use my own keys</button>
         </p>
