@@ -7,15 +7,22 @@ export const DEMO_CHECKS = 3;
 const IP_CHECKS = 6;
 const LIMITS: Record<string, number> = { search: 15, extract: 15, research: 6 };
 const COOKIE = "gr_demo";
+export const DEMO_SIGNUP_MESSAGE = "Sign up free to get 3 free checks a day - no API keys needed.";
 export const DEMO_LIMIT_MESSAGE =
   "You've used your 3 free checks for today. Add your own free Nebius and Tavily keys in Settings to keep going - it takes 2 minutes.";
 
-function visitor(): string {
-  let id = getCookie(COOKIE);
-  if (!id || !/^[a-f0-9-]{36}$/.test(id)) {
-    id = crypto.randomUUID();
-    setCookie(COOKIE, id, { httpOnly: true, sameSite: "lax", secure: true, path: "/", maxAge: 60 * 60 * 24 * 365 });
-  }
+void getCookie; void setCookie; void COOKIE;
+/** Demo checks belong to a signed-in account; returns the verified user id or null. */
+export async function demoUser(): Promise<string | null> {
+  const auth = getRequestHeader("authorization") || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  if (!token) return null;
+  const { data, error } = await supabaseAdmin.auth.getUser(token);
+  return error || !data.user ? null : data.user.id;
+}
+async function visitor(): Promise<string> {
+  const id = await demoUser();
+  if (!id) throw new Error(DEMO_SIGNUP_MESSAGE);
   return id;
 }
 function ip(): string {
@@ -34,7 +41,7 @@ async function consume(bucket: string, kind: string, limit: number) {
 
 /** Free checks left today for this visitor (min of cookie and IP allowance). */
 export async function demoRemaining(): Promise<number> {
-  const v = visitor();
+  const v = await visitor();
   const [a, b] = await Promise.all([used(`v:${v}`, "check"), used(`ip:${ip()}`, "check")]);
   return Math.max(0, Math.min(DEMO_CHECKS - a, IP_CHECKS - b));
 }
@@ -42,7 +49,7 @@ export async function demoRemaining(): Promise<number> {
 /** Use one free check (a copilot reply). Returns remaining, or throws when the limit is hit. */
 export async function useDemoCheck(): Promise<number> {
   if ((await demoRemaining()) <= 0) throw new Error(DEMO_LIMIT_MESSAGE);
-  const v = visitor();
+  const v = await visitor();
   const a = await consume(`v:${v}`, "check", DEMO_CHECKS);
   const b = await consume(`ip:${ip()}`, "check", IP_CHECKS);
   if (a < 0 || b < 0) throw new Error(DEMO_LIMIT_MESSAGE);
@@ -52,7 +59,7 @@ export async function useDemoCheck(): Promise<number> {
 /** Supporting demo calls (role search, page reads, research) are allowed only while checks remain, with their own caps. */
 export async function allowDemo(kind: keyof typeof LIMITS): Promise<void> {
   if ((await demoRemaining()) <= 0) throw new Error(DEMO_LIMIT_MESSAGE);
-  if ((await consume(`v:${visitor()}`, kind, LIMITS[kind]!)) < 0) throw new Error(DEMO_LIMIT_MESSAGE);
+  if ((await consume(`v:${await visitor()}`, kind, LIMITS[kind]!)) < 0) throw new Error(DEMO_LIMIT_MESSAGE);
 }
 
 /** Resolve a provider key: the user's own key, or the owner's server key under demo limits. */

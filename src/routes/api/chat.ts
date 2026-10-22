@@ -51,7 +51,11 @@ export const Route = createFileRoute("/api/chat")({
           if (!key) return new Response("Add your Nebius API key in Settings.", { status: 401 });
           const demo = await import("@/lib/demo.server");
           try { demoLeft = await demo.useDemoCheck(); }
-          catch (e) { return new Response((e as Error).message, { status: 429, headers: { "X-Demo-Limit": "1" } }); }
+          catch (e) {
+            const m = (e as Error).message;
+            if (m === demo.DEMO_SIGNUP_MESSAGE) return new Response(m, { status: 401, headers: { "X-Demo-Signup": "1" } });
+            return new Response(m, { status: 429, headers: { "X-Demo-Limit": "1" } });
+          }
           model = process.env["DEMO_MODEL"] || (await pickDemoModel(key));
         }
 

@@ -2,10 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 
 /** Free demo checks left today for this visitor; sets the visitor cookie if missing. */
 export const getDemoStatus = createServerFn({ method: "POST" }).handler(async () => {
-  const { demoRemaining, DEMO_CHECKS } = await import("./demo.server");
+  const { demoRemaining, demoUser, DEMO_CHECKS } = await import("./demo.server");
   try {
-    return { remaining: await demoRemaining(), total: DEMO_CHECKS };
+    if (!(await demoUser())) return { remaining: 0, total: DEMO_CHECKS, signedIn: false };
+    return { remaining: await demoRemaining(), total: DEMO_CHECKS, signedIn: true };
   } catch {
-    return { remaining: 0, total: DEMO_CHECKS };
+    return { remaining: 0, total: DEMO_CHECKS, signedIn: true };
   }
 });
