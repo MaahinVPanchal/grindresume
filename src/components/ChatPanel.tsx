@@ -193,7 +193,7 @@ export function ChatPanel({
         const { data: s } = await supabase.auth.getSession();
         if (!s.session && !keys.tavily) throw new Error("Sign in to use deep research for free, or add your own Tavily key in Settings.");
         setStatus(tgt.trim() ? "Researching the role and company…" : "Reading your resume…");
-        void supabase.from("search_history").insert({ user_id: s.session.user.id, kind: "deep_chat", query: text.slice(0, 2000), company: company?.name || tgt.slice(0, 120), urls: roleUrls });
+        if (s.session) void supabase.from("search_history").insert({ user_id: s.session.user.id, kind: "deep_chat", query: text.slice(0, 2000), company: company?.name || tgt.slice(0, 120), urls: roleUrls });
         // Reuse research for follow-up questions about the same resume and job.
         const cacheKey = JSON.stringify([useResume, tgt.trim(), roleUrls]);
         const r = researchCache.current.get(cacheKey) ?? await research({ data: { resumeId: useResume || undefined, target: tgt, roles: roleUrls.length ? roleUrls : undefined, tavilyKey: keys.tavily || undefined, nebiusKey: keys.nebius || undefined } });
