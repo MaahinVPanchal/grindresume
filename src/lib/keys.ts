@@ -56,7 +56,7 @@ async function syncFromAccount() {
   const local = readStored();
   if (!uid) {
     // Signed out: keep only keys typed while signed out.
-    if (local.owner) clearLocal();
+    if (local.owner !== "") clearLocal();
     return;
   }
   const { data: row } = await supabase
