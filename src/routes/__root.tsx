@@ -1,3 +1,4 @@
+import { oloy } from "@oloy/sdk/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -125,6 +126,9 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    oloy("https://browser.oloy.ai/app_bafb7d20-5239-4783-97a9-450b022fc652");
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
