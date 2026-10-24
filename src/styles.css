@@ -217,3 +217,11 @@ input, textarea { min-width: 0; }
 .swatch-blue { background: var(--resume-blue); }
 @media(max-width: 1023px) { .resume-workspace { height: 680px; max-height: none; } }
 @media(max-width: 600px) { .resume-paper { margin-left: 0; } }
+
+/* Social dock (React Bits "Dock" inspired): neighbors of the hovered icon lift slightly. */
+.dock > a:has(+ a:hover), .dock > a:hover + a { transform: translateY(-3px) scale(1.05); }
+
+/* Fused field shells own the focus ring so it follows the pill shape instead of a bare
+   rectangular input outline spilling over the wrapper. */
+.field-shell:focus-within { outline: 2px solid var(--ring); outline-offset: 3px; }
+.field-shell input:focus-visible { outline: none; }

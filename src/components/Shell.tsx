@@ -1,8 +1,7 @@
 import { Button } from "@/components/Button";
 import { Link } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
 import { Eye, EyeOff, KeyRound, Loader2, Check, MessageCircle, X, Github, Linkedin, Youtube } from "lucide-react";
-import bg from "@/assets/landscape.webp.asset.json";
 import { saveKeys, useKeys } from "@/lib/keys";
 import { useServerFn } from "@tanstack/react-start";
 import { validateTavily, listNebiusModels } from "@/lib/research.functions";
@@ -17,9 +16,17 @@ export function DevpostIcon({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
+const SOCIALS: { label: string; href: string; Icon: ComponentType<{ className?: string }>; hover: string }[] = [
+  { label: "GitHub", href: "https://github.com/MaahinVPanchal/grindresume", Icon: Github, hover: "hover:text-foreground" },
+  { label: "Devpost", href: "https://devpost.com/software/grinderresume", Icon: DevpostIcon, hover: "hover:text-teal-600 dark:hover:text-teal-400" },
+  { label: "Demo Video", href: "https://www.youtube.com/watch?v=83adL-GZ4IY", Icon: Youtube, hover: "hover:text-red-600 dark:hover:text-red-400" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/feed/update/urn:li:activity:7516032835724484609/", Icon: Linkedin, hover: "hover:text-blue-600 dark:hover:text-blue-400" },
+];
+
 export function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [ask, setAsk] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const keys = useKeys();
   const ready = !!keys.tavily && !!keys.nebius;
   useEffect(() => {
@@ -27,104 +34,108 @@ export function Shell({ children }: { children: ReactNode }) {
     window.addEventListener("grinder-open-keys", h);
     return () => window.removeEventListener("grinder-open-keys", h);
   }, []);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   return (
     <div className="relative isolate min-h-screen">
       <div
         className="fixed inset-0 -z-10 bg-cover bg-center"
-        style={{ backgroundImage: `url(${bg.url})` }}
+        style={{ backgroundImage: "url(/tavily-landscape.jpg)" }}
         aria-hidden
       />
       <div className="fixed inset-0 -z-10 bg-background/35" aria-hidden />
-      <header className="sticky top-0 z-40 border-b border-border/30 glass-strong backdrop-blur-md mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-3">
-        <Link to="/" className="flex shrink-0 items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary font-display text-xl text-primary-foreground">
-            g
-          </span>
-          <span className="text-xl font-semibold tracking-normal">GrinderResume</span>
-          <span className="hidden font-display text-lg italic text-muted-foreground xl:inline">/careers</span>
-        </Link>
-        <nav className="order-3 flex w-full flex-wrap items-center justify-center gap-0.5 rounded-full glass p-1 text-sm lg:order-none lg:w-auto">
-
-          {([
-            ["/", "Discover"],
-            ["/resume", "Resume"],
-            ["/yc", "YC Explorer"],
-            ["/quiz", "Fit quiz"],
-            ["/saved", "Saved"],
-            ["/focus", "Our focus"],
-          ] as const).map(([to, l]) => (
-            <Link
-              key={to}
-              to={to}
-              activeOptions={{ exact: true }}
-              className="rounded-full px-2.5 py-1.5 text-muted-foreground transition hover:text-foreground"
-              activeProps={{ className: "bg-primary !text-primary-foreground" }}
+      <header
+        className={`sticky top-0 z-40 w-full border-b bg-background/75 backdrop-blur-xl transition ${
+          scrolled ? "border-border/60 shadow-[0_1px_16px_-6px_oklch(0.25_0.01_60/0.18)]" : "border-border/30"
+        }`}
+      >
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 py-3">
+          <Link to="/" className="flex shrink-0 items-center gap-2.5">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary font-display text-lg text-primary-foreground ring-1 ring-foreground/10">
+              g
+            </span>
+            <span className="text-lg font-semibold tracking-tight">GrinderResume</span>
+            <span className="hidden font-display text-base italic text-muted-foreground/80 xl:inline">/careers</span>
+          </Link>
+          <nav aria-label="Primary" className="order-3 flex w-full flex-wrap items-center justify-center gap-1 text-sm lg:order-none lg:w-auto">
+            {([
+              ["/", "Discover"],
+              ["/resume", "Resume"],
+              ["/yc", "YC Explorer"],
+              ["/quiz", "Fit Quiz"],
+              ["/saved", "Saved"],
+              ["/focus", "Our Focus"],
+            ] as const).map(([to, l]) => (
+              <Link
+                key={to}
+                to={to}
+                activeOptions={{ exact: true }}
+                className="rounded-full px-3 py-1.5 font-medium text-muted-foreground transition hover:bg-foreground/5 hover:text-foreground"
+                activeProps={{ className: "bg-primary !text-primary-foreground shadow-sm hover:!bg-primary hover:!text-primary-foreground" }}
+              >
+                {l}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button aria-label="Ask GrinderResume" title="Ask GrinderResume" className="grid h-9 w-9 place-items-center rounded-full border border-border/60 bg-glass-strong transition hover:bg-muted" onClick={()=>setAsk(true)}><MessageCircle className="h-4 w-4"/></Button>
+            <Button
+              onClick={() => setOpen(true)}
+              title={ready ? "API keys connected" : "Connect API keys"}
+              className="flex h-9 items-center gap-2 rounded-full bg-primary px-3.5 text-sm font-medium text-primary-foreground transition hover:opacity-90"
             >
-              {l}
-            </Link>
-          ))}
-        </nav>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <Button aria-label="Ask GrinderResume" title="Ask GrinderResume" className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong" onClick={()=>setAsk(true)}><MessageCircle className="h-4 w-4"/></Button>
-          <Button
-            onClick={() => setOpen(true)}
-            className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
-          >
-            <KeyRound className="h-4 w-4" />
-            <span className="hidden sm:inline">{ready ? "Keys connected" : "Connect keys"}</span>
-            <span className={`h-2 w-2 rounded-full ${ready ? "bg-sage" : "bg-peach"}`} />
-          </Button>
-          <ProfileMenu />
+              <KeyRound className="h-4 w-4" />
+              <span className="hidden sm:inline">{ready ? "Keys" : "Connect keys"}</span>
+              <span className={`h-1.5 w-1.5 rounded-full ${ready ? "bg-sage" : "bg-peach"}`} aria-hidden />
+            </Button>
+            <ProfileMenu />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-5 pb-8">{children}</main>
-      <footer className="mx-auto max-w-7xl border-t border-border/40 px-5 py-8 text-xs text-muted-foreground">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="grid h-6 w-6 place-items-center rounded-md bg-primary font-display text-sm text-primary-foreground">
-              g
-            </span>
-            <span className="font-semibold text-foreground">GrinderResume</span>
-            <span className="text-muted-foreground">/ Careers & Resume Workspace</span>
+      <footer className="relative mt-4 overflow-hidden border-t border-border/40">
+        <span aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 select-none text-center font-display text-[13vw] italic leading-[0.85] text-foreground/5 sm:text-[9vw]">
+          GrinderResume
+        </span>
+        <div className="relative mx-auto flex max-w-7xl flex-col items-center gap-8 px-5 py-10 text-xs text-muted-foreground sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex flex-col items-center gap-2 sm:items-start">
+            <div className="flex items-center gap-2">
+              <span className="grid h-7 w-7 place-items-center rounded-md bg-primary font-display text-sm text-primary-foreground">g</span>
+              <span className="text-sm font-semibold text-foreground">GrinderResume</span>
+            </div>
+            <p>/ Careers & Resume Workspace</p>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <a
-              href="https://github.com/MaahinVPanchal/grindresume"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full glass-strong px-3 py-1.5 hover:text-foreground transition font-medium"
-            >
-              <Github className="h-3.5 w-3.5" />
-              <span>GitHub</span>
-            </a>
-            <a
-              href="https://devpost.com/software/grinderresume"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full glass-strong px-3 py-1.5 hover:text-foreground transition font-medium text-teal-600 dark:text-teal-400"
-            >
-              <DevpostIcon className="h-3.5 w-3.5" />
-              <span>Devpost</span>
-            </a>
-            <a
-              href="https://www.youtube.com/watch?v=83adL-GZ4IY"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full glass-strong px-3 py-1.5 hover:text-foreground transition font-medium text-red-600 dark:text-red-400"
-            >
-              <Youtube className="h-3.5 w-3.5" />
-              <span>Demo Video</span>
-            </a>
-            <a
-              href="https://www.linkedin.com/feed/update/urn:li:activity:7516032835724484609/"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full glass-strong px-3 py-1.5 hover:text-foreground transition font-medium text-blue-600 dark:text-blue-400"
-            >
-              <Linkedin className="h-3.5 w-3.5" />
-              <span>LinkedIn</span>
-            </a>
+          <div className="flex flex-col items-center gap-5 sm:items-end">
+            <div className="flex flex-col items-center gap-2 sm:items-end">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Built for</p>
+              <span title="Built for the Nebius × NVIDIA AI Hackathon" className="grid h-16 w-16 place-items-center rounded-2xl bg-white shadow-md ring-1 ring-border/60">
+                <img src="/hack.png" alt="Built for the Nebius × NVIDIA AI Hackathon" width="52" height="52" className="h-13 w-13 object-contain" />
+              </span>
+            </div>
+            <div className="flex flex-col items-center gap-2 sm:items-end">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Follow the build</p>
+              <div className="dock flex items-center gap-2.5">
+                {SOCIALS.map(({ label, href, Icon, hover }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`${label} (opens in a new tab)`}
+                    className={`group relative grid h-10 w-10 place-items-center rounded-full border border-border/60 bg-glass-strong text-muted-foreground shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-foreground/25 ${hover}`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-[11px] font-medium text-background opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+                      {label}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </footer>

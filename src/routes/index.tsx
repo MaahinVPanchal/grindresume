@@ -2,7 +2,7 @@ import { companyLink } from "@/lib/company-slug";
 import { Button } from "@/components/Button";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Building2, Globe, MapPin, Briefcase, Search, Upload, ArrowRight, Github, Linkedin, Youtube, Sparkles, FileCheck2, ChevronDown, Check, X, Microscope, Scale } from "lucide-react";
+import { Building2, Globe, MapPin, Briefcase, Search, Upload, ArrowRight, FileCheck2, ChevronDown, Check, X, Microscope, Scale } from "lucide-react";
 
 const STEPS = [
   { icon: Search, title: "Find live roles", text: "Pick any company. We read its official careers page and job boards directly.", example: "Cursor → 270 open roles" },
@@ -18,7 +18,7 @@ const COMPARE = [
   { label: "Resume editor with matching PDF & Word", hint: "What you see is what you send", v: [true, false, false] },
   { label: "Free to start, no keys needed", hint: "Sign up for 3 free checks a day", v: [true, true, true] },
 ];
-import { Shell, DevpostIcon } from "@/components/Shell";
+import { Shell } from "@/components/Shell";
 import { CompanyTicker } from "@/components/CompanyTicker";
 import { CommunityCatalog } from "@/components/CommunityCatalog";
 import { FeaturedCatalog } from "@/components/FeaturedCatalog";
@@ -88,113 +88,14 @@ function Index() {
 
   return (
     <Shell>
-      <section className="mx-auto max-w-4xl pt-5 text-center">
-        <p className="inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1 text-xs font-medium text-muted-foreground">
-          <Sparkles className="h-3.5 w-3.5" /> GrinderResume · Built for the Nebius × NVIDIA AI Hackathon
-        </p>
-        <h1 className="mt-4 font-display text-5xl leading-tight tracking-normal sm:text-6xl">
-          Apply to fewer jobs.<br />Get more interviews.
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-          See every open role straight from the company, learn what they really want, and tailor your resume using only
-          your real experience — never invented.
-        </p>
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-          <Link to="/resume" className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90">
-            Sign up free — 3 checks a day <ArrowRight className="h-4 w-4" />
+      <section className="mx-auto max-w-4xl pt-6 text-center">
+        <h1 className="sr-only">GrinderResume — see open roles straight from companies, learn what employers want, and tailor your resume with your real experience.</h1>
+        <div className="flex flex-wrap items-center justify-center">
+          <Link to="/resume" className="inline-flex h-11 items-center gap-2 rounded-full border border-border/70 bg-glass-strong px-5 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted">
+            <Upload className="h-4 w-4" /> Upload resume <ArrowRight className="h-4 w-4 text-muted-foreground" />
           </Link>
-          <Link to="/resume" className="inline-flex h-11 items-center gap-2 rounded-lg glass-strong px-5 text-sm font-medium transition hover:bg-muted">
-            <Upload className="h-4 w-4" /> Upload resume
-          </Link>
-        </div>
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
-          <a
-            href="https://github.com/MaahinVPanchal/grindresume"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              try {
-                if (window.self !== window.top) {
-                  e.preventDefault();
-                  window.open("https://github.com/MaahinVPanchal/grindresume", "_blank", "noopener,noreferrer");
-                }
-              } catch {
-                e.preventDefault();
-                window.open("https://github.com/MaahinVPanchal/grindresume", "_blank", "noopener,noreferrer");
-              }
-            }}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-foreground hover:bg-muted"
-          >
-            <Github className="h-4 w-4" />
-            <span>GitHub</span>
-          </a>
-          <a
-            href="https://devpost.com/software/grinderresume"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              try {
-                if (window.self !== window.top) {
-                  e.preventDefault();
-                  window.open("https://devpost.com/software/grinderresume", "_blank", "noopener,noreferrer");
-                }
-              } catch {
-                e.preventDefault();
-                window.open("https://devpost.com/software/grinderresume", "_blank", "noopener,noreferrer");
-              }
-            }}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-teal-600 dark:text-teal-400 hover:bg-muted"
-          >
-            <DevpostIcon className="h-4 w-4" />
-            <span>Devpost</span>
-          </a>
-          <a
-            href="https://www.youtube.com/watch?v=83adL-GZ4IY"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              try {
-                if (window.self !== window.top) {
-                  e.preventDefault();
-                  window.open("https://www.youtube.com/watch?v=83adL-GZ4IY", "_blank", "noopener,noreferrer");
-                }
-              } catch {
-                e.preventDefault();
-                window.open("https://www.youtube.com/watch?v=83adL-GZ4IY", "_blank", "noopener,noreferrer");
-              }
-            }}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-red-600 dark:text-red-400 hover:bg-muted"
-          >
-            <Youtube className="h-4 w-4" />
-            <span>Demo Video</span>
-          </a>
-          <a
-            href="https://www.linkedin.com/feed/update/urn:li:activity:7516032835724484609/"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => {
-              try {
-                if (window.self !== window.top) {
-                  e.preventDefault();
-                  window.open("https://www.linkedin.com/feed/update/urn:li:activity:7516032835724484609/", "_blank", "noopener,noreferrer");
-                }
-              } catch {
-                e.preventDefault();
-                window.open("https://www.linkedin.com/feed/update/urn:li:activity:7516032835724484609/", "_blank", "noopener,noreferrer");
-              }
-            }}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs font-medium hover:border-foreground/30 transition shadow-sm text-blue-600 dark:text-blue-400 hover:bg-muted"
-          >
-            <Linkedin className="h-4 w-4" />
-            <span>LinkedIn</span>
-          </a>
         </div>
       </section>
-
-      <div className="mx-auto mt-6 flex max-w-4xl flex-wrap items-center justify-between gap-4 border-y border-border py-4 text-left">
-        <div className="flex items-center gap-3"><Upload className="h-5 w-5 text-muted-foreground"/><div><p className="text-sm font-semibold">Make your next application count.</p><p className="text-xs text-muted-foreground">Your resume, ready for the right opportunity.</p></div></div>
-        <Link to="/resume" className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground">Upload resume <ArrowRight className="h-4 w-4"/></Link>
-      </div>
 
       <form
         onSubmit={(e) => {
@@ -206,25 +107,39 @@ function Index() {
             else void go(isUrl ? company.replace(/^https?:\/\//, "").split(".")[0] ?? company : company.trim(), isUrl ? company : undefined);
           }
         }}
-        className="mx-auto mt-7 max-w-4xl space-y-4 rounded-lg glass p-5 text-left"
+        aria-label="Find careers and open roles"
+        className="mx-auto mt-7 max-w-4xl space-y-4 rounded-2xl glass p-5 text-left sm:p-6"
       >
-        <label className="text-sm font-medium">Company name or website</label>
-        <div className="flex items-center gap-3 rounded-lg bg-glass-strong px-4">
-          <Building2 className="h-5 w-5 text-muted-foreground" />
-          <input
-            value={company}
-            onChange={(e) => setCompany(e.target.value)}
-            placeholder="Which company are you curious about?"
-            className="h-14 flex-1 bg-transparent outline-none"
-          />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="field-shell flex h-12 flex-1 items-center gap-3 rounded-full border border-border/70 bg-glass-strong px-5 transition focus-within:border-foreground/40 focus-within:shadow-sm">
+            <Building2 className="h-5 w-5 shrink-0 text-muted-foreground" />
+            <label htmlFor="company-search" className="sr-only">Company name or website</label>
+            <input
+              id="company-search"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              placeholder="Which company are you curious about?"
+              autoComplete="off"
+              className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+          <Button type="submit" className="flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-medium text-primary-foreground shadow-md transition hover:opacity-90 sm:w-auto">
+            <Search className="h-4 w-4" /> Find Careers & Open Roles
+          </Button>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field icon={<Briefcase className="h-4 w-4" />} label="Job title" value={title} onChange={setTitle} ph="e.g. Product Designer" />
-          <Field icon={<MapPin className="h-4 w-4" />} label="Location" value={location} onChange={setLocation} ph="e.g. Remote, London" />
+          <div className="field-shell flex h-12 items-center gap-2.5 rounded-xl border border-border/60 bg-glass-strong px-4 transition focus-within:border-foreground/40">
+            <Briefcase className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <label htmlFor="job-title-filter" className="sr-only">Job title (optional)</label>
+            <input id="job-title-filter" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Job title · e.g. Product Designer" className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+          </div>
+          <div className="field-shell flex h-12 items-center gap-2.5 rounded-xl border border-border/60 bg-glass-strong px-4 transition focus-within:border-foreground/40">
+            <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <label htmlFor="location-filter" className="sr-only">Location (optional)</label>
+            <input id="location-filter" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Location · e.g. Remote, London" className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground" />
+          </div>
         </div>
-        <Button type="submit" className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-primary py-3.5 font-medium text-primary-foreground transition hover:opacity-90">
-          <Search className="h-4 w-4" /> Find Careers & Open Roles
-        </Button>
+        <p className="text-xs text-muted-foreground">Live from official careers pages and job boards — job title and location are optional.</p>
       </form>
 
       <CompanyTicker onSelect={go} />
@@ -325,19 +240,5 @@ function Index() {
         />
       </section>
     </Shell>
-  );
-}
-
-function Field({ icon, label, value, onChange, ph }: { icon: React.ReactNode; label: string; value: string; onChange: (v: string) => void; ph: string }) {
-  return (
-    <div>
-      <div className="mb-1.5 flex justify-between text-sm font-medium">
-        {label} <span className="text-xs font-normal text-muted-foreground">Optional</span>
-      </div>
-      <div className="flex items-center gap-2 rounded-lg bg-muted px-3 text-muted-foreground">
-        {icon}
-        <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={ph} className="h-11 flex-1 bg-transparent text-sm text-foreground outline-none" />
-      </div>
-    </div>
   );
 }
