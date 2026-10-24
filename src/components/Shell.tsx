@@ -35,15 +35,16 @@ export function Shell({ children }: { children: ReactNode }) {
         aria-hidden
       />
       <div className="fixed inset-0 -z-10 bg-background/35" aria-hidden />
-      <header className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-4">
-        <Link to="/" className="flex items-center gap-2">
+      <header className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-4">
+        <Link to="/" className="flex shrink-0 items-center gap-2">
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary font-display text-xl text-primary-foreground">
             g
           </span>
           <span className="text-xl font-semibold tracking-normal">GrinderResume</span>
-          <span className="hidden font-display text-lg italic text-muted-foreground sm:inline">/careers</span>
+          <span className="hidden font-display text-lg italic text-muted-foreground xl:inline">/careers</span>
         </Link>
-        <nav className="order-3 flex w-full flex-wrap items-center justify-center gap-1 rounded-full glass p-1 text-sm lg:order-none lg:w-auto">
+        <nav className="order-3 flex w-full flex-wrap items-center justify-center gap-0.5 rounded-full glass p-1 text-sm lg:order-none lg:w-auto">
+
           {([
             ["/", "Discover"],
             ["/resume", "Resume"],
