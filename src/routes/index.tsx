@@ -2,7 +2,22 @@ import { companyLink } from "@/lib/company-slug";
 import { Button } from "@/components/Button";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Building2, Globe, MapPin, Briefcase, Search, Upload, ArrowRight, Github, Linkedin, Youtube, ShieldCheck, Sparkles, FileCheck2, Cpu, ChevronDown } from "lucide-react";
+import { Building2, Globe, MapPin, Briefcase, Search, Upload, ArrowRight, Github, Linkedin, Youtube, Sparkles, FileCheck2, ChevronDown, Check, X, Microscope, Scale } from "lucide-react";
+
+const STEPS = [
+  { icon: Search, title: "Find live roles", text: "Pick any company. We read its official careers page and job boards directly.", example: "Cursor → 270 open roles" },
+  { icon: Microscope, title: "Learn what they want", text: "Get the real requirements and team context from the company's own sources.", example: "Skills, team, expectations" },
+  { icon: Scale, title: "Check your fit", text: "Compare your resume to the role: what matches, and honest gaps.", example: "Match score + gaps" },
+  { icon: FileCheck2, title: "Tailor & download", text: "Polish your bullets and download a PDF or Word file that looks exactly like the preview.", example: "PDF · Word" },
+];
+
+const COMPARE = [
+  { label: "Never invents experience", hint: "Every suggestion uses your real resume", v: [true, false, true] },
+  { label: "Live roles from the company itself", hint: "Official careers pages, Greenhouse, Lever, Ashby", v: [true, false, false] },
+  { label: "Explains what the employer wants", hint: "Grounded in sources, not guesses", v: [true, false, false] },
+  { label: "Resume editor with matching PDF & Word", hint: "What you see is what you send", v: [true, false, false] },
+  { label: "Free to start, no keys needed", hint: "Sign up for 3 free checks a day", v: [true, true, true] },
+];
 import { Shell, DevpostIcon } from "@/components/Shell";
 import { CompanyTicker } from "@/components/CompanyTicker";
 import { CommunityCatalog } from "@/components/CommunityCatalog";
@@ -74,11 +89,24 @@ function Index() {
   return (
     <Shell>
       <section className="mx-auto max-w-4xl pt-5 text-center">
-        <h1 className="font-display text-5xl leading-tight tracking-normal sm:text-6xl">GrinderResume</h1>
-        <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
-          Your experience stays. Your applications get smarter. Discover opportunities, understand what employers need,
-          and improve your application with research.
+        <p className="inline-flex items-center gap-2 rounded-full glass-strong px-3 py-1 text-xs font-medium text-muted-foreground">
+          <Sparkles className="h-3.5 w-3.5" /> GrinderResume · Built for the Nebius × NVIDIA AI Hackathon
         </p>
+        <h1 className="mt-4 font-display text-5xl leading-tight tracking-normal sm:text-6xl">
+          Apply to fewer jobs.<br />Get more interviews.
+        </h1>
+        <p className="mx-auto mt-4 max-w-2xl text-muted-foreground">
+          See every open role straight from the company, learn what they really want, and tailor your resume using only
+          your real experience — never invented.
+        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Link to="/resume" className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 text-sm font-medium text-primary-foreground shadow-sm transition hover:opacity-90">
+            Sign up free — 3 checks a day <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link to="/resume" className="inline-flex h-11 items-center gap-2 rounded-lg glass-strong px-5 text-sm font-medium transition hover:bg-muted">
+            <Upload className="h-4 w-4" /> Upload resume
+          </Link>
+        </div>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
           <a
             href="https://github.com/MaahinVPanchal/grindresume"
@@ -209,113 +237,60 @@ function Index() {
       </p>
 
       {/* How it works */}
-      <section className="mx-auto mt-20 max-w-5xl text-left border-t border-border/40 pt-12">
+      <section className="mx-auto mt-20 max-w-5xl border-t border-border/40 pt-12 text-left">
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Workflow</p>
           <h2 className="mt-2 font-display text-3xl sm:text-4xl">How GrinderResume Works</h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground">
-            A continuous loop from company discovery to deep role research, verified evidence mapping, and ATS-ready resume downloads.
-          </p>
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground">From a company name to a tailored, ready-to-send resume in four steps.</p>
         </div>
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="flex flex-col justify-between rounded-xl glass p-5 transition hover:border-foreground/20">
-            <div>
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-xs font-bold text-primary">01</span>
-              <h3 className="mt-3 font-semibold text-sm">Search & Live Harvest</h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                Pick any company or startup. GrinderResume reads official careers pages and crawls ATS job boards (Greenhouse, Lever, Ashby) with Tavily search fallback.
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col justify-between rounded-xl glass p-5 transition hover:border-foreground/20">
-            <div>
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-xs font-bold text-primary">02</span>
-              <h3 className="mt-3 font-semibold text-sm">Research Real Criteria</h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                Synthesize true role criteria, team context, and candidate expectations directly from primary sources without generic boilerplate.
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col justify-between rounded-xl glass p-5 transition hover:border-foreground/20">
-            <div>
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-xs font-bold text-primary">03</span>
-              <h3 className="mt-3 font-semibold text-sm">Evidence Gap Analysis</h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                Compare your actual resume against the role requirements. Identify matching proof and honest gaps — zero invented accomplishments.
-              </p>
-            </div>
-          </div>
-          <div className="flex flex-col justify-between rounded-xl glass p-5 transition hover:border-foreground/20">
-            <div>
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-xs font-bold text-primary">04</span>
-              <h3 className="mt-3 font-semibold text-sm">Tailor & Export</h3>
-              <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-                Refine bullet points in the live paginated workspace and export matched PDF or DOCX files sharing single-state layout geometry.
-              </p>
-            </div>
-          </div>
-        </div>
+        <ol className="relative mt-10 grid gap-8 lg:grid-cols-4 lg:gap-4">
+          <div aria-hidden className="absolute left-5 top-5 bottom-5 w-px bg-border lg:left-[12.5%] lg:right-[12.5%] lg:top-5 lg:bottom-auto lg:h-px lg:w-auto" />
+          {STEPS.map((s, i) => (
+            <li key={s.title} className="relative flex gap-4 lg:flex-col lg:items-center lg:text-center">
+              <span className="relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                <s.icon className="h-4 w-4" />
+              </span>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Step {i + 1}</p>
+                <h3 className="mt-1 text-sm font-semibold">{s.title}</h3>
+                <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{s.text}</p>
+                <p className="mt-3 inline-block rounded-md glass-strong px-2.5 py-1 text-[11px] font-medium">{s.example}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </section>
 
       {/* Why GrinderResume */}
-      <section className="mx-auto mt-20 max-w-5xl text-left border-t border-border/40 pt-12">
+      <section className="mx-auto mt-20 max-w-5xl border-t border-border/40 pt-12 text-left">
         <div className="text-center">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Differentiators</p>
           <h2 className="mt-2 font-display text-3xl sm:text-4xl">Why GrinderResume</h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground">
-            Built for candidates who want to send one thoughtful, grounded application that gets interviews rather than 500 mass blasts.
-          </p>
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-muted-foreground">One thoughtful application that gets interviews beats 500 mass blasts.</p>
         </div>
-
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
-          <div className="rounded-xl glass p-6">
-            <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <h3 className="text-base font-semibold">Zero Hallucinations Guarantee</h3>
-            </div>
-            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-              We never fabricate candidate achievements, imaginary metrics, or fake companies. If a required skill is missing from your experience, our assistant alerts you to address it honestly rather than hallucinating false claims.
-            </p>
-          </div>
-
-          <div className="rounded-xl glass p-6">
-            <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <h3 className="text-base font-semibold">Live Primary-Source Research</h3>
-            </div>
-            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-              Instead of relying on stale job aggregator databases, GrinderResume checks official company domains and ATS boards (Greenhouse, Lever, Ashby, Workday) live with Tavily intelligence.
-            </p>
-          </div>
-
-          <div className="rounded-xl glass p-6">
-            <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400">
-                <FileCheck2 className="h-5 w-5" />
-              </div>
-              <h3 className="text-base font-semibold">Single-State PDF & Word Geometry</h3>
-            </div>
-            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-              What you see in the live paginated editor is exactly what gets exported. The editor, thumbnail generator, PDF engine, and DOCX generator share one single validated layout state.
-            </p>
-          </div>
-
-          <div className="rounded-xl glass p-6">
-            <div className="flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                <Cpu className="h-5 w-5" />
-              </div>
-              <h3 className="text-base font-semibold">Free Demo & Private BYO Keys</h3>
-            </div>
-            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-              Sign up free to get 3 checks daily run on server-side Nebius (Llama 3.3 70B) and Tavily keys. Add your own free keys anytime for unlimited usage.
-            </p>
-          </div>
+        <div className="mt-8 overflow-x-auto rounded-xl glass">
+          <table className="w-full min-w-[560px] text-sm">
+            <thead>
+              <tr className="border-b border-border text-left">
+                <th className="p-4 font-medium text-muted-foreground"> </th>
+                <th className="p-4 text-center font-semibold">GrinderResume</th>
+                <th className="p-4 text-center font-medium text-muted-foreground">ChatGPT</th>
+                <th className="p-4 text-center font-medium text-muted-foreground">Job boards</th>
+              </tr>
+            </thead>
+            <tbody>
+              {COMPARE.map((r) => (
+                <tr key={r.label} className="border-b border-border/50 last:border-0">
+                  <td className="p-4"><p className="font-medium">{r.label}</p><p className="mt-0.5 text-xs text-muted-foreground">{r.hint}</p></td>
+                  {r.v.map((ok, j) => (
+                    <td key={j} className={`p-4 text-center ${j === 0 ? "bg-primary/5" : ""}`}>
+                      {ok ? <Check className="mx-auto h-5 w-5 text-primary" /> : <X className="mx-auto h-5 w-5 text-muted-foreground/60" />}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 
