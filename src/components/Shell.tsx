@@ -35,7 +35,7 @@ export function Shell({ children }: { children: ReactNode }) {
         aria-hidden
       />
       <div className="fixed inset-0 -z-10 bg-background/35" aria-hidden />
-      <header className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-4">
+      <header className="sticky top-0 z-40 border-b border-border/30 glass-strong backdrop-blur-md mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-3">
         <Link to="/" className="flex shrink-0 items-center gap-2">
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary font-display text-xl text-primary-foreground">
             g
