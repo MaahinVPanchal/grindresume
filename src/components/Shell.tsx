@@ -57,7 +57,7 @@ export function Shell({ children }: { children: ReactNode }) {
               key={to}
               to={to}
               activeOptions={{ exact: true }}
-              className="rounded-full px-3 py-1.5 text-muted-foreground transition hover:text-foreground"
+              className="rounded-full px-2.5 py-1.5 text-muted-foreground transition hover:text-foreground"
               activeProps={{ className: "bg-primary !text-primary-foreground" }}
             >
               {l}
@@ -68,7 +68,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <Button aria-label="Ask GrinderResume" title="Ask GrinderResume" className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong" onClick={()=>setAsk(true)}><MessageCircle className="h-4 w-4"/></Button>
           <Button
             onClick={() => setOpen(true)}
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+            className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
           >
             <KeyRound className="h-4 w-4" />
             <span className="hidden sm:inline">{ready ? "Keys connected" : "Connect keys"}</span>
