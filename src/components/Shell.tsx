@@ -35,15 +35,16 @@ export function Shell({ children }: { children: ReactNode }) {
         aria-hidden
       />
       <div className="fixed inset-0 -z-10 bg-background/35" aria-hidden />
-      <header className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-4">
-        <Link to="/" className="flex items-center gap-2">
+      <header className="sticky top-0 z-40 border-b border-border/30 glass-strong backdrop-blur-md mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-3">
+        <Link to="/" className="flex shrink-0 items-center gap-2">
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary font-display text-xl text-primary-foreground">
             g
           </span>
           <span className="text-xl font-semibold tracking-normal">GrinderResume</span>
-          <span className="hidden font-display text-lg italic text-muted-foreground sm:inline">/careers</span>
+          <span className="hidden font-display text-lg italic text-muted-foreground xl:inline">/careers</span>
         </Link>
-        <nav className="order-3 flex w-full flex-wrap items-center justify-center gap-1 rounded-full glass p-1 text-sm lg:order-none lg:w-auto">
+        <nav className="order-3 flex w-full flex-wrap items-center justify-center gap-0.5 rounded-full glass p-1 text-sm lg:order-none lg:w-auto">
+
           {([
             ["/", "Discover"],
             ["/resume", "Resume"],
@@ -56,7 +57,7 @@ export function Shell({ children }: { children: ReactNode }) {
               key={to}
               to={to}
               activeOptions={{ exact: true }}
-              className="rounded-full px-3 py-1.5 text-muted-foreground transition hover:text-foreground"
+              className="rounded-full px-2.5 py-1.5 text-muted-foreground transition hover:text-foreground"
               activeProps={{ className: "bg-primary !text-primary-foreground" }}
             >
               {l}
@@ -67,7 +68,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <Button aria-label="Ask GrinderResume" title="Ask GrinderResume" className="grid h-9 w-9 place-items-center rounded-full bg-glass-strong" onClick={()=>setAsk(true)}><MessageCircle className="h-4 w-4"/></Button>
           <Button
             onClick={() => setOpen(true)}
-            className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+            className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground"
           >
             <KeyRound className="h-4 w-4" />
             <span className="hidden sm:inline">{ready ? "Keys connected" : "Connect keys"}</span>
