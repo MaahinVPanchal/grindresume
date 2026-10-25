@@ -13,8 +13,9 @@ export const Route = createFileRoute("/chat")({
     }),
   component: () => (
     <Shell>
+      <h1 className="mx-auto mb-4 max-w-3xl font-display text-3xl">Career chat with GrinderResume</h1>
       <ChatPanel
-        className="mx-auto h-[calc(100vh-8rem)] max-w-3xl"
+        className="mx-auto h-[calc(100vh-12rem)] max-w-3xl"
         title="Career chat"
         suggestions={[
           "How should I approach researching a company before applying?",

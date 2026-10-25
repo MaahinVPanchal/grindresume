@@ -25,3 +25,4 @@
 - Role discovery reads the official careers page and public ATS boards (Greenhouse/Ashby/Lever) first, using Tavily search/map only as fallback; why: search alone misses most exact listings.
 - Every chat exchange (question, answer, grounding context, model) is stored in chat_interactions; why: owner-scoped history and Nebius fine-tuning JSONL exports.
 - Keep README screenshots in docs/images as privacy-safe captures of the real portal, and document verified setup dependencies and feature limits; why: repository onboarding must remain reproducible without exposing user data or implying unsupported capabilities.
+- Keep page titles, descriptions and canonicals on leaf routes via pageHead, and do not force a common social image from the root or helper; why: each page must retain its own preview details, with image tags only for a meaningful image shown on that page.

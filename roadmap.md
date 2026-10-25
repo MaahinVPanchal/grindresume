@@ -1,4 +1,5 @@
 # Resume workspace
+- [x] Fix and verify the two failing SEO findings: career-chat heading/control names and page-specific social previews.
 - [x] Create the GrinderResume hackathon README with real portal screenshots, verified feature walkthroughs and repository setup instructions.
 - [x] Replace the Discover company grid with four alternating ticker rows and verify motion, pause and company navigation.
 - [x] Add explicit employer website approval, metadata preview and removal without automatically publishing resume employers.

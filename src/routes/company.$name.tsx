@@ -166,6 +166,7 @@ function CompanyPage() {
                     Open roles ({roles.length}){res.officialCount ? ` · ${res.officialCount} from the official careers page` : ""}
                   </h2>
                   <input
+                    aria-label={`Filter open roles at ${name}`}
                     value={filter}
                     onChange={(e) => setFilter(e.target.value)}
                     placeholder="Filter…"

@@ -59,16 +59,16 @@ function YCPage() {
       <div className="mx-auto mt-8 flex max-w-4xl flex-wrap gap-2 rounded-lg glass p-3">
         <div className="flex min-w-[200px] flex-1 items-center gap-2 rounded-lg bg-glass-strong px-3">
           <Search className="h-4 w-4 text-muted-foreground" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, product or industry…" className="h-11 flex-1 bg-transparent text-sm outline-none" />
+          <input aria-label="Search YC startups by name, product or industry" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, product or industry…" className="h-11 flex-1 bg-transparent text-sm outline-none" />
         </div>
-        <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="h-11 max-w-full rounded-lg bg-glass-strong px-3 text-sm outline-none">
+        <select aria-label="Startup industry" value={industry} onChange={(e) => setIndustry(e.target.value)} className="h-11 max-w-full rounded-lg bg-glass-strong px-3 text-sm outline-none">
           <option value="">All industries</option>
           {res?.industries.map((i) => (
             <option key={i}>{i}</option>
           ))}
         </select>
         <label className="flex h-11 items-center gap-2 rounded-lg bg-glass-strong px-3 text-sm">
-          <input type="checkbox" checked={hiring} onChange={(e) => setHiring(e.target.checked)} /> Hiring only
+          <input aria-label="Hiring only" type="checkbox" checked={hiring} onChange={(e) => setHiring(e.target.checked)} /> Hiring only
         </label>
       </div>
       <p className="mt-4 text-center text-xs text-muted-foreground">
