@@ -89,7 +89,7 @@ function Index() {
   return (
     <Shell>
       <section className="mx-auto max-w-4xl pt-6 text-center">
-        <h1 className="sr-only">GrinderResume — see open roles straight from companies, learn what employers want, and tailor your resume with your real experience.</h1>
+        <h1 className="mb-5 font-display text-4xl leading-tight sm:text-5xl">Research companies and tailor your resume with verified experience</h1>
         <div className="flex flex-wrap items-center justify-center">
           <Link to="/resume" className="inline-flex h-11 items-center gap-2 rounded-full border border-border/70 bg-glass-strong px-5 text-sm font-medium text-foreground shadow-sm transition hover:bg-muted">
             <Upload className="h-4 w-4" /> Upload resume <ArrowRight className="h-4 w-4 text-muted-foreground" />
