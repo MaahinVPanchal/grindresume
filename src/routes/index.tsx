@@ -71,7 +71,7 @@ export const Route = createFileRoute("/")({
     pageHead({
       title: "GrinderResume — Grounded Career Intelligence & AI Resume Workspace",
       description:
-        "Research companies and live open roles with Tavily, extract exact employer requirements, and tailor ATS-ready resumes with private server-grounded AI.",
+        "Research companies and live jobs, compare employer requirements with your verified experience, and tailor your resume in a private workspace with PDF and Word downloads.",
       path: "/",
     }),
   component: Index,

@@ -79,15 +79,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "GrinderResume — Grounded Career Intelligence & AI Resume Workspace" },
-      { name: "description", content: "Discover companies, open roles and YC startups with Tavily live research and a grounded AI resume workspace." },
       { property: "og:site_name", content: "GrinderResume" },
-      { property: "og:title", content: "GrinderResume — Grounded Career Intelligence & AI Resume Workspace" },
-      { property: "og:description", content: "Discover companies, open roles and YC startups with Tavily live research and a grounded AI resume workspace." },
       { property: "og:type", content: "website" },
-      { property: "og:image", content: "https://grindresume.lovable.app/og-image.jpg" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:image", content: "https://grindresume.lovable.app/og-image.jpg" },
       { name: "google-site-verification", content: "google9cb88f25639f8e11" },
     ],
     links: [
