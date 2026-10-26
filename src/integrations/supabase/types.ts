@@ -114,21 +114,27 @@ export type Database = {
         Row: {
           created_at: string
           kind: string
+          own_key: boolean
           period: string
+          processing_claimed: boolean
           resource: string
           user_id: string
         }
         Insert: {
           created_at?: string
           kind: string
+          own_key?: boolean
           period: string
+          processing_claimed?: boolean
           resource: string
           user_id: string
         }
         Update: {
           created_at?: string
           kind?: string
+          own_key?: boolean
           period?: string
+          processing_claimed?: boolean
           resource?: string
           user_id?: string
         }
