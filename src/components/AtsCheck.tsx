@@ -32,6 +32,7 @@ export function AtsCheck({ resume, onClose }: { resume: Resume; onClose: () => v
     setBusy(true); setError('');
     const response = await run({ data: { resumeText, jd, deterministicMissing: result.keywords.missing.slice(0, 25), apiKey: keys.nebius || undefined, model: keys.model || undefined } });
     setAi(response);
+    window.dispatchEvent(new Event('grinder-usage-changed'));
     if (!response.ok) setError(response.error);
     setBusy(false);
   }
@@ -73,7 +74,7 @@ export function AtsCheck({ resume, onClose }: { resume: Resume; onClose: () => v
           <Button className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50" onClick={review} disabled={busy}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-amber-500" />}{busy ? 'Reviewing…' : 'Run AI review'}
           </Button>
-          <p className="text-xs text-muted-foreground">{keys.nebius && keys.model ? 'Runs on your Nebius key — unlimited.' : 'Free with sign-up: 3 AI reviews a day, no keys needed.'}</p>
+          <p className="text-xs text-muted-foreground">{keys.nebius ? 'Runs on your Nebius key — unlimited.' : 'Free with sign-up: 3 AI reviews a day, no keys needed.'}</p>
         </div>
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         {ai?.ok && (
