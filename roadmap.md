@@ -1,5 +1,6 @@
 # Resume workspace
-- [ ] Enforce admin-only fine-tuning exports and account allowances; show profile counters and verify key-based unlimited use.
+- [x] Enforce admin-only fine-tuning exports and account allowances; add profile counters and automated quota tests.
+- [ ] Verify profile counters and real provider requests signed in as the affected free account — blocked by declined test sign-in permission.
 - [x] Fix and verify the two failing SEO findings: career-chat heading/control names and page-specific social previews.
 - [x] Create the GrinderResume hackathon README with real portal screenshots, verified feature walkthroughs and repository setup instructions.
 - [x] Replace the Discover company grid with four alternating ticker rows and verify motion, pause and company navigation.
