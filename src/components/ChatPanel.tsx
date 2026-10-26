@@ -368,7 +368,7 @@ export function ChatPanel({
       )}
       {!keys.nebius && !needSignup && demoOut && (
         <div role="alert" className="mx-3 mt-2 rounded-lg border border-border bg-muted/60 p-3 text-xs">
-          <p className="font-medium">You've used your 3 free checks for today for today. Add your own free Nebius and Tavily keys in Settings to keep going - it takes 2 minutes.</p>
+          <p className="font-medium">You've used your 3 free checks for today. Add your own free Nebius and Tavily keys in Settings to keep going - it takes 2 minutes.</p>
           <ul className="mt-2 list-disc space-y-1 pl-4 text-muted-foreground">
             <li>Nebius: sign up at <a className="underline" href="https://tokenfactory.nebius.com" target="_blank" rel="noreferrer">tokenfactory.nebius.com</a>, open API keys and create a key.</li>
             <li>Tavily: sign up at <a className="underline" href="https://app.tavily.com" target="_blank" rel="noreferrer">app.tavily.com</a> and copy your free API key from the dashboard.</li>
