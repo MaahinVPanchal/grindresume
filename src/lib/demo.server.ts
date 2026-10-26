@@ -6,7 +6,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 export const DEMO_CHECKS = 3;
 const IP_CHECKS = 6;
-const LIMITS: Record<string, number> = { search: 15, extract: 15, research: 6 };
+const LIMITS: Record<string, number> = { search: 15, extract: 15, research: 6, ats: 3 };
 const COOKIE = "gr_demo";
 export const DEMO_SIGNUP_MESSAGE = "Sign up free to get 3 free checks a day - no API keys needed.";
 export const SIGN_IN_REQUIRED_MESSAGE = DEMO_SIGNUP_MESSAGE;
@@ -86,6 +86,13 @@ export async function allowDemo(kind: keyof typeof LIMITS, customAuthHeader?: st
   }
   if ((await demoRemaining(v)) <= 0) throw new Error(DEMO_LIMIT_MESSAGE);
   if ((await consume(`v:${v}`, kind, LIMITS[kind]!)) < 0) throw new Error(DEMO_LIMIT_MESSAGE);
+}
+
+/** Independent per-feature quota for signed-in users (e.g. ATS reviews): does not draw from the shared check pool. */
+export async function useKindQuota(kind: keyof typeof LIMITS, limitMessage = DEMO_LIMIT_MESSAGE, customAuthHeader?: string | null): Promise<void> {
+  const v = await demoUser(customAuthHeader);
+  if (!v) throw new Error(DEMO_SIGNUP_MESSAGE);
+  if ((await consume(`v:${v}`, kind, LIMITS[kind]!)) < 0) throw new Error(limitMessage);
 }
 
 /** Resolve a provider key: the user's own key, or the owner's server key under demo limits. */

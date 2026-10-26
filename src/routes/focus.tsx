@@ -38,7 +38,7 @@ const COMPARISON = [
 ];
 
 const WONT_DO = [
-  { Icon: Gauge, title: 'No made-up “ATS scores”', text: 'Scores you can’t verify are theater. We show the requirement, your evidence and the gap instead.', tile: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+  { Icon: Gauge, title: 'No black-box “ATS scores”', text: 'Scores you can’t verify are theater. Our readiness check shows every reason behind its number — the requirement, your evidence, the gap.', tile: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
   { Icon: Ban, title: 'No mass auto-applying', text: 'Spraying hundreds of generic applications is the problem, not the solution.', tile: 'bg-rose-500/10 text-rose-600 dark:text-rose-400' },
   { Icon: ShieldCheck, title: 'No invented experience', text: 'Your resume only changes when you say so, and never with facts you didn’t provide.', tile: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
 ];
