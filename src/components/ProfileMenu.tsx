@@ -15,12 +15,17 @@ import {
 
 export function ProfileMenu() {
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null));
     const { data } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
     return () => data.subscription.unsubscribe();
   }, []);
+  useEffect(() => {
+    if (!user) { setIsAdmin(false); return; }
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => setIsAdmin(data === true));
+  }, [user]);
 
   if (!user)
     return (
@@ -55,9 +60,11 @@ export function ProfileMenu() {
         <DropdownMenuItem onSelect={async () => { const n = await exportFineTuneDataset(); if (!n) alert("No saved chats or submitted quizzes yet."); }}>
           <Database className="mr-2 h-4 w-4" /> Export fine-tuning data (.jsonl)
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => navigate({ to: "/admin" })}>
-          <UserRound className="mr-2 h-4 w-4" /> Admin console
-        </DropdownMenuItem>
+        {isAdmin && (
+          <DropdownMenuItem onSelect={() => navigate({ to: "/admin" })}>
+            <UserRound className="mr-2 h-4 w-4" /> Admin console
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={() => supabase.auth.signOut()}>
           <LogOut className="mr-2 h-4 w-4" /> Sign out
