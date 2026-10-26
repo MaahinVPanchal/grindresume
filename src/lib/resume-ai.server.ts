@@ -9,7 +9,8 @@ export async function structuredAI<T>(schema: z.ZodType<T>, instructions: string
   // BYOK uses the caller's key + chosen model; otherwise free features run on the owner's
   // server-side Nebius key with the same model the chat demo uses.
   const key = nebiusKey && selectedModel ? nebiusKey : process.env['NEBIUS_API_KEY'];
-  const model = nebiusKey && selectedModel ? selectedModel : 'meta-llama/Llama-3.3-70B-Instruct';
+  // Free features use a model the owner's Nebius account can access and that supports JSON schema output.
+  const model = nebiusKey && selectedModel ? selectedModel : process.env['DEMO_STRUCTURED_MODEL'] || 'Qwen/Qwen3-235B-A22B-Instruct-2507';
   if (key) {
     const provider = createOpenAICompatible({ name: 'nebius', baseURL: 'https://api.tokenfactory.nebius.com/v1', apiKey: key, supportsStructuredOutputs: true });
     const result = streamText({ model: provider(model), system: instructions, prompt, output, maxRetries: 0 });
