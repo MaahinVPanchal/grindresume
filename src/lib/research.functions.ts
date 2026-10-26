@@ -62,7 +62,9 @@ export const findCareers = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     try {
-      const key = await (await import("./demo.server")).demoKey(data.apiKey, "TAVILY_API_KEY", "search");
+      const demo = await import('./demo.server');
+      if (!data.apiKey?.trim()) await demo.useCompanyDiscovery(data.company, data.domain);
+      const key = await demo.demoKey(data.apiKey, "TAVILY_API_KEY", "search");
       const { rejectReason, careerHost, matcher } = await import("./role-match");
       const { harvestCareersPage, atsBoards, atsJobs, rankRoles } = await import("./careers-harvest.server");
       const company = data.company.trim();
