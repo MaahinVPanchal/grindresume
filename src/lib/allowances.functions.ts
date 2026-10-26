@@ -31,7 +31,7 @@ export const reserveResumeUpload = createServerFn({ method: 'POST' })
     const { supabaseAdmin } = await import('@/integrations/supabase/client.server');
     if (data.apiKey?.trim()) {
       // A caller-supplied key is used for processing; it never unlocks the owner's AI key.
-      const { error } = await supabaseAdmin.from('feature_allowance_usage').insert({ user_id: context.userId, kind: 'upload', period: '1970-01-01', resource: data.path });
+      const { error } = await supabaseAdmin.from('feature_allowance_usage').insert({ user_id: context.userId, kind: 'upload', period: '1970-01-01', resource: data.path, own_key: true });
       if (error) throw new Error('Upload could not be authorized.');
     } else {
       const { data: left, error } = await supabaseAdmin.rpc('consume_feature_allowance', { _user: context.userId, _kind: 'upload', _resource: data.path });
