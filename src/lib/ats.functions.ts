@@ -19,7 +19,7 @@ export const reviewResume = createServerFn({ method: 'POST' })
   .middleware([requireSupabaseAuth])
   .inputValidator(d => z.object({ resumeText: z.string().min(30).max(15000), jd: z.string().max(12000).default(''), deterministicMissing: z.array(z.string()).max(25).default([]), apiKey: z.string().optional(), model: z.string().optional() }).parse(d))
   .handler(async ({ data }) => {
-    const byok = !!(data.apiKey && data.model);
+    const byok = Boolean(data.apiKey?.trim());
     if (!byok) {
       try {
         await useKindQuota('ats', "You've used your 3 free ATS reviews for today. Connect your Nebius key in Settings for unlimited reviews.");

@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { getAdminFineTuneDataset } from './allowances.functions';
 
 const SYSTEM = "You are GrinderResume's career copilot. Ground every claim in the candidate's resume and the provided job/company context. Never invent experience; flag gaps honestly.";
 type M = { role: string; content: string };
@@ -57,8 +57,8 @@ export function splitLines(lines: string[], maxBytes = NEBIUS_MAX_BYTES) {
   let size = 0;
   for (const l of lines) {
     const b = enc.encode(l).length + 1;
-    if (size + b > maxBytes && parts[parts.length - 1]!.length) { parts.push([]); size = 0; }
-    parts[parts.length - 1]!.push(l); size += b;
+    if (size + b > maxBytes && parts.at(-1)?.length) { parts.push([]); size = 0; }
+    parts.at(-1)?.push(l); size += b;
   }
   return parts.filter((p) => p.length);
 }
@@ -81,11 +81,10 @@ export function formatBytes(n: number) {
   return `${n.toFixed(i ? 2 : 0)} ${u[i]}`;
 }
 
-// Signed-in user's own data.
+// The server verifies the admin role before returning any export data.
 export async function exportFineTuneDataset() {
-  const { data: chats } = await supabase.from("chat_interactions").select("context,messages").order("created_at");
-  const { data: quizzes } = await supabase.from("role_assessments").select("company,role,questions,answers,score,feedback").not("submitted_at", "is", null);
-  const lines = buildLines(chats ?? [], quizzes ?? []);
+  const dataset = await getAdminFineTuneDataset() as { chats: ChatRow[]; quizzes: QuizRow[] };
+  const lines = buildLines(dataset.chats ?? [], dataset.quizzes ?? []);
   if (lines.length) downloadParts(lines, `grinder-finetune-${new Date().toISOString().slice(0, 10)}`);
   return lines.length;
 }

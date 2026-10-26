@@ -212,6 +212,7 @@ export function ChatPanel({
       if (res.status === 401 && (res.headers.get("X-Demo-Signup") || res.headers.get("X-Auth-Required"))) { setNeedSignup(true); setErr("Sign up free to get 3 free checks a day - no API keys needed."); setMsgs(msgs); return; }
       if (res.status === 429 && res.headers.get("X-Demo-Limit")) { setDemoLeft(0); setDemoOut(true); setMsgs(msgs); return; }
       const left = res.headers.get("X-Demo-Remaining");
+      window.dispatchEvent(new Event('grinder-usage-changed'));
       if (left !== null) { setDemoLeft(Number(left)); if (Number(left) <= 0) setDemoOut(true); }
       if (!res.ok || !res.body) throw new Error((await res.text()) || `Error ${res.status}`);
       const reader = res.body.getReader();

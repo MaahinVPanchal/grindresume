@@ -8,6 +8,7 @@ import { blankEntry, blankResume, normalizeResume, uid, validateSaved, type Resu
 import { extractResume } from '@/lib/resume-parse';
 import { autoFitFormat } from '@/lib/resume-fit';
 import { structureResume, improveResume } from '@/lib/resume.functions';
+import { reserveResumeUpload } from '@/lib/allowances.functions';
 import { exportPDF, exportDOCX } from '@/lib/resume-layout';
 import { useKeys } from '@/lib/keys';
 import { Button } from './Button';
@@ -46,6 +47,7 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
   const input=useRef<HTMLInputElement>(null);
   const revision=useRef(0);
   const keys=useKeys(); const parse=useServerFn(structureResume);
+  const reserveUpload=useServerFn(reserveResumeUpload);
 
   useEffect(()=>{
     supabase.auth.getSession().then(({data})=>{setSession(data.session);setAuthReady(true);});
@@ -96,10 +98,12 @@ export function ResumeWorkspace({ jobURL='', target='' }: { jobURL?: string; tar
     try{
       const parsed=await extractResume(file,setProgress);setExtracted(parsed.text);
       const path=`${session.user.id}/${uid()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+      await reserveUpload({data:{path,apiKey:keys.nebius||undefined}});
+      window.dispatchEvent(new Event('grinder-usage-changed'));
       const {error:uploadError}=await supabase.storage.from('resumes').upload(path,file,{contentType:file.type||'application/octet-stream'});
       if(uploadError)throw new Error('The original file could not be saved privately. Please retry.');
       originalPath=path;setBusy('Organizing your resume');setProgress(75);
-      const result=await parse({data:{text:parsed.text,apiKey:keys.nebius||undefined,model:keys.model||undefined}});
+      const result=await parse({data:{text:parsed.text,uploadPath:path,apiKey:keys.nebius||undefined,model:keys.model||undefined}});
       if(result.ok){await create(autoFitFormat(normalizeResume(result.content),parsed.pages,parsed.columns),path,parsed.text);}
       else{
         const fallback=blankResume();fallback.sections=[{id:uid(),kind:'additional',heading:'Imported content — review and organize',entries:[{...blankEntry(),details:parsed.text}]}];fallback.reviewNotes=[result.error];await create(autoFitFormat(fallback,parsed.pages,parsed.columns),path,parsed.text);

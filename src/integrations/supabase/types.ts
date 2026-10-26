@@ -110,6 +110,36 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_allowance_usage: {
+        Row: {
+          created_at: string
+          kind: string
+          own_key: boolean
+          period: string
+          processing_claimed: boolean
+          resource: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          kind: string
+          own_key?: boolean
+          period: string
+          processing_claimed?: boolean
+          resource: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          kind?: string
+          own_key?: boolean
+          period?: string
+          processing_claimed?: boolean
+          resource?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       resume_versions: {
         Row: {
           created_at: string
@@ -391,6 +421,10 @@ export type Database = {
           people: number
         }[]
       }
+      consume_feature_allowance: {
+        Args: { _kind: string; _resource: string; _user: string }
+        Returns: number
+      }
       demo_consume: {
         Args: { _bucket: string; _kind: string; _limit: number }
         Returns: number
@@ -403,6 +437,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      resume_upload_authorized: { Args: { _path: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user"

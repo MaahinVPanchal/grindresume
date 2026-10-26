@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 - Use the shared Button component for application commands so keyboard focus and button behavior remain consistent.
+- Enforce feature allowances in server handlers and atomic database functions, require upload reservations in storage RLS, and authorize fine-tuning exports with server-verified roles; why: profile visibility must never be the security boundary.
 - Keep the shared Shell responsible for the landscape and navigation so all content pages retain the same visual frame.
 - Keep featured-company motion in the shared CompanyTicker with CSS tracks and accessible stationary browsing, so discovery links remain usable without animation.
 - Maintain one validated resume state for the structured editor, contextual preview edits and exports so edits cannot diverge.
