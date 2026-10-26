@@ -268,7 +268,7 @@ export function ChatPanel({
           onChange={(e) => saveKeys({ model: e.target.value })}
           className="max-w-[55%] truncate rounded-lg bg-muted px-2 py-1 text-xs outline-none"
         >
-          {models.length === 0 && <option value="">{keys.nebius ? "Loading models…" : "No Nebius key"}</option>}
+          {models.length === 0 && <option value="">{keys.nebius ? "Loading models…" : "Free model · 3 checks a day"}</option>}
           {models.map((m) => (
             <option key={m} value={m}>
               {m}
