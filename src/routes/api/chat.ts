@@ -14,7 +14,7 @@ const Body = z.object({
 const BASES = ["https://api.tokenfactory.nebius.com/v1", "https://api.studio.nebius.com/v1"];
 
 // Demo replies use the first preferred model the owner's Nebius account can access.
-const PREFERRED = [/Llama-3\.3-70B/i, /Llama-3\.1-70B/i, /DeepSeek-V3/i, /Qwen.*Instruct/i, /Instruct/i];
+const PREFERRED = [/^nvidia\/NVIDIA-Nemotron-3-Nano-30B-A3B$/i, /Llama-3\.3-70B/i, /Llama-3\.1-70B/i, /DeepSeek-V3/i, /Qwen.*Instruct/i, /Instruct/i];
 let demoModel: string | null = null;
 async function pickDemoModel(key: string): Promise<string> {
   if (demoModel) return demoModel;
@@ -32,7 +32,7 @@ async function pickDemoModel(key: string): Promise<string> {
       /* try next base */
     }
   }
-  return "meta-llama/Llama-3.3-70B-Instruct";
+  return "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B";
 }
 
 export const Route = createFileRoute("/api/chat")({

@@ -31,7 +31,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "How does the free demo mode work?",
-    a: "Sign up free to get 3 checks daily without needing your own API keys. Free checks are tied to your account and processed on the server using owner-scoped Nebius AI (powered by Llama 3.3 70B) and Tavily search, bounded by privacy-safe daily limits. Private keys and tokens never leave the server or reach visitor browsers.",
+    a: "Sign up free to get 3 checks daily without needing your own API keys. Free checks are tied to your account and processed on the server using owner-scoped Nebius AI (powered by NVIDIA Nemotron-3-Nano 30B) and Tavily search, bounded by privacy-safe daily limits. Private keys and tokens never leave the server or reach visitor browsers.",
   },
   {
     q: "Can I connect my own API keys?",
