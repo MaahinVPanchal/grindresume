@@ -27,7 +27,7 @@ function parseWhen(value: string): { y: number; m: number } | null {
 /** Deterministic keyword overlap: the JD's top non-stopword tokens plus frequent two-word
  *  phrases (so multi-word skills like "machine learning" match), checked against the resume. */
 export function keywordOverlap(resumeText: string, jd: string): { found: string[]; missing: string[] } {
-  const flat = resumeText.toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ');
+  const flat = ` ${resumeText.toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim()} `;
   const resumeWords = new Set(tokens(resumeText).map(strip));
   const raw = tokens(jd);
   const freq = new Map<string, number>();
@@ -46,7 +46,7 @@ export function keywordOverlap(resumeText: string, jd: string): { found: string[
     bigramFreq.set(phrase, (bigramFreq.get(phrase) ?? 0) + 1);
   }
   const topBigrams = [...bigramFreq.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([w]) => w);
-  const foundBigrams = topBigrams.filter(p => flat.includes(p));
+  const foundBigrams = topBigrams.filter(p => flat.includes(` ${p} `));
   const foundSet = new Set(top.filter(w => resumeWords.has(w)));
   for (const phrase of foundBigrams) for (const word of phrase.split(' ')) foundSet.add(word);
   const missing = top.filter(w => !foundSet.has(w));
